@@ -33,6 +33,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         <div className="flex w-full flex-col items-start justify-center gap-4 lg:flex-row">
             <nav
                 aria-label="Settings"
+                data-slot="tabs-list"
                 className={cn(
                     tabsListVariants(),
                     'grid h-auto w-full shrink-0 grid-cols-3 gap-1 lg:w-60 lg:grid-cols-1',
@@ -45,6 +46,8 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                         <Link
                             key={toUrl(item.href)}
                             href={item.href}
+                            data-slot="tabs-trigger"
+                            data-active={isActive ? '' : undefined}
                             aria-current={isActive ? 'page' : undefined}
                             className={cn(
                                 'inline-flex items-center justify-center rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all hover:text-foreground lg:justify-start dark:text-muted-foreground dark:hover:text-foreground',
