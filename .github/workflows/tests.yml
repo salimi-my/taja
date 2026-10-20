@@ -37,6 +37,12 @@ jobs:
 
       - name: Setup Application
         run: composer setup
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          SESSION_DRIVER: array
+          CACHE_STORE: array
+          QUEUE_CONNECTION: sync
 
       - name: Run CI Checks
         run: composer ci:check
