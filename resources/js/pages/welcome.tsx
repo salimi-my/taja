@@ -19,7 +19,7 @@ export default function Welcome() {
 
                 <div className="flex max-w-md flex-col items-center gap-6 text-center">
                     <div className="flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-                        <AppLogoIcon className="size-9 fill-current" />
+                        <AppLogoIcon className="size-11 fill-current" />
                     </div>
 
                     <div className="space-y-2">

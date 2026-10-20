@@ -40,7 +40,7 @@ export default function AuthSimpleLayout({
                         <div className="relative hidden items-center justify-center overflow-hidden bg-primary/15 p-4 md:flex dark:bg-primary/95">
                             <PlaceholderPattern className="absolute inset-0 size-full stroke-primary/15 dark:stroke-primary-foreground/15" />
                             <div className="relative flex size-24 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg dark:bg-primary-foreground dark:text-primary">
-                                <AppLogoIcon className="size-14 fill-current" />
+                                <AppLogoIcon className="size-16 fill-current" />
                             </div>
                         </div>
                     </CardContent>
