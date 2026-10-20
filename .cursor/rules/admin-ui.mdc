@@ -1,0 +1,16 @@
+---
+description: Conventions for the admin dashboard UI (layout, nav, tables, forms)
+globs: resources/js/**/*.tsx,resources/js/**/*.ts
+alwaysApply: false
+---
+
+# Admin dashboard UI
+
+- Reuse `resources/js/components/ui/*` and `components/content-card.tsx`. Do not write one-off versions of components that already exist.
+- Pages declare `Page.layout = { breadcrumbs: [...] }`. The layout already provides padding, so do not add outer padding or a page `<h1>` styled heading.
+- Sidebar items live in `resources/js/lib/nav.ts` and must use Wayfinder route functions. Use `adminOnly: true` for admin pages.
+- List pages must use `components/table/*` with `useTableParams` (query-string driven, Inertia visits). Do not fetch table data on the client.
+- Forms use Inertia `<Form>` with `Field`, `FieldLabel` and `FieldError`. Do not add react-hook-form or zod.
+- Use Wayfinder (`@/actions`, `@/routes`) for every URL. Never hardcode paths.
+- Colors come from the theme variables in `resources/css/app.css` (`--brand`, `--primary`, ...). Do not hardcode brand colors in components.
+- Run `pnpm run check:fix` and `pnpm run types:check` after changing frontend code.

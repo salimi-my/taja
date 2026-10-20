@@ -1,0 +1,24 @@
+---
+description: Always use pnpm instead of npm (or yarn) for JavaScript package management and scripts
+alwaysApply: true
+---
+
+# Use pnpm, not npm
+
+This project uses pnpm (see `packageManager` in `package.json` and `pnpm-lock.yaml`).
+
+- Never run `npm` or `npx` commands, and never create or commit `package-lock.json` or `yarn.lock`.
+- Use `pnpm` for everything, and use `pnpm dlx` instead of `npx`.
+- Do not change the dependencies without approval.
+
+| Instead of | Use |
+|---|---|
+| `npm install` | `pnpm install` |
+| `npm install <pkg>` | `pnpm add <pkg>` |
+| `npm install -D <pkg>` | `pnpm add -D <pkg>` |
+| `npm uninstall <pkg>` | `pnpm remove <pkg>` |
+| `npm run build` | `pnpm run build` |
+| `npm run dev` | `pnpm run dev` |
+| `npx <tool>` | `pnpm dlx <tool>` (or `pnpm exec <tool>` for local binaries) |
+
+When a Laravel Boost guideline or skill mentions `npm run build` or `npm run dev`, run the `pnpm run` equivalent.

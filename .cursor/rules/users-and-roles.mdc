@@ -1,0 +1,14 @@
+---
+description: Conventions for roles, authorization and user management in the backend
+globs: app/**/*.php,routes/**/*.php,database/**/*.php,tests/**/*.php
+alwaysApply: false
+---
+
+# Users, roles and authorization
+
+- Roles are the `App\Enums\UserRole` backed enum stored in a plain string column. Add roles as enum cases (least privileged first, it is the default) and never as a database enum column.
+- Authorize through `App\Policies\UserPolicy` or Form Request `authorize()`. Do not compare roles inline in controllers.
+- Return API Resources (`UserResource`) to Inertia pages, not raw models.
+- Flash user feedback with `Inertia::flash('toast', ['type' => 'success', 'message' => __('...')])`.
+- Index endpoints validate `search`, filter arrays, `sort`, `direction` and `per_page` in a Form Request and cap `per_page`.
+- Cover controller behavior and authorization failures with Pest feature tests that use the model factories.
