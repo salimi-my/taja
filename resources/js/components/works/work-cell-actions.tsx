@@ -1,0 +1,80 @@
+import { Link } from '@inertiajs/react';
+import { Edit, Ellipsis, Eye, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { WorkDelete } from '@/components/works/work-delete';
+import { useIsAdmin } from '@/hooks/use-is-admin';
+import { edit, show } from '@/routes/works';
+import type { Work } from '@/types';
+
+type WorkCellActionsProps = {
+    work: Work;
+};
+
+export function WorkCellActions({ work }: WorkCellActionsProps) {
+    const isAdmin = useIsAdmin();
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    aria-label="Open menu"
+                    variant="ghost"
+                    className="flex size-8 p-0 data-[state=open]:bg-muted"
+                >
+                    <Ellipsis className="size-4" aria-hidden="true" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem asChild>
+                    <Link
+                        href={show(work.id)}
+                        className="cursor-pointer text-sm font-medium"
+                    >
+                        <Eye className="mr-2 size-4" aria-hidden="true" />
+                        View
+                    </Link>
+                </DropdownMenuItem>
+                {isAdmin && (
+                    <>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href={edit(work.id)}
+                                className="cursor-pointer text-sm font-medium"
+                            >
+                                <Edit
+                                    className="mr-2 size-4"
+                                    aria-hidden="true"
+                                />
+                                Edit
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <WorkDelete work={work}>
+                                <Button
+                                    variant="ghost"
+                                    className="group w-full justify-start px-2"
+                                >
+                                    <Trash2
+                                        className="mr-2 size-4 group-hover:text-destructive"
+                                        aria-hidden="true"
+                                    />
+                                    <span className="group-hover:text-destructive">
+                                        Delete
+                                    </span>
+                                </Button>
+                            </WorkDelete>
+                        </DropdownMenuItem>
+                    </>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}

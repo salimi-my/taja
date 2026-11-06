@@ -47,6 +47,8 @@ export interface ComboboxOption {
 }
 
 export interface ComboboxProps {
+  /** Id of the trigger button, so a `<label htmlFor>` can point at it. */
+  id?: string;
   options: ComboboxOption[];
   value?: string | number | null;
   onValueChange?: (value: string | number) => void;
@@ -81,6 +83,7 @@ export interface ComboboxProps {
 }
 
 function Combobox({
+  id,
   options,
   value,
   onValueChange,
@@ -106,6 +109,8 @@ function Combobox({
     <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
+          type="button"
           data-slot="combobox-trigger"
           variant="outline"
           role="combobox"
