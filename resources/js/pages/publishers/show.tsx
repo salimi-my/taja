@@ -41,8 +41,6 @@ export default function PublishersShow({
         <>
             <Head title={publisher.name} />
 
-            <h1 className="sr-only">{publisher.name}</h1>
-
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <Button variant="ghost" size="sm" asChild>
                     <Link href={index()}>

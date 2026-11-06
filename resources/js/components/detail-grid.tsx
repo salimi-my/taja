@@ -12,8 +12,10 @@ export function DetailItem({ label, children }: DetailItemProps) {
 
     return (
         <div className="space-y-1">
-            <dt className="text-xs text-muted-foreground">{label}</dt>
-            <dd className="text-sm break-words whitespace-pre-line">
+            <dt className="text-xs font-medium text-muted-foreground">
+                {label}
+            </dt>
+            <dd className="text-sm font-medium break-words whitespace-pre-line">
                 {isEmpty ? (
                     <span className="text-muted-foreground">-</span>
                 ) : (
