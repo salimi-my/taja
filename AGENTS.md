@@ -235,3 +235,27 @@ This is a Laravel + Inertia React admin dashboard starter kit. The UI is a float
 - Forms use the Inertia `<Form>` component with the `Field`, `FieldLabel` and `FieldError` components, and the server returns validation errors. Do not add react-hook-form or zod.
 - Success and error toasts are flashed from the server with `Inertia::flash('toast', ['type' => 'success', 'message' => ...])` and shown by `useFlashToast`.
 - Format and lint with `pnpm run check:fix`, and type check with `pnpm run types:check`.
+
+## House of TAJA rights management (Phase 1)
+
+The spec is `PHASE_1.md`. The three client workbooks it describes are the source of truth for the data model. Never put real data from `taja-project-resources/` in tests, seeders or factories.
+
+### Areas
+
+- **Masters:** publishers (`PUB-` code), writers (`WRT-` code, up to 4 aliases). Soft-deleted, and a master with party rows cannot be deleted.
+- **Works:** `Work` (`TAP-` code, unique `macp_work_id`), `WorkIsrc`, and `WorkParty`. A party is a writer or a publisher on a work for one period. Rows are temporal and never overwritten: a change ends the row and opens a new one, a correction sets `superseded_at`. Use the `WorkParty` scopes `current()`, `effectiveOn($date)` and `forCatalogue()`, never re-implement the date rules.
+- **Rights history:** `RightsHistory` is insert-only (the model throws on update or delete). Write entries only through `RecordRightsHistory`, inside the same transaction as the change.
+- **Domain logic** lives in `app/Actions/{Area}` (`Works`, `Imports`, `Reports`), not in controllers. Generated codes come from the `HasGeneratedCode` trait, so do not seed with `WithoutModelEvents`.
+- **CSV import:** one `ImportDefinition` per type in `app/Actions/Imports` drives the template, the field guide and the validation. Flow: upload, preview, confirm. Imports are create-only and processed by `ProcessCsvImportJob`.
+- **Reports:** `app/Actions/Reports/*Report` builds the query (and the CSV headers and rows) once. The report controller's `index` renders the datatable and `export` streams the same filters through `StreamCsv`, so the screen and the file cannot drift. Report filters are read by a Form Request `filters()` method. Reports are read-only and open to every signed-in user.
+- **Dashboard:** counts, the incomplete split count (`IncompleteSplitReport::count()`), the registration status chart, recent rights history, and recent imports for admins.
+
+### Frontend
+
+- Work and party pickers reuse `Combobox`. Report pages are in `resources/js/pages/reports/*` and use `ReportActions` (Export CSV link plus Print). Printing uses `window.print()` with `print:hidden` classes and the `@media print` block in `resources/css/app.css`, so mark new toolbars and buttons `print:hidden`.
+- Report filters live in `Params` (`types/table.ts`) and `lib/table.ts`, like any datatable. Pass a stable `defaultParams` (see `reportDefaults()` in `lib/reports.ts`) to `useTableParams` when a report sorts by something other than `created_at`.
+- Generate Wayfinder files with `php artisan wayfinder:generate --with-form` when you add routes outside `pnpm run dev`.
+
+### Seeding
+
+`php artisan db:seed` creates fake users, publishers (including "Taja Archive"), writers with aliases, and works with parties, history and a few deliberately incomplete splits.
