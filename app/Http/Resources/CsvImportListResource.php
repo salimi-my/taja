@@ -40,7 +40,7 @@ class CsvImportListResource extends JsonResource
             'has_original_file' => Storage::disk('local')->exists($this->stored_path),
             'can_delete' => ! $this->status->isProcessing(),
             'uploaded_by' => $this->user->name ?? null,
-            'uploaded_by_avatar_url' => $this->user?->avatar_url,
+            'uploaded_by_avatar_url' => $this->user->avatar_url ?? null,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

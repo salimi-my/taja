@@ -91,7 +91,7 @@ class DashboardController extends Controller
                         'total_rows' => $csvImport->total_rows,
                         'imported_count' => $csvImport->imported_count,
                         'uploaded_by' => $csvImport->user->name ?? null,
-                        'uploaded_by_avatar_url' => $csvImport->user?->avatar_url,
+                        'uploaded_by_avatar_url' => $csvImport->user->avatar_url ?? null,
                         'created_at' => $csvImport->created_at?->toIso8601String(),
                     ])
                     ->all()
