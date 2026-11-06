@@ -10,11 +10,14 @@ use App\Actions\Imports\ImportDefinition;
 use App\Actions\Imports\ImportRegistry;
 use App\Actions\Imports\InvalidImportFile;
 use App\Actions\Imports\PreviewCsvImport;
+use App\Actions\Imports\ReadCsvSample;
+use App\Enums\CsvImportStatus;
 use App\Enums\CsvImportType;
 use App\Http\Requests\Imports\StoreCsvImportRequest;
 use App\Http\Resources\CsvImportResource;
 use App\Models\CsvImport;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -54,7 +57,7 @@ class CsvImportController extends Controller
     /**
      * Display the preview, or the result once the import was confirmed.
      */
-    public function show(CsvImport $csvImport): Response
+    public function show(Request $request, CsvImport $csvImport, ReadCsvSample $readSample): Response
     {
         Gate::authorize('view', $csvImport);
 
@@ -62,6 +65,7 @@ class CsvImportController extends Controller
 
         return Inertia::render('imports/show', [
             'csvImport' => new CsvImportResource($csvImport),
+            'sample' => $csvImport->status === CsvImportStatus::Previewed ? $readSample($csvImport, $request->integer('sample_rows', ReadCsvSample::ROWS)) : null,
         ]);
     }
 

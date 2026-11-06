@@ -1,18 +1,34 @@
 import { Head, router, setLayoutProps } from '@inertiajs/react';
-import { CircleAlert, CircleCheckBig, TriangleAlert } from 'lucide-react';
+import { format } from 'date-fns';
+import {
+    CircleAlert,
+    CircleCheckBig,
+    FileSpreadsheet,
+    ListChecks,
+    Rows3,
+    TriangleAlert,
+    Upload,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { ContentCard } from '@/components/content-card';
+import { ImportStatusBadge } from '@/components/imports/import-status-badge';
 import { ImportActions } from '@/components/imports/import-actions';
+import { ImportSampleTable } from '@/components/imports/import-sample-table';
 import { ImportIssuesTable } from '@/components/imports/import-issues-table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { cn } from '@/lib/utils';
 import { importListRoutes } from '@/lib/imports';
 import { dashboard } from '@/routes';
-import { create, show } from '@/routes/imports';
-import type { CsvImport } from '@/types';
+import { create } from '@/routes/imports';
+import type { CsvImport, ImportSample } from '@/types';
 
 type Props = {
     csvImport: { data: CsvImport };
+    /** The first rows of the file; only sent while the import is previewed. */
+    sample: ImportSample | null;
 };
 
 const POLL_INTERVAL_MS = 2000;
@@ -34,18 +50,56 @@ function ProgressBar({ percentage }: { percentage: number }) {
     );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+type StatTone = 'neutral' | 'success' | 'danger';
+
+const statTones: Record<StatTone, string> = {
+    neutral: 'bg-muted text-muted-foreground',
+    success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    danger: 'bg-destructive/10 text-destructive',
+};
+
+function Stat({
+    label,
+    value,
+    icon: Icon,
+    tone = 'neutral',
+}: {
+    label: string;
+    value: number;
+    icon: LucideIcon;
+    tone?: StatTone;
+}) {
     return (
-        <div className="rounded-lg border p-4">
-            <div className="text-2xl font-semibold tabular-nums">
-                {value.toLocaleString()}
+        <div className="flex items-center gap-3 rounded-lg border p-4">
+            <div
+                className={cn(
+                    'flex size-10 shrink-0 items-center justify-center rounded-md',
+                    statTones[tone],
+                )}
+            >
+                <Icon className="size-5" />
             </div>
-            <div className="text-sm text-muted-foreground">{label}</div>
+            <div className="min-w-0">
+                <div className="text-2xl leading-none font-semibold tabular-nums">
+                    {value.toLocaleString()}
+                </div>
+                <div className="mt-1 text-sm text-muted-foreground">
+                    {label}
+                </div>
+            </div>
         </div>
     );
 }
 
-export default function ImportsShow({ csvImport: { data: csvImport } }: Props) {
+export default function ImportsShow({
+    csvImport: { data: csvImport },
+    sample,
+}: Props) {
+    const isPreview = csvImport.status === 'previewed';
+    const isValidating = csvImport.status === 'validating';
+    const isImporting = csvImport.status === 'importing';
+    const showsImportedCount = csvImport.status === 'imported' || isImporting;
+
     setLayoutProps({
         breadcrumbs: [
             { title: 'Dashboard', href: dashboard() },
@@ -53,14 +107,15 @@ export default function ImportsShow({ csvImport: { data: csvImport } }: Props) {
                 title: csvImport.type_label,
                 href: importListRoutes[csvImport.type].href,
             },
-            { title: 'Import', href: create(csvImport.type) },
-            { title: `#${csvImport.id}`, href: show(csvImport.id) },
+            {
+                title:
+                    isPreview || isValidating
+                        ? 'Import preview'
+                        : 'Import result',
+                href: create(csvImport.type),
+            },
         ],
     });
-
-    const isPreview = csvImport.status === 'previewed';
-    const isValidating = csvImport.status === 'validating';
-    const isImporting = csvImport.status === 'importing';
 
     useEffect(() => {
         if (!csvImport.is_processing) {
@@ -68,7 +123,7 @@ export default function ImportsShow({ csvImport: { data: csvImport } }: Props) {
         }
 
         const timer = window.setInterval(() => {
-            router.reload({ only: ['csvImport'] });
+            router.reload({ only: ['csvImport', 'sample'] });
         }, POLL_INTERVAL_MS);
 
         return () => window.clearInterval(timer);
@@ -85,27 +140,73 @@ export default function ImportsShow({ csvImport: { data: csvImport } }: Props) {
                             ? 'Import preview'
                             : 'Import result'
                     }
-                    description={`${csvImport.original_filename} · ${csvImport.status_label}${csvImport.uploaded_by ? ` · uploaded by ${csvImport.uploaded_by}` : ''}`}
+                    description={`Importing ${csvImport.type_label.toLowerCase()} from a CSV file.`}
                 >
                     <div className="flex flex-col gap-6">
-                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground ring-1 ring-border">
+                                <FileSpreadsheet className="size-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="truncate text-sm font-medium">
+                                    {csvImport.original_filename}
+                                </div>
+                                <div className="truncate text-xs text-muted-foreground">
+                                    {[
+                                        csvImport.uploaded_by &&
+                                            `Uploaded by ${csvImport.uploaded_by}`,
+                                        csvImport.created_at &&
+                                            format(
+                                                new Date(csvImport.created_at),
+                                                'dd MMM yyyy, HH:mm',
+                                            ),
+                                    ]
+                                        .filter(Boolean)
+                                        .join(' · ')}
+                                </div>
+                            </div>
+                            <ImportStatusBadge csvImport={csvImport} />
+                        </div>
+
+                        <div
+                            className={cn(
+                                'grid gap-3 sm:grid-cols-2',
+                                showsImportedCount
+                                    ? 'lg:grid-cols-4'
+                                    : 'lg:grid-cols-3',
+                            )}
+                        >
                             <Stat
                                 label="Rows in file"
                                 value={csvImport.total_rows}
+                                icon={Rows3}
                             />
                             <Stat
                                 label="Valid rows"
                                 value={csvImport.valid_rows}
+                                icon={ListChecks}
+                                tone={
+                                    csvImport.valid_rows > 0
+                                        ? 'success'
+                                        : 'neutral'
+                                }
                             />
                             <Stat
                                 label="Rows with errors"
                                 value={csvImport.error_rows}
+                                icon={TriangleAlert}
+                                tone={
+                                    csvImport.error_rows > 0
+                                        ? 'danger'
+                                        : 'neutral'
+                                }
                             />
-                            {(csvImport.status === 'imported' ||
-                                isImporting) && (
+                            {showsImportedCount && (
                                 <Stat
                                     label="Rows imported"
                                     value={csvImport.imported_count}
+                                    icon={Upload}
+                                    tone="success"
                                 />
                             )}
                         </div>
@@ -190,9 +291,23 @@ export default function ImportsShow({ csvImport: { data: csvImport } }: Props) {
                             </Alert>
                         )}
 
+                        <Separator />
+
                         <ImportActions csvImport={csvImport} />
                     </div>
                 </ContentCard>
+
+                {sample && (
+                    <ContentCard
+                        title="Sample rows"
+                        description="The first rows of the file, as they will be read. Check that each value sits in the right column."
+                    >
+                        <ImportSampleTable
+                            sample={sample}
+                            total={csvImport.total_rows}
+                        />
+                    </ContentCard>
+                )}
 
                 {csvImport.errors_total > 0 && (
                     <ContentCard

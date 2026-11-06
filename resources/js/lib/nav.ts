@@ -28,7 +28,17 @@ import {
     create as createWriter,
     index as writersIndex,
 } from '@/routes/writers';
-import type { SidebarNavGroup, SidebarNavItem } from '@/types';
+import type { ImportType, SidebarNavGroup, SidebarNavItem } from '@/types';
+
+/**
+ * Keep an Import item active on the preview and result pages (`/imports/{id}`),
+ * whose url holds the import id instead of the type.
+ */
+function isImportOf(type: ImportType) {
+    return (props: Record<string, unknown>): boolean =>
+        (props.csvImport as { data?: { type?: string } } | undefined)?.data
+            ?.type === type;
+}
 
 /**
  * The sidebar menu.
@@ -67,6 +77,7 @@ export const navGroups: SidebarNavGroup[] = [
                     {
                         title: 'Import',
                         href: importCreate('works'),
+                        isActiveForProps: isImportOf('works'),
                         adminOnly: true,
                     },
                 ],
@@ -89,6 +100,7 @@ export const navGroups: SidebarNavGroup[] = [
                     {
                         title: 'Import',
                         href: importCreate('writers'),
+                        isActiveForProps: isImportOf('writers'),
                         adminOnly: true,
                     },
                 ],
@@ -106,6 +118,7 @@ export const navGroups: SidebarNavGroup[] = [
                     {
                         title: 'Import',
                         href: importCreate('publishers'),
+                        isActiveForProps: isImportOf('publishers'),
                         adminOnly: true,
                     },
                 ],

@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -73,9 +73,14 @@ function useActiveSubItem(
     items: SidebarNavSubItem[],
 ): SidebarNavSubItem | undefined {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { props } = usePage();
 
     return items
-        .filter((subItem) => isCurrentOrParentUrl(subItem.href))
+        .filter(
+            (subItem) =>
+                isCurrentOrParentUrl(subItem.href) ||
+                subItem.isActiveForProps?.(props) === true,
+        )
         .sort((a, b) => toUrl(b.href).length - toUrl(a.href).length)[0];
 }
 

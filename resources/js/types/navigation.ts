@@ -23,6 +23,11 @@ type SidebarNavBase = {
 
 export type SidebarNavSubItem = SidebarNavBase & {
     href: NonNullable<InertiaLinkProps['href']>;
+    /**
+     * Also mark the item as active when this returns true for the current
+     * page props, for pages whose url does not start with `href`.
+     */
+    isActiveForProps?: (props: Record<string, unknown>) => boolean;
 };
 
 export type SidebarNavLink = SidebarNavBase & {

@@ -49,3 +49,14 @@ export type CsvImport = {
     imported_at: string | null;
     created_at: string | null;
 };
+
+/** The first rows of an uploaded file, as sent by `CsvImportController::show`. */
+export type ImportSample = {
+    headers: string[];
+    rows: {
+        /** The line in the file; line 1 is the header row. */
+        line: number;
+        data: Record<string, string | null>;
+        errors: string[];
+    }[];
+};

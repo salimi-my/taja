@@ -141,6 +141,53 @@ describe('upload', function (): void {
             );
     });
 
+    test('the preview page lists the first rows and marks the rows with errors', function () {
+        uploadCsv($this->actingAs($this->admin), CsvImportType::Publishers, [
+            importPublisherRow(1),
+            importPublisherRow(2, ['Official_Email' => 'not-an-email']),
+        ]);
+        $csvImport = CsvImport::query()->firstOrFail();
+
+        $this->get(route('imports.show', $csvImport))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('sample.rows', 2)
+                ->where('sample.rows.0.line', 2)
+                ->where('sample.rows.0.data.Publisher_Name', 'Fake Publisher 1')
+                ->where('sample.rows.0.errors', [])
+                ->where('sample.rows.1.line', 3)
+                ->has('sample.rows.1.errors', 1)
+            );
+    });
+
+    test('the preview can show more rows, up to 100', function () {
+        uploadCsv($this->actingAs($this->admin), CsvImportType::Publishers, array_map(
+            fn (int $number): array => importPublisherRow($number),
+            range(1, 120),
+        ));
+        $csvImport = CsvImport::query()->firstOrFail();
+
+        $this->get(route('imports.show', $csvImport))
+            ->assertInertia(fn (Assert $page) => $page->has('sample.rows', 10));
+
+        $this->get(route('imports.show', [$csvImport, 'sample_rows' => 20]))
+            ->assertInertia(fn (Assert $page) => $page->has('sample.rows', 20));
+
+        $this->get(route('imports.show', [$csvImport, 'sample_rows' => 500]))
+            ->assertInertia(fn (Assert $page) => $page->has('sample.rows', 100));
+
+        $this->get(route('imports.show', [$csvImport, 'sample_rows' => 1]))
+            ->assertInertia(fn (Assert $page) => $page->has('sample.rows', 10));
+    });
+
+    test('the sample is only sent while the import is previewed', function () {
+        uploadCsv($this->actingAs($this->admin), CsvImportType::Publishers, [importPublisherRow(1)]);
+        $csvImport = CsvImport::query()->firstOrFail();
+        $csvImport->update(['status' => CsvImportStatus::Cancelled]);
+
+        $this->get(route('imports.show', $csvImport))
+            ->assertInertia(fn (Assert $page) => $page->where('sample', null));
+    });
+
     test('a missing required column rejects the whole file', function () {
         $headers = array_values(array_diff(
             ImportRegistry::find(CsvImportType::Publishers)->headers(),
