@@ -104,8 +104,9 @@ export function TableDateRangeFilter({
                     <Button
                         id="date"
                         variant="outline"
+                        size="sm"
                         className={cn(
-                            'w-[240px] justify-start text-left font-normal',
+                            'h-8 w-[240px] justify-start border-dashed text-left font-normal',
                             !displayedDate?.from && 'text-muted-foreground',
                         )}
                     >
