@@ -42,6 +42,7 @@ class CsvImportResource extends JsonResource
             'warnings' => array_slice($this->warnings ?? [], 0, $listed),
             'warnings_total' => $this->warning_count,
             'uploaded_by' => $this->user->name ?? null,
+            'uploaded_by_avatar_url' => $this->user?->avatar_url,
             'imported_at' => $this->imported_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

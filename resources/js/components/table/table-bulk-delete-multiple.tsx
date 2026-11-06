@@ -31,6 +31,8 @@ interface TableBulkDeleteBaseProps<TId extends string | number> {
     endpoint: string;
     /** Singular entity label used in the confirmation dialog (e.g. `"user"`). */
     entityName: string;
+    /** Replaces the default warning text of the confirmation dialog. */
+    description?: string;
     serializeIds?: (ids: TId[]) => (string | number)[];
     onSuccess?: () => void;
 }
@@ -66,11 +68,13 @@ function useTableBulkDelete<TId extends string | number>({
 
 function TableBulkDeleteDialogContent({
     entityName,
+    description,
     count,
     loading,
     onConfirm,
 }: {
     entityName: string;
+    description?: string;
     count: number;
     loading: boolean;
     onConfirm: () => void;
@@ -80,9 +84,14 @@ function TableBulkDeleteDialogContent({
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete{' '}
-                    {count} {entityName}
-                    {count > 1 && 's'} and remove the data from our servers.
+                    {description ?? (
+                        <>
+                            This action cannot be undone. This will permanently
+                            delete {count} {entityName}
+                            {count > 1 && 's'} and remove the data from our
+                            servers.
+                        </>
+                    )}
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -111,7 +120,7 @@ function TableBulkDeleteDialogContent({
 export function TableBulkDeleteMultiple<TId extends string | number>(
     props: TableBulkDeleteBaseProps<TId>,
 ) {
-    const { entityName } = props;
+    const { entityName, description } = props;
     const { loading, open, setOpen, handleDelete, count } =
         useTableBulkDelete(props);
 
@@ -130,6 +139,7 @@ export function TableBulkDeleteMultiple<TId extends string | number>(
             </AlertDialogTrigger>
             <TableBulkDeleteDialogContent
                 entityName={entityName}
+                description={description}
                 count={count}
                 loading={loading}
                 onConfirm={handleDelete}
@@ -151,6 +161,7 @@ export function TableBulkDeleteMultipleMobile<TId extends string | number>({
     selectAllAriaLabel,
     onToggleSelectAll,
     entityName,
+    description,
     selectedIds,
     ...bulkDeleteProps
 }: TableBulkDeleteMultipleMobileProps<TId>) {
@@ -199,6 +210,7 @@ export function TableBulkDeleteMultipleMobile<TId extends string | number>({
             <AlertDialog open={open} onOpenChange={setOpen}>
                 <TableBulkDeleteDialogContent
                     entityName={entityName}
+                    description={description}
                     count={count}
                     loading={loading}
                     onConfirm={handleDelete}

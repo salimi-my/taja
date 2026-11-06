@@ -15,6 +15,8 @@ export type Params = {
     sort?: string;
     roles?: string[];
     status?: string[];
+    /** Import history: the kinds of import (works, writers, publishers). */
+    types?: string[];
     societies?: string[];
     publishers?: string[];
     rights_types?: string[];

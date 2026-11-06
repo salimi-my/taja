@@ -16,6 +16,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UserAvatarName } from '@/components/user-avatar-name';
 import { show } from '@/routes/works';
 import type {
     PaginatedResource,
@@ -77,8 +78,17 @@ function HistoryEntry({ entry }: { entry: RightsHistoryEntry }) {
                 </span>
                 <span className="text-xs text-muted-foreground">
                     Recorded {formatDate(entry.recorded_at)} by{' '}
-                    {entry.user_name ??
-                        (entry.csv_import_id ? 'an import' : 'the system')}
+                    {entry.user_name ? (
+                        <UserAvatarName
+                            name={entry.user_name}
+                            avatarUrl={entry.user_avatar_url}
+                            size="compact"
+                        />
+                    ) : entry.csv_import_id ? (
+                        'an import'
+                    ) : (
+                        'the system'
+                    )}
                 </span>
             </div>
             <p className="text-sm">{entry.summary}</p>

@@ -1,6 +1,7 @@
 import {
     BarChart3,
     Building2,
+    History,
     LayoutGrid,
     Music,
     PenLine,
@@ -16,7 +17,10 @@ import {
     songOwnership,
     writerCatalogue,
 } from '@/routes/reports';
-import { create as importCreate } from '@/routes/imports';
+import {
+    create as importCreate,
+    index as importsIndex,
+} from '@/routes/imports';
 import { edit as editSecurity } from '@/routes/security';
 import { index as usersIndex } from '@/routes/users';
 import {
@@ -122,6 +126,18 @@ export const navGroups: SidebarNavGroup[] = [
                         adminOnly: true,
                     },
                 ],
+            },
+        ],
+    },
+    {
+        title: 'Imports',
+        items: [
+            {
+                title: 'Import History',
+                href: importsIndex(),
+                icon: History,
+                exact: true,
+                adminOnly: true,
             },
         ],
     },

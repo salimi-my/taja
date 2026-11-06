@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Imports\BuildCsvTemplate;
 use App\Actions\Imports\CancelCsvImport;
 use App\Actions\Imports\ConfirmCsvImport;
+use App\Actions\Imports\DeleteCsvImport;
 use App\Actions\Imports\ImportColumn;
 use App\Actions\Imports\ImportDefinition;
 use App\Actions\Imports\ImportRegistry;
@@ -13,9 +14,12 @@ use App\Actions\Imports\PreviewCsvImport;
 use App\Actions\Imports\ReadCsvSample;
 use App\Enums\CsvImportStatus;
 use App\Enums\CsvImportType;
+use App\Http\Requests\Imports\CsvImportIndexRequest;
 use App\Http\Requests\Imports\StoreCsvImportRequest;
+use App\Http\Resources\CsvImportListResource;
 use App\Http\Resources\CsvImportResource;
 use App\Models\CsvImport;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -26,6 +30,54 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CsvImportController extends Controller
 {
+    /**
+     * Display a paginated, searchable and filterable history of every import.
+     */
+    public function index(CsvImportIndexRequest $request): Response
+    {
+        $filters = [
+            'search' => $request->string('search')->trim()->toString(),
+            'types' => $request->array('types'),
+            'status' => $request->array('status'),
+            'start_date' => $request->string('start_date')->toString(),
+            'end_date' => $request->string('end_date')->toString(),
+            'sort' => $request->string('sort', 'created_at')->toString(),
+            'direction' => $request->string('direction', 'desc')->toString(),
+            'per_page' => $request->integer('per_page', 10),
+        ];
+
+        $csvImports = CsvImport::query()
+            ->with('user')
+            ->when($filters['search'] !== '', function (Builder $query) use ($filters): void {
+                $term = '%'.addcslashes($filters['search'], '%_\\').'%';
+
+                $query->where(function (Builder $query) use ($term): void {
+                    $query->where('original_filename', 'like', $term)
+                        ->orWhereHas('user', fn (Builder $query) => $query->where('name', 'like', $term));
+                });
+            })
+            ->when($filters['types'] !== [], fn (Builder $query) => $query->whereIn('type', $filters['types']))
+            ->when($filters['status'] !== [], fn (Builder $query) => $query->whereIn('status', $filters['status']))
+            ->when($filters['start_date'] !== '', fn (Builder $query) => $query->whereDate('created_at', '>=', $filters['start_date']))
+            ->when($filters['end_date'] !== '', fn (Builder $query) => $query->whereDate('created_at', '<=', $filters['end_date']))
+            ->when(
+                $filters['direction'] === 'desc',
+                fn (Builder $query) => $query->orderByDesc($filters['sort']),
+                fn (Builder $query) => $query->orderBy($filters['sort']),
+            )
+            ->orderByDesc('id')
+            ->paginate($filters['per_page'])
+            ->withQueryString();
+
+        return Inertia::render('imports/index', [
+            'csvImports' => CsvImportListResource::collection($csvImports),
+            'filters' => $filters,
+            'types' => CsvImportType::options(),
+            'statuses' => CsvImportStatus::options(),
+            'perPageOptions' => CsvImportIndexRequest::PER_PAGE_OPTIONS,
+        ]);
+    }
+
     /**
      * Display the upload page with the field guide of the import type.
      */
@@ -107,6 +159,34 @@ class CsvImportController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Import cancelled.')]);
 
         return redirect()->route('imports.create', $csvImport->type);
+    }
+
+    /**
+     * Delete an import from the history, together with its files.
+     */
+    public function destroy(CsvImport $csvImport, DeleteCsvImport $delete): RedirectResponse
+    {
+        Gate::authorize('delete', $csvImport);
+
+        $delete($csvImport);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Import deleted.')]);
+
+        return back();
+    }
+
+    /**
+     * Download the file that was uploaded, under its original name.
+     */
+    public function download(CsvImport $csvImport): StreamedResponse
+    {
+        Gate::authorize('view', $csvImport);
+
+        $disk = Storage::disk('local');
+
+        abort_unless($disk->exists($csvImport->stored_path), 404);
+
+        return $disk->download($csvImport->stored_path, $csvImport->original_filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /**

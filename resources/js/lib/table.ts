@@ -10,6 +10,7 @@ export const DEFAULT_PARAMS: Params = {
     search: undefined,
     roles: undefined,
     status: undefined,
+    types: undefined,
     societies: undefined,
     publishers: undefined,
     rights_types: undefined,
@@ -40,6 +41,7 @@ export type ServerFilters = {
     search: string;
     roles?: string[];
     status?: string[];
+    types?: string[];
     societies?: string[];
     publishers?: string[];
     rights_types?: string[];
@@ -80,6 +82,7 @@ export function paramsFromServer(
         sort: `${filters.sort}.${filters.direction}`,
         roles: filters.roles?.length ? filters.roles : undefined,
         status: filters.status?.length ? filters.status : undefined,
+        types: filters.types?.length ? filters.types : undefined,
         societies: filters.societies?.length ? filters.societies : undefined,
         publishers: filters.publishers?.length ? filters.publishers : undefined,
         rights_types: filters.rights_types?.length
@@ -143,6 +146,10 @@ export function paramsToQuery(
 
     if (params.status?.length) {
         query.status = params.status;
+    }
+
+    if (params.types?.length) {
+        query.types = params.types;
     }
 
     if (params.societies?.length) {
@@ -259,6 +266,7 @@ export function hasActiveFilters(
         'search',
         'roles',
         'status',
+        'types',
         'societies',
         'publishers',
         'rights_types',

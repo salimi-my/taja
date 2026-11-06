@@ -84,6 +84,7 @@ describe('screen', function () {
                 ->has('rows.data', 1)
                 ->where('rows.data.0.id', $match->id)
                 ->has('users', 2)
+                ->has('users.0.avatar_url')
             );
     });
 

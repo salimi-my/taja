@@ -20,10 +20,10 @@ import { ImportIssuesTable } from '@/components/imports/import-issues-table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { UserAvatarName } from '@/components/user-avatar-name';
 import { cn } from '@/lib/utils';
-import { importListRoutes } from '@/lib/imports';
 import { dashboard } from '@/routes';
-import { create } from '@/routes/imports';
+import { create, index } from '@/routes/imports';
 import type { CsvImport, ImportSample } from '@/types';
 
 type Props = {
@@ -105,10 +105,7 @@ export default function ImportsShow({
     setLayoutProps({
         breadcrumbs: [
             { title: 'Dashboard', href: dashboard() },
-            {
-                title: csvImport.type_label,
-                href: importListRoutes[csvImport.type].href,
-            },
+            { title: 'Import history', href: index() },
             {
                 title:
                     isPreview || isValidating
@@ -153,18 +150,33 @@ export default function ImportsShow({
                                 <div className="truncate text-sm font-medium">
                                     {csvImport.original_filename}
                                 </div>
-                                <div className="truncate text-xs text-muted-foreground">
-                                    {[
-                                        csvImport.uploaded_by &&
-                                            `Uploaded by ${csvImport.uploaded_by}`,
-                                        csvImport.created_at &&
-                                            format(
+                                <div className="flex min-w-0 items-center gap-1.5 text-xs whitespace-nowrap text-muted-foreground">
+                                    {csvImport.uploaded_by && (
+                                        <>
+                                            <span className="shrink-0">
+                                                Uploaded by
+                                            </span>
+                                            <UserAvatarName
+                                                name={csvImport.uploaded_by}
+                                                avatarUrl={
+                                                    csvImport.uploaded_by_avatar_url
+                                                }
+                                                size="compact"
+                                            />
+                                        </>
+                                    )}
+                                    {csvImport.uploaded_by &&
+                                        csvImport.created_at && (
+                                            <span className="shrink-0">·</span>
+                                        )}
+                                    {csvImport.created_at && (
+                                        <span className="shrink-0">
+                                            {format(
                                                 new Date(csvImport.created_at),
                                                 'dd MMM yyyy, HH:mm',
-                                            ),
-                                    ]
-                                        .filter(Boolean)
-                                        .join(' · ')}
+                                            )}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                             <ImportStatusBadge csvImport={csvImport} />

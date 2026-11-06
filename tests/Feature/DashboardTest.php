@@ -72,6 +72,7 @@ test('only admins see the recent imports', function () {
             ->where('recentImports.0.id', $import->id)
             ->where('recentImports.0.original_filename', 'fake-works.csv')
             ->where('recentImports.0.uploaded_by', $admin->name)
+            ->where('recentImports.0.uploaded_by_avatar_url', $admin->avatar_url)
         );
 
     $this->actingAs(User::factory()->create())

@@ -53,4 +53,5 @@ export type IncompleteSplitRow = {
 export type ReportUserOption = {
     id: number;
     name: string;
+    avatar_url: string | null;
 };

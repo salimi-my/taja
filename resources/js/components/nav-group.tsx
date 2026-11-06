@@ -90,14 +90,15 @@ function NavBadge({ children }: { children: ReactNode }) {
 
 function SidebarMenuLink({ item }: { item: SidebarNavLink }) {
     const { setOpenMobile } = useSidebar();
-    const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
+    const matchesUrl = item.exact ? isCurrentUrl : isCurrentOrParentUrl;
 
     return (
         <SidebarMenuItem>
             <SidebarMenuButton
                 asChild
                 isActive={[item.href, ...(item.activeHrefs ?? [])].some(
-                    (href) => isCurrentOrParentUrl(href),
+                    (href) => matchesUrl(href),
                 )}
                 tooltip={item.title}
             >

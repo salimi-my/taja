@@ -27,7 +27,7 @@ class DashboardController extends Controller
     /**
      * The number of history entries and imports listed on the dashboard.
      */
-    private const RECENT_HISTORY_LIMIT = 6;
+    private const RECENT_HISTORY_LIMIT = 5;
 
     private const RECENT_IMPORTS_LIMIT = 5;
 
@@ -91,6 +91,7 @@ class DashboardController extends Controller
                         'total_rows' => $csvImport->total_rows,
                         'imported_count' => $csvImport->imported_count,
                         'uploaded_by' => $csvImport->user->name ?? null,
+                        'uploaded_by_avatar_url' => $csvImport->user?->avatar_url,
                         'created_at' => $csvImport->created_at?->toIso8601String(),
                     ])
                     ->all()

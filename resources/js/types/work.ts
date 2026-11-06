@@ -136,6 +136,7 @@ export type RightsHistoryEntry = {
     effective_date: string;
     recorded_at: string;
     user_name: string | null;
+    user_avatar_url: string | null;
     work_party_id: number | null;
     csv_import_id: number | null;
     remarks: string | null;

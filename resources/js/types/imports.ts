@@ -46,6 +46,7 @@ export type CsvImport = {
     warnings: ImportIssue[];
     warnings_total: number;
     uploaded_by: string | null;
+    uploaded_by_avatar_url: string | null;
     imported_at: string | null;
     created_at: string | null;
 };
@@ -59,4 +60,30 @@ export type ImportSample = {
         data: Record<string, string | null>;
         errors: string[];
     }[];
+};
+
+/** An import as listed in the import history, from `App\Http\Resources\CsvImportListResource`. */
+export type CsvImportListItem = Pick<
+    CsvImport,
+    | 'id'
+    | 'type'
+    | 'type_label'
+    | 'original_filename'
+    | 'status'
+    | 'status_label'
+    | 'is_processing'
+    | 'progress'
+    | 'total_rows'
+    | 'valid_rows'
+    | 'error_rows'
+    | 'imported_count'
+    | 'has_errors_file'
+    | 'uploaded_by'
+    | 'uploaded_by_avatar_url'
+    | 'created_at'
+> & {
+    /** False once the uploaded file was removed, e.g. when the import was cancelled. */
+    has_original_file: boolean;
+    /** False while a queued job is still working on the file. */
+    can_delete: boolean;
 };

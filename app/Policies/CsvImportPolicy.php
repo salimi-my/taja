@@ -41,4 +41,13 @@ class CsvImportPolicy
     {
         return $user->isAdmin();
     }
+
+    /**
+     * Determine whether the user can delete the given import. One that is
+     * still being processed has to finish or be cancelled first.
+     */
+    public function delete(User $user, CsvImport $csvImport): bool
+    {
+        return $user->isAdmin() && ! $csvImport->status->isProcessing();
+    }
 }

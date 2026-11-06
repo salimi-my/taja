@@ -16,6 +16,7 @@ import {
     formatDate,
     formatYesNo,
 } from '@/components/detail-grid';
+import { PhoneDisplay } from '@/components/phone-display';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WorkCatalogue } from '@/components/works/work-catalogue';
@@ -75,7 +76,7 @@ export function WriterDetails({
                                     {writer.tin_number}
                                 </DetailItem>
                                 <DetailItem label="Phone">
-                                    {writer.phone}
+                                    <PhoneDisplay phone={writer.phone} />
                                 </DetailItem>
                                 <DetailItem label="Address">
                                     {writer.address}
@@ -269,7 +270,9 @@ export function WriterDetails({
                                     {writer.heir_relationship}
                                 </DetailItem>
                                 <DetailItem label="Mobile number">
-                                    {writer.heir_mobile_number}
+                                    <PhoneDisplay
+                                        phone={writer.heir_mobile_number}
+                                    />
                                 </DetailItem>
                                 <DetailItem label="Email">
                                     {writer.heir_email}

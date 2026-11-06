@@ -27,6 +27,7 @@ class RightsHistoryResource extends JsonResource
             'effective_date' => $this->effective_date->toDateString(),
             'recorded_at' => $this->recorded_at->toIso8601String(),
             'user_name' => $this->user?->name,
+            'user_avatar_url' => $this->user?->avatar_url,
             'work_party_id' => $this->work_party_id,
             'csv_import_id' => $this->csv_import_id,
             'remarks' => $this->remarks,

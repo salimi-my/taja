@@ -40,8 +40,12 @@ class RightsHistoryReportController extends Controller
             'users' => User::query()
                 ->whereIn('id', RightsHistory::query()->whereNotNull('user_id')->select('user_id'))
                 ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
+                ->get(['id', 'name', 'avatar'])
+                ->map(fn (User $user): array => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'avatar_url' => $user->avatar_url,
+                ])
                 ->all(),
             'perPageOptions' => RightsHistoryReportRequest::PER_PAGE_OPTIONS,
         ]);

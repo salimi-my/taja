@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CsvImportBulkDestroyController;
 use App\Http\Controllers\CsvImportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PublisherController;
@@ -38,6 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('publishers', PublisherController::class);
 
     Route::prefix('imports')->name('imports.')->where(['type' => '[a-z]+'])->group(function () {
+        Route::get('/', [CsvImportController::class, 'index'])->name('index');
+        Route::delete('/', CsvImportBulkDestroyController::class)->name('destroy-many');
         Route::get('{type}', [CsvImportController::class, 'create'])->name('create');
         Route::post('{type}', [CsvImportController::class, 'store'])->name('store');
         Route::get('{type}/template', [CsvImportController::class, 'template'])->name('template');
@@ -46,6 +49,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('{csvImport}', [CsvImportController::class, 'show'])->whereNumber('csvImport')->name('show');
         Route::post('{csvImport}/confirm', [CsvImportController::class, 'confirm'])->whereNumber('csvImport')->name('confirm');
         Route::delete('{csvImport}', [CsvImportController::class, 'cancel'])->whereNumber('csvImport')->name('cancel');
+        Route::delete('{csvImport}/record', [CsvImportController::class, 'destroy'])->whereNumber('csvImport')->name('destroy');
+        Route::get('{csvImport}/file', [CsvImportController::class, 'download'])->whereNumber('csvImport')->name('download');
         Route::get('{csvImport}/errors', [CsvImportController::class, 'errors'])->whereNumber('csvImport')->name('errors');
     });
 

@@ -66,5 +66,6 @@ export type RecentImport = {
     total_rows: number;
     imported_count: number;
     uploaded_by: string | null;
+    uploaded_by_avatar_url: string | null;
     created_at: string | null;
 };

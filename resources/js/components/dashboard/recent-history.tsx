@@ -1,6 +1,17 @@
 import { Link } from '@inertiajs/react';
-import { History } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import type { LucideIcon } from 'lucide-react';
+import {
+    CalendarClock,
+    FilePen,
+    FilePlus2,
+    FileUp,
+    Globe,
+    History,
+    Percent,
+    UserMinus,
+    UserPlus,
+    Wrench,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -16,6 +27,7 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
+import { UserAvatarName } from '@/components/user-avatar-name';
 import { cn } from '@/lib/utils';
 import { rightsHistory } from '@/routes/reports';
 import { show } from '@/routes/works';
@@ -26,14 +38,28 @@ type RecentHistoryProps = {
     entries: RightsHistoryEntry[];
 };
 
-/** Tint the badge of the changes that add or end rights, so they stand out in the list. */
-const CHANGE_TYPE_CLASSES: Record<string, string> = {
-    work_created: 'bg-green-500/10 text-green-700 dark:text-green-400',
-    imported: 'bg-green-500/10 text-green-700 dark:text-green-400',
-    party_added: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
-    party_removed: 'bg-destructive/10 text-destructive',
-    correction: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+const GREEN = 'bg-green-500/10 text-green-700 dark:text-green-400';
+const BLUE = 'bg-blue-500/10 text-blue-700 dark:text-blue-400';
+const AMBER = 'bg-amber-500/10 text-amber-700 dark:text-amber-400';
+const RED = 'bg-destructive/10 text-destructive';
+const NEUTRAL = 'bg-muted text-muted-foreground';
+
+type ChangeTypeStyle = { icon: LucideIcon; classes: string };
+
+/** The icon and tint of each change type: additions are green or blue, removals red, fixes amber. */
+const CHANGE_TYPE_STYLES: Record<string, ChangeTypeStyle> = {
+    work_created: { icon: FilePlus2, classes: GREEN },
+    work_updated: { icon: FilePen, classes: NEUTRAL },
+    party_added: { icon: UserPlus, classes: BLUE },
+    party_removed: { icon: UserMinus, classes: RED },
+    share_updated: { icon: Percent, classes: NEUTRAL },
+    territory_changed: { icon: Globe, classes: NEUTRAL },
+    dates_changed: { icon: CalendarClock, classes: NEUTRAL },
+    correction: { icon: Wrench, classes: AMBER },
+    imported: { icon: FileUp, classes: GREEN },
 };
+
+const FALLBACK_STYLE: ChangeTypeStyle = { icon: History, classes: NEUTRAL };
 
 /** The latest recorded changes to the rights of works. */
 export function RecentHistory({ entries }: RecentHistoryProps) {
@@ -68,48 +94,82 @@ export function RecentHistory({ entries }: RecentHistoryProps) {
                         </EmptyHeader>
                     </Empty>
                 ) : (
-                    <ul className="divide-y">
-                        {entries.map((entry) => (
-                            <li
-                                key={entry.id}
-                                className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0"
-                            >
-                                <div className="flex min-w-0 items-center gap-2">
-                                    <Badge
-                                        variant="secondary"
+                    <ul className="grid gap-2">
+                        {entries.map((entry) => {
+                            const { icon: Icon, classes } =
+                                CHANGE_TYPE_STYLES[entry.change_type] ??
+                                FALLBACK_STYLE;
+
+                            return (
+                                <li
+                                    key={entry.id}
+                                    className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/40"
+                                >
+                                    <span
                                         className={cn(
-                                            'shrink-0',
-                                            CHANGE_TYPE_CLASSES[
-                                                entry.change_type
-                                            ],
+                                            'flex size-9 shrink-0 items-center justify-center rounded-md',
+                                            classes,
                                         )}
                                     >
-                                        {entry.change_type_label}
-                                    </Badge>
-                                    {entry.work && (
-                                        <Link
-                                            href={show(entry.work.id)}
-                                            prefetch
-                                            className="link-hover truncate text-sm font-semibold after:h-[2px]"
-                                        >
-                                            {entry.work.tap_number}{' '}
-                                            {entry.work.title}
-                                        </Link>
-                                    )}
-                                </div>
-                                <p className="truncate text-sm">
-                                    {entry.summary}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    <RelativeTime iso={entry.recorded_at} />
-                                    {' by '}
-                                    {entry.user_name ??
-                                        (entry.csv_import_id
-                                            ? 'an import'
-                                            : 'the system')}
-                                </p>
-                            </li>
-                        ))}
+                                        <Icon
+                                            aria-hidden="true"
+                                            className="size-4"
+                                        />
+                                    </span>
+                                    <div className="min-w-0 flex-1 space-y-1">
+                                        <div className="flex items-baseline justify-between gap-3">
+                                            {entry.work ? (
+                                                <Link
+                                                    href={show(entry.work.id)}
+                                                    prefetch
+                                                    className="min-w-0 truncate text-sm font-semibold"
+                                                >
+                                                    <span className="link-hover after:h-[2px]">
+                                                        {entry.work.title}
+                                                    </span>
+                                                    <span className="ml-2 font-mono text-[11px] font-normal text-muted-foreground">
+                                                        {entry.work.tap_number}
+                                                    </span>
+                                                </Link>
+                                            ) : (
+                                                <span />
+                                            )}
+                                            <RelativeTime
+                                                iso={entry.recorded_at}
+                                                className="shrink-0 text-xs text-muted-foreground"
+                                            />
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            {entry.summary}
+                                        </p>
+                                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                            <span
+                                                className={cn(
+                                                    'rounded-sm px-1.5 py-0.5 font-medium',
+                                                    classes,
+                                                )}
+                                            >
+                                                {entry.change_type_label}
+                                            </span>
+                                            <span aria-hidden="true">·</span>
+                                            {entry.user_name ? (
+                                                <UserAvatarName
+                                                    name={entry.user_name}
+                                                    avatarUrl={
+                                                        entry.user_avatar_url
+                                                    }
+                                                    size="compact"
+                                                />
+                                            ) : entry.csv_import_id ? (
+                                                'An import'
+                                            ) : (
+                                                'The system'
+                                            )}
+                                        </p>
+                                    </div>
+                                </li>
+                            );
+                        })}
                     </ul>
                 )}
             </CardContent>

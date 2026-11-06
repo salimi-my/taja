@@ -16,6 +16,7 @@ import {
     formatYesNo,
 } from '@/components/detail-grid';
 import { PublisherHeader } from '@/components/publishers/publisher-header';
+import { PhoneDisplay } from '@/components/phone-display';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WorkCatalogue } from '@/components/works/work-catalogue';
@@ -211,7 +212,11 @@ export function PublisherDetails({
                                     {publisher.person_in_charge_nric}
                                 </DetailItem>
                                 <DetailItem label="Mobile number">
-                                    {publisher.person_in_charge_mobile_no}
+                                    <PhoneDisplay
+                                        phone={
+                                            publisher.person_in_charge_mobile_no
+                                        }
+                                    />
                                 </DetailItem>
                                 <DetailItem label="Email">
                                     {publisher.person_in_charge_email}

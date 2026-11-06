@@ -34,6 +34,8 @@ export type SidebarNavLink = SidebarNavBase & {
     href: NonNullable<InertiaLinkProps['href']>;
     /** Extra urls that also mark this item as active, such as sibling pages. */
     activeHrefs?: NonNullable<InertiaLinkProps['href']>[];
+    /** Only mark the item as active on its exact url, not on pages below it. */
+    exact?: boolean;
     items?: never;
 };
 

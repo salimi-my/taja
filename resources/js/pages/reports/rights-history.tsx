@@ -31,6 +31,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { UserAvatar, UserAvatarName } from '@/components/user-avatar-name';
 import { useTableParams } from '@/hooks/use-table-params';
 import { exportQuery, reportDefaults } from '@/lib/reports';
 import { paramsFromServer } from '@/lib/table';
@@ -87,6 +88,10 @@ export default function RightsHistoryReport({
         () => users.map((item) => ({ id: String(item.id), name: item.name })),
         [users],
     );
+    const avatarUrlsByUserId = useMemo(
+        () => new Map(users.map((item) => [String(item.id), item.avatar_url])),
+        [users],
+    );
 
     return (
         <>
@@ -116,6 +121,16 @@ export default function RightsHistoryReport({
                                 params={params}
                                 setParams={setParams}
                                 options={userOptions}
+                                renderOptionLeading={(option) => (
+                                    <UserAvatar
+                                        name={option.name}
+                                        avatarUrl={
+                                            avatarUrlsByUserId.get(
+                                                String(option.id),
+                                            ) ?? null
+                                        }
+                                    />
+                                )}
                             />
                             <ReportWorkBadge
                                 work={work}
@@ -263,10 +278,20 @@ export default function RightsHistoryReport({
                                                         {entry.summary}
                                                     </TableCell>
                                                     <TableCell className="whitespace-nowrap">
-                                                        {entry.user_name ??
-                                                            (entry.csv_import_id
-                                                                ? 'Import'
-                                                                : 'System')}
+                                                        {entry.user_name ? (
+                                                            <UserAvatarName
+                                                                name={
+                                                                    entry.user_name
+                                                                }
+                                                                avatarUrl={
+                                                                    entry.user_avatar_url
+                                                                }
+                                                            />
+                                                        ) : entry.csv_import_id ? (
+                                                            'Import'
+                                                        ) : (
+                                                            'System'
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="min-w-[10rem] whitespace-normal text-muted-foreground">
                                                         {entry.remarks}
