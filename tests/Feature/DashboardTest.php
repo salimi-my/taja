@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\ConflictStatus;
+use App\Enums\CsvImportStatus;
 use App\Enums\RegistrationStatus;
 use App\Models\CsvImport;
 use App\Models\Publisher;
@@ -75,4 +77,150 @@ test('only admins see the recent imports', function () {
     $this->actingAs(User::factory()->create())
         ->get(route('dashboard'))
         ->assertInertia(fn (Assert $page) => $page->where('recentImports', null));
+});
+
+test('the dashboard counts what was added this week and the week before', function () {
+    Work::factory()->count(2)->create(['created_at' => now()->subDays(2)]);
+    Work::factory()->create(['created_at' => now()->subDays(10)]);
+    Work::factory()->create(['created_at' => now()->subDays(40)]);
+    Work::factory()->create(['created_at' => now()->subDay()])->delete();
+    Writer::factory()->create(['created_at' => now()->subDays(9)]);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('stats.works', 4)
+            ->where('stats.works_this_week', 2)
+            ->where('stats.works_last_week', 1)
+            ->where('stats.writers_this_week', 0)
+            ->where('stats.writers_last_week', 1)
+        );
+});
+
+test('the attention checks count conflicts and rejected registrations', function () {
+    Work::factory()->count(2)->create(['conflict_status' => ConflictStatus::ShareConflict]);
+    Work::factory()->create(['conflict_status' => ConflictStatus::Duplicate]);
+    Work::factory()->create(['registration_status' => RegistrationStatus::Rejected]);
+    Work::factory()->create(['conflict_status' => ConflictStatus::SocietyQuery])->delete();
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('attention', fn ($items) => collect($items)->firstWhere('key', 'works_in_conflict')['count'] === 3
+                && collect($items)->firstWhere('key', 'rejected_registrations')['count'] === 1
+                && collect($items)->firstWhere('key', 'incomplete_splits')['count'] === 4)
+        );
+});
+
+test('only admins get the failed imports check, pointing at the latest failed import', function () {
+    $admin = User::factory()->admin()->create();
+    CsvImport::factory()->create(['status' => CsvImportStatus::Failed]);
+    $latest = CsvImport::factory()->create(['status' => CsvImportStatus::Failed]);
+    CsvImport::factory()->imported()->create();
+
+    $this->actingAs($admin)
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('attention', fn ($items) => collect($items)->firstWhere('key', 'failed_imports') === [
+                'key' => 'failed_imports',
+                'count' => 2,
+                'target_id' => $latest->id,
+            ])
+        );
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('attention', fn ($items) => collect($items)->doesntContain('key', 'failed_imports'))
+        );
+});
+
+test('the activity chart is deferred, covers 30 days by default and fills empty days', function () {
+    $work = Work::factory()->create(['created_at' => now()]);
+    RightsHistory::factory()->count(2)->create(['work_id' => $work->id, 'recorded_at' => now()->subDays(2)]);
+    RightsHistory::factory()->create(['work_id' => $work->id, 'recorded_at' => now()->subDays(45)]);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('activityDays', 30)
+            ->missing('activity')
+            ->loadDeferredProps(fn (Assert $page) => $page
+                ->has('activity', 30)
+                ->where('activity.29.date', now()->toDateString())
+                ->where('activity.29.works', 1)
+                ->where('activity.27.changes', 2)
+                ->where('activity.0.works', 0)
+            )
+        );
+});
+
+test('the activity chart accepts a period and rejects other values', function () {
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard', ['days' => 7]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('activityDays', 7)
+            ->loadDeferredProps(fn (Assert $page) => $page->has('activity', 7))
+        );
+
+    $this->get(route('dashboard', ['days' => 5]))->assertSessionHasErrors('days');
+});
+
+test('the conflict breakdown lists every status with its works', function () {
+    Work::factory()->count(2)->create(['conflict_status' => ConflictStatus::ShareConflict]);
+    Work::factory()->create();
+    Work::factory()->create(['conflict_status' => ConflictStatus::Duplicate])->delete();
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->loadDeferredProps(fn (Assert $page) => $page
+                ->has('conflictBreakdown', count(ConflictStatus::cases()))
+                ->where('conflictBreakdown', fn ($breakdown) => collect($breakdown)->firstWhere('value', 'share_conflict')['total'] === 2
+                    && collect($breakdown)->firstWhere('value', 'no_conflict')['total'] === 1
+                    && collect($breakdown)->firstWhere('value', 'duplicate')['total'] === 0)
+            )
+        );
+});
+
+test('the top publishers are ranked by the works they are a current party of', function () {
+    [$busiest, $quiet, $ended, $unused] = Publisher::factory()->count(4)->create();
+
+    foreach (Work::factory()->count(3)->create() as $work) {
+        WorkParty::factory()->forPublisher($busiest)->create(['work_id' => $work->id]);
+        // A second row of the same publisher on the same work counts once.
+        WorkParty::factory()->forPublisher($busiest)->create(['work_id' => $work->id]);
+    }
+
+    WorkParty::factory()->forPublisher($quiet)->create(['work_id' => Work::factory()]);
+    WorkParty::factory()->forPublisher($ended)->ended()->create(['work_id' => Work::factory()]);
+    WorkParty::factory()->forPublisher($unused)->superseded()->create(['work_id' => Work::factory()]);
+    $deletedWork = Work::factory()->create();
+    WorkParty::factory()->forPublisher($quiet)->create(['work_id' => $deletedWork->id]);
+    $deletedWork->delete();
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->loadDeferredProps(fn (Assert $page) => $page
+                ->has('topPublishers', 2)
+                ->where('topPublishers.0.id', $busiest->id)
+                ->where('topPublishers.0.total', 3)
+                ->where('topPublishers.0.code', $busiest->publisher_code)
+                ->where('topPublishers.1.id', $quiet->id)
+                ->where('topPublishers.1.total', 1)
+            )
+        );
+});
+
+test('the top publishers list is limited to five', function () {
+    foreach (Publisher::factory()->count(7)->create() as $publisher) {
+        WorkParty::factory()->forPublisher($publisher)->create(['work_id' => Work::factory()]);
+    }
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->loadDeferredProps(fn (Assert $page) => $page->has('topPublishers', 5))
+        );
 });

@@ -116,11 +116,13 @@
     --border: oklch(0.9 0.02 var(--brand-hue));
     --input: oklch(0.9 0.02 var(--brand-hue));
     --ring: var(--brand);
+    /* Chart 1 follows the brand. 2 to 5 use fixed hues (blue, amber, rose,
+       green) so neighbouring series are easy to tell apart. */
     --chart-1: var(--brand);
-    --chart-2: oklch(0.64 0.2 var(--brand-hue));
-    --chart-3: oklch(0.45 0.2 var(--brand-hue));
-    --chart-4: oklch(0.65 0.2 335);
-    --chart-5: oklch(0.82 0.09 var(--brand-hue));
+    --chart-2: oklch(0.66 0.17 245);
+    --chart-3: oklch(0.78 0.16 75);
+    --chart-4: oklch(0.65 0.2 15);
+    --chart-5: oklch(0.62 0.17 150);
     --radius: 0.625rem;
     --backdrop: oklch(0.965 0.02 var(--brand-hue));
     --sidebar: oklch(1 0 0);
@@ -163,10 +165,10 @@
     --input: oklch(0.8 0.08 var(--brand-hue) / 20%);
     --ring: var(--brand);
     --chart-1: var(--brand);
-    --chart-2: oklch(0.55 0.22 var(--brand-hue));
-    --chart-3: oklch(0.85 0.1 var(--brand-hue));
-    --chart-4: oklch(0.7 0.19 335);
-    --chart-5: oklch(0.4 0.18 var(--brand-hue));
+    --chart-2: oklch(0.76 0.13 245);
+    --chart-3: oklch(0.82 0.15 80);
+    --chart-4: oklch(0.72 0.18 15);
+    --chart-5: oklch(0.74 0.17 150);
     --backdrop: oklch(0.15 0.025 var(--brand-hue));
     --sidebar: oklch(0.19 0.03 var(--brand-hue));
     --sidebar-foreground: oklch(0.985 0 0);
