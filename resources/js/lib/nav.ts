@@ -1,28 +1,33 @@
 import {
-    FileText,
-    Folder,
-    Image,
-    Images,
+    BarChart3,
+    Building2,
     LayoutGrid,
-    List,
-    MessageSquare,
-    Plus,
+    Music,
+    PenLine,
     Settings,
-    Upload,
     Users,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
-import { index as categoriesIndex } from '@/routes/categories';
-import {
-    index as commentsIndex,
-    pending as commentsPending,
-} from '@/routes/comments';
-import { index as mediaIndex, upload as mediaUpload } from '@/routes/media';
-import { create as postsCreate, index as postsIndex } from '@/routes/posts';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editProfile } from '@/routes/profile';
+import {
+    incompleteSplit,
+    rightsHistory,
+    songOwnership,
+    writerCatalogue,
+} from '@/routes/reports';
+import { create as importCreate } from '@/routes/imports';
 import { edit as editSecurity } from '@/routes/security';
 import { index as usersIndex } from '@/routes/users';
+import {
+    create as createPublisher,
+    index as publishersIndex,
+} from '@/routes/publishers';
+import { create as createWork, index as worksIndex } from '@/routes/works';
+import {
+    create as createWriter,
+    index as writersIndex,
+} from '@/routes/writers';
 import type { SidebarNavGroup, SidebarNavItem } from '@/types';
 
 /**
@@ -31,7 +36,8 @@ import type { SidebarNavGroup, SidebarNavItem } from '@/types';
  * - A link item has an `href`.
  * - A collapsible item has `items` (sub menu) instead of an `href`.
  * - A link item can list `activeHrefs` so it stays active on related pages.
- * - Set `adminOnly: true` to hide an item from non-admin users.
+ * - Set `adminOnly: true` on an item or a sub menu item to hide it from
+ *   non-admin users.
  * - Always build `href` with Wayfinder route functions, never raw strings.
  */
 export const navGroups: SidebarNavGroup[] = [
@@ -46,35 +52,77 @@ export const navGroups: SidebarNavGroup[] = [
         ],
     },
     {
-        title: 'Content',
+        title: 'Catalogue',
         items: [
             {
-                title: 'Posts',
-                icon: FileText,
+                title: 'Works',
+                icon: Music,
                 items: [
-                    { title: 'All Posts', href: postsIndex(), icon: List },
-                    { title: 'New Post', href: postsCreate(), icon: Plus },
                     {
-                        title: 'Categories',
-                        href: categoriesIndex(),
-                        icon: Folder,
+                        title: 'Create New',
+                        href: createWork(),
+                        adminOnly: true,
+                    },
+                    { title: 'All Works', href: worksIndex() },
+                    {
+                        title: 'Import',
+                        href: importCreate('works'),
+                        adminOnly: true,
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        title: 'Masters',
+        items: [
+            {
+                title: 'Writers',
+                icon: PenLine,
+                items: [
+                    {
+                        title: 'Create New',
+                        href: createWriter(),
+                        adminOnly: true,
+                    },
+                    { title: 'All Writers', href: writersIndex() },
+                    {
+                        title: 'Import',
+                        href: importCreate('writers'),
+                        adminOnly: true,
                     },
                 ],
             },
             {
-                title: 'Media',
-                icon: Image,
+                title: 'Publishers',
+                icon: Building2,
                 items: [
-                    { title: 'Library', href: mediaIndex(), icon: Images },
-                    { title: 'Upload', href: mediaUpload(), icon: Upload },
+                    {
+                        title: 'Create New',
+                        href: createPublisher(),
+                        adminOnly: true,
+                    },
+                    { title: 'All Publishers', href: publishersIndex() },
+                    {
+                        title: 'Import',
+                        href: importCreate('publishers'),
+                        adminOnly: true,
+                    },
                 ],
             },
+        ],
+    },
+    {
+        title: 'Reports',
+        items: [
             {
-                title: 'Comments',
-                icon: MessageSquare,
+                title: 'Reports',
+                icon: BarChart3,
                 items: [
-                    { title: 'All Comments', href: commentsIndex() },
-                    { title: 'Pending', href: commentsPending() },
+                    { title: 'Writer Catalogue', href: writerCatalogue() },
+                    { title: 'Song Ownership Split', href: songOwnership() },
+                    { title: 'Rights History', href: rightsHistory() },
+                    { title: 'Incomplete Split', href: incompleteSplit() },
                 ],
             },
         ],
@@ -106,9 +154,18 @@ export function getNavGroups(isAdmin: boolean): SidebarNavGroup[] {
     return navGroups
         .map((group) => ({
             ...group,
-            items: group.items.filter(
-                (item: SidebarNavItem) => !item.adminOnly || isAdmin,
-            ),
+            items: group.items
+                .filter((item: SidebarNavItem) => !item.adminOnly || isAdmin)
+                .map((item: SidebarNavItem) =>
+                    item.items
+                        ? {
+                              ...item,
+                              items: item.items.filter(
+                                  (subItem) => !subItem.adminOnly || isAdmin,
+                              ),
+                          }
+                        : item,
+                ),
         }))
         .filter((group) => group.items.length > 0);
 }

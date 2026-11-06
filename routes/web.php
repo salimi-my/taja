@@ -1,9 +1,18 @@
 <?php
 
+use App\Http\Controllers\CsvImportController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PublisherController;
+use App\Http\Controllers\Reports\IncompleteSplitReportController;
+use App\Http\Controllers\Reports\RightsHistoryReportController;
+use App\Http\Controllers\Reports\SongOwnershipReportController;
+use App\Http\Controllers\Reports\WriterCatalogueReportController;
 use App\Http\Controllers\UserBulkDestroyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserPasswordResetLinkController;
+use App\Http\Controllers\WorkController;
+use App\Http\Controllers\WorkPartyController;
+use App\Http\Controllers\WriterController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -15,40 +24,44 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::post('users/{user}/password-reset-link', UserPasswordResetLinkController::class)->name('users.password-reset-link');
 
-    /*
-     * Dummy pages that demonstrate sidebar sub menus. Replace these with real
-     * controllers and pages when you build the Content section.
-     */
-    Route::inertia('posts', 'content/placeholder', [
-        'title' => 'All Posts',
-        'description' => 'Every post you have written will be listed here.',
-    ])->name('posts.index');
-    Route::inertia('posts/create', 'content/placeholder', [
-        'title' => 'New Post',
-        'description' => 'The post editor will live here.',
-    ])->name('posts.create');
-    Route::inertia('categories', 'content/placeholder', [
-        'title' => 'Categories',
-        'description' => 'Organize your posts into categories.',
-    ])->name('categories.index');
+    Route::resource('works', WorkController::class);
 
-    Route::inertia('media', 'content/placeholder', [
-        'title' => 'Media Library',
-        'description' => 'Browse the images and files you have uploaded.',
-    ])->name('media.index');
-    Route::inertia('media/upload', 'content/placeholder', [
-        'title' => 'Upload Media',
-        'description' => 'Upload new images and files here.',
-    ])->name('media.upload');
+    Route::scopeBindings()->prefix('works/{work}/parties')->name('works.parties.')->group(function () {
+        Route::post('/', [WorkPartyController::class, 'store'])->name('store');
+        Route::put('{party}/change', [WorkPartyController::class, 'change'])->name('change');
+        Route::put('{party}/correct', [WorkPartyController::class, 'correct'])->name('correct');
+        Route::delete('{party}', [WorkPartyController::class, 'destroy'])->name('destroy');
+    });
 
-    Route::inertia('comments', 'content/placeholder', [
-        'title' => 'All Comments',
-        'description' => 'Every comment left on your posts.',
-    ])->name('comments.index');
-    Route::inertia('comments/pending', 'content/placeholder', [
-        'title' => 'Pending Comments',
-        'description' => 'Comments waiting for moderation.',
-    ])->name('comments.pending');
+    Route::resource('writers', WriterController::class);
+
+    Route::resource('publishers', PublisherController::class);
+
+    Route::prefix('imports')->name('imports.')->where(['type' => '[a-z]+'])->group(function () {
+        Route::get('{type}', [CsvImportController::class, 'create'])->name('create');
+        Route::post('{type}', [CsvImportController::class, 'store'])->name('store');
+        Route::get('{type}/template', [CsvImportController::class, 'template'])->name('template');
+        Route::get('{type}/example', [CsvImportController::class, 'example'])->name('example');
+
+        Route::get('{csvImport}', [CsvImportController::class, 'show'])->whereNumber('csvImport')->name('show');
+        Route::post('{csvImport}/confirm', [CsvImportController::class, 'confirm'])->whereNumber('csvImport')->name('confirm');
+        Route::delete('{csvImport}', [CsvImportController::class, 'cancel'])->whereNumber('csvImport')->name('cancel');
+        Route::get('{csvImport}/errors', [CsvImportController::class, 'errors'])->whereNumber('csvImport')->name('errors');
+    });
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('writer-catalogue', [WriterCatalogueReportController::class, 'index'])->name('writer-catalogue');
+        Route::get('song-ownership', [SongOwnershipReportController::class, 'index'])->name('song-ownership');
+        Route::get('rights-history', [RightsHistoryReportController::class, 'index'])->name('rights-history');
+        Route::get('incomplete-split', [IncompleteSplitReportController::class, 'index'])->name('incomplete-split');
+
+        Route::prefix('export')->name('export.')->group(function () {
+            Route::get('writer-catalogue', [WriterCatalogueReportController::class, 'export'])->name('writer-catalogue');
+            Route::get('song-ownership', [SongOwnershipReportController::class, 'export'])->name('song-ownership');
+            Route::get('rights-history', [RightsHistoryReportController::class, 'export'])->name('rights-history');
+            Route::get('incomplete-split', [IncompleteSplitReportController::class, 'export'])->name('incomplete-split');
+        });
+    });
 });
 
 require __DIR__.'/settings.php';

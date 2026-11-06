@@ -21,7 +21,7 @@ type SidebarNavBase = {
     adminOnly?: boolean;
 };
 
-export type SidebarNavSubItem = Omit<SidebarNavBase, 'adminOnly'> & {
+export type SidebarNavSubItem = SidebarNavBase & {
     href: NonNullable<InertiaLinkProps['href']>;
 };
 

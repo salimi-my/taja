@@ -4,3 +4,8 @@ export type * from './ui';
 export type * from './table';
 export type * from './user';
 export type * from './dashboard';
+export type * from './publisher';
+export type * from './writer';
+export type * from './work';
+export type * from './imports';
+export type * from './report';

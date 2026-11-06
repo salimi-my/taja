@@ -15,8 +15,31 @@ export type Params = {
     sort?: string;
     roles?: string[];
     status?: string[];
+    societies?: string[];
+    publishers?: string[];
+    rights_types?: string[];
+    territories?: string[];
+    registration_statuses?: string[];
+    conflict_statuses?: string[];
+    work_types?: string[];
+    languages?: string[];
+    genres?: string[];
+    public_domain?: string[];
+    controlled?: string[];
     start_date?: string;
     end_date?: string;
+    /** Report filters: the chosen writer or work, a point in time and history filters. */
+    writer_id?: string;
+    work_id?: string;
+    /** `'1'` includes ended involvement in the writer catalogue. */
+    include_ended?: string;
+    as_of?: string;
+    change_types?: string[];
+    users?: string[];
+    effective_from?: string;
+    effective_to?: string;
+    recorded_from?: string;
+    recorded_to?: string;
 };
 
 /** Params keys that hold a list of selected values (faceted filters). */
