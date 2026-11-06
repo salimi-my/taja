@@ -1,6 +1,12 @@
 <?php
 
+use App\Actions\Imports\BuildCsvTemplate;
+use App\Actions\Imports\ImportRegistry;
+use App\Enums\CsvImportType;
+use App\Models\CsvImport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /*
@@ -47,4 +53,105 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Build the text of a CSV file.
+ *
+ * @param  list<string>  $headers
+ * @param  list<array<string, string>>  $rows  Cells keyed by header; a missing header is left blank.
+ */
+function csvContent(array $headers, array $rows): string
+{
+    return BuildCsvTemplate::toCsv([
+        $headers,
+        ...array_map(
+            fn (array $row): array => array_map(fn (string $header): string => $row[$header] ?? '', $headers),
+            $rows,
+        ),
+    ]);
+}
+
+/**
+ * Upload CSV rows to the import page of a type, as the signed in user.
+ *
+ * @param  list<array<string, string>>  $rows
+ * @param  list<string>|null  $headers  Defaults to every column of the import.
+ */
+function uploadCsv(TestCase $test, CsvImportType $type, array $rows, ?array $headers = null): TestResponse
+{
+    $headers ??= ImportRegistry::find($type)->headers();
+
+    return $test->post(route('imports.store', $type), [
+        'file' => UploadedFile::fake()->createWithContent('import.csv', csvContent($headers, $rows)),
+    ]);
+}
+
+/**
+ * A valid publisher row. Every value is fake and unique per number.
+ *
+ * @param  array<string, string>  $overrides
+ * @return array<string, string>
+ */
+function importPublisherRow(int $number, array $overrides = []): array
+{
+    return [
+        ...ImportRegistry::find(CsvImportType::Publishers)->exampleRows()[0],
+        'Publisher_Name' => "Fake Publisher {$number}",
+        'IPI_Name_Number' => str_pad((string) $number, 11, '0', STR_PAD_LEFT),
+        'Company_Registration_Number' => "REG-{$number}",
+        ...$overrides,
+    ];
+}
+
+/**
+ * A valid writer row. Every value is fake and unique per number.
+ *
+ * @param  array<string, string>  $overrides
+ * @return array<string, string>
+ */
+function importWriterRow(int $number, array $overrides = []): array
+{
+    return [
+        ...ImportRegistry::find(CsvImportType::Writers)->exampleRows()[0],
+        'Name' => "Fake Writer {$number}",
+        'IPI_Name_Number' => str_pad((string) $number, 11, '0', STR_PAD_LEFT),
+        'NRIC' => "NRIC-{$number}",
+        'Email' => "writer{$number}@fake-writer.test",
+        'Heir_NRIC' => "HEIR-{$number}",
+        ...$overrides,
+    ];
+}
+
+/**
+ * A valid works row: one contributor of a work. Every value is fake. By default
+ * the contributor is the writer with IPI number 00000000011 with 25% shares.
+ *
+ * @param  array<string, string>  $overrides
+ * @return array<string, string>
+ */
+function importWorkRow(int $number, array $overrides = []): array
+{
+    return [
+        ...ImportRegistry::find(CsvImportType::Works)->exampleRows()[0],
+        'Work_ID' => "MACP-FAKE-{$number}",
+        'English_Work_Title' => "Fake Song {$number}",
+        ...$overrides,
+    ];
+}
+
+/**
+ * The errors or warnings of the latest import as `line:column` => messages.
+ *
+ * @return array<string, list<string>>
+ */
+function latestImportIssues(string $kind = 'errors'): array
+{
+    $issues = [];
+
+    foreach (CsvImport::query()->latest('id')->firstOrFail()->{$kind} as $issue) {
+        $issues["{$issue['line']}:{$issue['column']}"][] = $issue['message'];
+    }
+
+    return $issues;
 }
