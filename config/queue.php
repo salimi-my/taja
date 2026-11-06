@@ -68,7 +68,10 @@ return [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
+            // Large CSV imports run as one long job. This must stay longer than
+            // the longest import (see `imports.job_timeout`), otherwise the
+            // queue hands the running job to a second worker.
+            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 10800),
             'block_for' => null,
             'after_commit' => false,
         ],
