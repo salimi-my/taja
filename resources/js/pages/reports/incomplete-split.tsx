@@ -1,0 +1,271 @@
+import { Head, Link } from '@inertiajs/react';
+import { CircleCheck } from 'lucide-react';
+import { ContentCard } from '@/components/content-card';
+import { ReportActions } from '@/components/reports/report-actions';
+import { TableColumnHeader } from '@/components/table/table-column-header';
+import { TablePagination } from '@/components/table/table-pagination';
+import { TableSearchbar } from '@/components/table/table-searchbar';
+import {
+    TableDesktopFrame,
+    TableQueryState,
+} from '@/components/table/table-shell';
+import { TableSkeleton } from '@/components/table/table-skeleton';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
+import {
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { WorkRegistrationBadge } from '@/components/works/work-badges';
+import { useTableParams } from '@/hooks/use-table-params';
+import {
+    exportQuery,
+    formatTotal,
+    isCompleteTotal,
+    reportDefaults,
+} from '@/lib/reports';
+import { paramsFromServer } from '@/lib/table';
+import type { ServerFilters } from '@/lib/table';
+import { incompleteSplit } from '@/routes/reports';
+import { incompleteSplit as exportIncompleteSplit } from '@/routes/reports/export';
+import { show } from '@/routes/works';
+import type { IncompleteSplitRow, PaginatedResource } from '@/types';
+
+type Props = {
+    rows: PaginatedResource<IncompleteSplitRow>;
+    filters: ServerFilters;
+};
+
+const DEFAULTS = reportDefaults('tap_number.asc');
+const REFRESHED_PROPS = ['rows', 'filters'];
+
+function TotalCell({
+    total,
+    hasParties,
+}: {
+    total: number | null;
+    hasParties: boolean;
+}) {
+    return (
+        <TableCell
+            className={`text-right ${hasParties && !isCompleteTotal(total) ? 'font-medium text-amber-600 dark:text-amber-400' : ''}`}
+        >
+            {hasParties ? formatTotal(total) : '-'}
+        </TableCell>
+    );
+}
+
+export default function IncompleteSplitReport({ rows, filters }: Props) {
+    const { params, setParams, isLoading, hasError, retry } = useTableParams({
+        url: incompleteSplit().url,
+        initialParams: paramsFromServer(filters, rows.meta.current_page),
+        defaultParams: DEFAULTS,
+        only: REFRESHED_PROPS,
+    });
+
+    return (
+        <>
+            <Head title="Incomplete Split" />
+
+            <ContentCard
+                title="Incomplete Split"
+                description="Works that have no parties in effect, or whose shares do not add up to 100%."
+            >
+                <div className="space-y-4">
+                    <div className="flex flex-wrap items-center gap-3 print:hidden">
+                        <TableSearchbar params={params} setParams={setParams} />
+                        <div className="ml-auto">
+                            <ReportActions
+                                exportUrl={
+                                    exportIncompleteSplit({
+                                        query: exportQuery(params, DEFAULTS),
+                                    }).url
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">
+                        Totals are over the parties in effect today. Performance
+                        and mechanical are always checked. Sync and lyrics are
+                        only checked when a party has a value.
+                    </p>
+
+                    <TableQueryState
+                        isLoading={isLoading}
+                        hasError={hasError}
+                        data={rows}
+                        resourceName="the report"
+                        onRetry={retry}
+                        skeleton={<TableSkeleton columnCount={9} />}
+                    >
+                        {(data) =>
+                            data.data.length === 0 ? (
+                                <Empty>
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <CircleCheck />
+                                        </EmptyMedia>
+                                        <EmptyTitle>
+                                            No incomplete splits
+                                        </EmptyTitle>
+                                        <EmptyDescription>
+                                            Every work has parties and its
+                                            shares add up to 100%.
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                </Empty>
+                            ) : (
+                                <>
+                                    <TableDesktopFrame>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>
+                                                    <TableColumnHeader
+                                                        title="TAP"
+                                                        column="tap_number"
+                                                        params={params}
+                                                        setParams={setParams}
+                                                    />
+                                                </TableHead>
+                                                <TableHead>
+                                                    <TableColumnHeader
+                                                        title="MACP Work ID"
+                                                        column="macp_work_id"
+                                                        params={params}
+                                                        setParams={setParams}
+                                                    />
+                                                </TableHead>
+                                                <TableHead>
+                                                    <TableColumnHeader
+                                                        title="Title"
+                                                        column="english_title"
+                                                        params={params}
+                                                        setParams={setParams}
+                                                    />
+                                                </TableHead>
+                                                <TableHead>
+                                                    <TableColumnHeader
+                                                        title="Registration"
+                                                        column="registration_status"
+                                                        params={params}
+                                                        setParams={setParams}
+                                                    />
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Parties
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Perf.
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Mech.
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Sync
+                                                </TableHead>
+                                                <TableHead className="text-right">
+                                                    Lyrics
+                                                </TableHead>
+                                                <TableHead>Issues</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {data.data.map((row) => (
+                                                <TableRow key={row.id}>
+                                                    <TableCell className="font-mono text-xs">
+                                                        {row.tap_number}
+                                                    </TableCell>
+                                                    <TableCell className="font-mono text-xs">
+                                                        {row.macp_work_id}
+                                                    </TableCell>
+                                                    <TableCell className="max-w-[14rem] truncate">
+                                                        <Link
+                                                            href={show(row.id)}
+                                                            className="link-hover font-semibold after:h-[2px]"
+                                                        >
+                                                            {row.title}
+                                                        </Link>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <WorkRegistrationBadge
+                                                            work={row}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {row.parties_count}
+                                                    </TableCell>
+                                                    <TotalCell
+                                                        total={
+                                                            row.totals
+                                                                .performance
+                                                        }
+                                                        hasParties={
+                                                            row.parties_count >
+                                                            0
+                                                        }
+                                                    />
+                                                    <TotalCell
+                                                        total={
+                                                            row.totals
+                                                                .mechanical
+                                                        }
+                                                        hasParties={
+                                                            row.parties_count >
+                                                            0
+                                                        }
+                                                    />
+                                                    <TotalCell
+                                                        total={row.totals.sync}
+                                                        hasParties={
+                                                            row.parties_count >
+                                                            0
+                                                        }
+                                                    />
+                                                    <TotalCell
+                                                        total={
+                                                            row.totals.lyrics
+                                                        }
+                                                        hasParties={
+                                                            row.parties_count >
+                                                            0
+                                                        }
+                                                    />
+                                                    <TableCell className="min-w-[14rem] whitespace-normal">
+                                                        {row.reasons.join('. ')}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </TableDesktopFrame>
+                                    <div className="print:hidden">
+                                        <TablePagination
+                                            total={data.meta.total}
+                                            params={params}
+                                            setParams={setParams}
+                                        />
+                                    </div>
+                                </>
+                            )
+                        }
+                    </TableQueryState>
+                </div>
+            </ContentCard>
+        </>
+    );
+}
+
+IncompleteSplitReport.layout = {
+    breadcrumbs: [
+        { title: 'Reports', href: incompleteSplit() },
+        { title: 'Incomplete Split', href: incompleteSplit() },
+    ],
+};

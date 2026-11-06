@@ -1,21 +1,24 @@
 import { Head, usePage } from '@inertiajs/react';
-import { RecentUsers } from '@/components/dashboard/recent-users';
-import { RoleDistributionChart } from '@/components/dashboard/role-distribution-chart';
-import { SignupsChart } from '@/components/dashboard/signups-chart';
+import { RecentHistory } from '@/components/dashboard/recent-history';
+import { RecentImports } from '@/components/dashboard/recent-imports';
+import { RegistrationChart } from '@/components/dashboard/registration-chart';
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { dashboard } from '@/routes';
 import type {
     Auth,
     DashboardStats,
-    ManagedUser,
     PaginatedResource,
-    SignupPoint,
+    RecentImport,
+    RegistrationBreakdownItem,
+    RightsHistoryEntry,
 } from '@/types';
 
 type Props = {
     stats: DashboardStats;
-    signups: SignupPoint[];
-    recentUsers: Pick<PaginatedResource<ManagedUser>, 'data'>;
+    registrationBreakdown: RegistrationBreakdownItem[];
+    recentHistory: Pick<PaginatedResource<RightsHistoryEntry>, 'data'>;
+    /** Only sent to admins. */
+    recentImports: RecentImport[] | null;
 };
 
 function getGreeting(): string {
@@ -36,7 +39,12 @@ function getGreeting(): string {
     return 'Good night';
 }
 
-export default function Dashboard({ stats, signups, recentUsers }: Props) {
+export default function Dashboard({
+    stats,
+    registrationBreakdown,
+    recentHistory,
+    recentImports,
+}: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
     return (
@@ -49,23 +57,24 @@ export default function Dashboard({ stats, signups, recentUsers }: Props) {
                         {getGreeting()}, {auth.user.name}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Here's an overview of your application.
+                        Here's an overview of the rights catalogue.
                     </p>
                 </div>
 
                 <StatsCards stats={stats} />
 
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <div className="lg:col-span-2">
-                        <SignupsChart signups={signups} />
+                    <div className="lg:col-span-1">
+                        <RegistrationChart breakdown={registrationBreakdown} />
                     </div>
-                    <RoleDistributionChart stats={stats} />
+                    <div className="lg:col-span-2">
+                        <RecentHistory entries={recentHistory.data} />
+                    </div>
                 </div>
 
-                <RecentUsers
-                    users={recentUsers.data}
-                    canViewUsers={auth.user.role === 'admin'}
-                />
+                {recentImports !== null && (
+                    <RecentImports imports={recentImports} />
+                )}
             </div>
         </>
     );

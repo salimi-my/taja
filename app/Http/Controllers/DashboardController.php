@@ -2,54 +2,81 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserRole;
-use App\Http\Resources\UserResource;
-use App\Models\User;
+use App\Actions\Reports\IncompleteSplitReport;
+use App\Enums\RegistrationStatus;
+use App\Http\Resources\RightsHistoryResource;
+use App\Models\CsvImport;
+use App\Models\Publisher;
+use App\Models\RightsHistory;
+use App\Models\Work;
+use App\Models\Writer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
     /**
-     * The number of days shown in the signups chart.
+     * The number of history entries and imports listed on the dashboard.
      */
-    private const SIGNUP_CHART_DAYS = 14;
+    private const RECENT_HISTORY_LIMIT = 8;
+
+    private const RECENT_IMPORTS_LIMIT = 5;
 
     /**
-     * Display the dashboard with generic user statistics.
+     * Display the dashboard with the catalogue counts, the works that need
+     * attention, the latest rights changes and, for admins, the latest imports.
      */
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, IncompleteSplitReport $incompleteSplit): Response
     {
-        $startOfChart = now()->subDays(self::SIGNUP_CHART_DAYS - 1)->startOfDay();
-
-        $signupsByDay = User::query()
-            ->where('created_at', '>=', $startOfChart)
-            ->get(['created_at'])
-            ->countBy(fn (User $user): string => $user->created_at->toDateString());
-
-        $signups = collect(range(0, self::SIGNUP_CHART_DAYS - 1))
-            ->map(function (int $offset) use ($startOfChart, $signupsByDay): array {
-                $date = $startOfChart->copy()->addDays($offset);
-
-                return [
-                    'date' => $date->toDateString(),
-                    'label' => $date->format('M j'),
-                    'signups' => $signupsByDay->get($date->toDateString(), 0),
-                ];
-            })
-            ->all();
+        $worksByStatus = Work::query()->toBase()
+            ->selectRaw('registration_status, COUNT(*) as total')
+            ->whereNull('deleted_at')
+            ->groupBy('registration_status')
+            ->pluck('total', 'registration_status');
 
         return Inertia::render('dashboard', [
             'stats' => [
-                'total_users' => User::count(),
-                'verified_users' => User::whereNotNull('email_verified_at')->count(),
-                'admin_users' => User::where('role', UserRole::Admin)->count(),
-                'new_users' => User::where('created_at', '>=', Carbon::now()->subDays(30))->count(),
+                'works' => Work::count(),
+                'writers' => Writer::count(),
+                'publishers' => Publisher::count(),
+                'incomplete_splits' => $incompleteSplit->count(),
             ],
-            'signups' => $signups,
-            'recentUsers' => UserResource::collection(User::latest()->latest('id')->limit(6)->get()),
+            'registrationBreakdown' => collect(RegistrationStatus::cases())
+                ->map(fn (RegistrationStatus $status): array => [
+                    'status' => $status->value,
+                    'label' => $status->label(),
+                    'total' => (int) ($worksByStatus[$status->value] ?? 0),
+                ])
+                ->all(),
+            'recentHistory' => RightsHistoryResource::collection(
+                RightsHistory::query()
+                    ->with(['work', 'user', 'workParty'])
+                    ->latest('recorded_at')
+                    ->latest('id')
+                    ->limit(self::RECENT_HISTORY_LIMIT)
+                    ->get(),
+            ),
+            'recentImports' => $request->user()->isAdmin()
+                ? CsvImport::query()
+                    ->with('user')
+                    ->latest()
+                    ->limit(self::RECENT_IMPORTS_LIMIT)
+                    ->get()
+                    ->map(fn (CsvImport $csvImport): array => [
+                        'id' => $csvImport->id,
+                        'type' => $csvImport->type->value,
+                        'type_label' => $csvImport->type->label(),
+                        'original_filename' => $csvImport->original_filename,
+                        'status' => $csvImport->status->value,
+                        'status_label' => $csvImport->status->label(),
+                        'total_rows' => $csvImport->total_rows,
+                        'imported_count' => $csvImport->imported_count,
+                        'uploaded_by' => $csvImport->user->name ?? null,
+                        'created_at' => $csvImport->created_at?->toIso8601String(),
+                    ])
+                    ->all()
+                : null,
         ]);
     }
 }

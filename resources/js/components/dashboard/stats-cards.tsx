@@ -1,107 +1,103 @@
-import { CircleCheckBig, ShieldCheck, UserPlus, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Link } from '@inertiajs/react';
+import { Building2, Music, PenLine, TriangleAlert } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { incompleteSplit } from '@/routes/reports';
+import { index as publishersIndex } from '@/routes/publishers';
+import { index as worksIndex } from '@/routes/works';
+import { index as writersIndex } from '@/routes/writers';
 import type { DashboardStats } from '@/types';
 
 type StatsCardsProps = {
     stats: DashboardStats;
 };
 
-function toPercentage(value: number, total: number): string {
-    return total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
-}
+const CARD_CLASS =
+    'gap-4 border-sidebar-border transition-colors hover:bg-accent/40 max-md:gap-2 max-md:py-3';
 
 export function StatsCards({ stats }: StatsCardsProps) {
+    const needsAttention = stats.incomplete_splits > 0;
+
     return (
         <div className="grid grid-cols-2 gap-4 max-md:gap-2 xl:grid-cols-4">
-            <Card className="gap-4 border-sidebar-border max-md:gap-2 max-md:py-3">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 max-md:px-4 md:pb-2">
-                    <CardTitle className="text-xs font-medium md:text-sm">
-                        Total Users
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="max-md:px-4">
-                    <div className="text-lg font-bold md:text-2xl">
-                        {stats.total_users.toLocaleString()}
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                        Registered in system
-                    </p>
-                </CardContent>
-            </Card>
-
-            <Card className="gap-4 border-sidebar-border max-md:gap-2 max-md:py-3">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 max-md:px-4 md:pb-2">
-                    <CardTitle className="text-xs font-medium md:text-sm">
-                        Verified
-                    </CardTitle>
-                    <CircleCheckBig className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent className="max-md:px-4">
-                    <div className="text-lg font-bold md:text-2xl">
-                        {stats.verified_users.toLocaleString()}
-                    </div>
-                    <div className="mt-1 flex items-center gap-2">
-                        <Badge
-                            variant="secondary"
-                            className="text-xs leading-none"
-                        >
-                            {toPercentage(
-                                stats.verified_users,
-                                stats.total_users,
-                            )}
-                            %
-                        </Badge>
-                        <p className="text-xs text-muted-foreground">
-                            of total
+            <Link href={worksIndex()}>
+                <Card className={CARD_CLASS}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 max-md:px-4 md:pb-2">
+                        <CardTitle className="text-xs font-medium md:text-sm">
+                            Works
+                        </CardTitle>
+                        <Music className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="max-md:px-4">
+                        <div className="text-lg font-bold md:text-2xl">
+                            {stats.works.toLocaleString()}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            In the catalogue
                         </p>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </Link>
 
-            <Card className="gap-4 border-sidebar-border max-md:gap-2 max-md:py-3">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 max-md:px-4 md:pb-2">
-                    <CardTitle className="text-xs font-medium md:text-sm">
-                        Admins
-                    </CardTitle>
-                    <ShieldCheck className="h-4 w-4 text-orange-600" />
-                </CardHeader>
-                <CardContent className="max-md:px-4">
-                    <div className="text-lg font-bold md:text-2xl">
-                        {stats.admin_users.toLocaleString()}
-                    </div>
-                    <div className="mt-1 flex items-center gap-2">
-                        <Badge
-                            variant="outline"
-                            className="text-xs leading-none"
-                        >
-                            {toPercentage(stats.admin_users, stats.total_users)}
-                            %
-                        </Badge>
-                        <p className="text-xs text-muted-foreground">
-                            of total
+            <Link href={writersIndex()}>
+                <Card className={CARD_CLASS}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 max-md:px-4 md:pb-2">
+                        <CardTitle className="text-xs font-medium md:text-sm">
+                            Writers
+                        </CardTitle>
+                        <PenLine className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="max-md:px-4">
+                        <div className="text-lg font-bold md:text-2xl">
+                            {stats.writers.toLocaleString()}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            Interested parties
                         </p>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </Link>
 
-            <Card className="gap-4 border-sidebar-border max-md:gap-2 max-md:py-3">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 max-md:px-4 md:pb-2">
-                    <CardTitle className="text-xs font-medium md:text-sm">
-                        New Users
-                    </CardTitle>
-                    <UserPlus className="h-4 w-4 text-yellow-600" />
-                </CardHeader>
-                <CardContent className="max-md:px-4">
-                    <div className="text-lg font-bold md:text-2xl">
-                        {stats.new_users.toLocaleString()}
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                        In the last 30 days
-                    </p>
-                </CardContent>
-            </Card>
+            <Link href={publishersIndex()}>
+                <Card className={CARD_CLASS}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 max-md:px-4 md:pb-2">
+                        <CardTitle className="text-xs font-medium md:text-sm">
+                            Publishers
+                        </CardTitle>
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent className="max-md:px-4">
+                        <div className="text-lg font-bold md:text-2xl">
+                            {stats.publishers.toLocaleString()}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            Clients
+                        </p>
+                    </CardContent>
+                </Card>
+            </Link>
+
+            <Link href={incompleteSplit()}>
+                <Card className={CARD_CLASS}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 max-md:px-4 md:pb-2">
+                        <CardTitle className="text-xs font-medium md:text-sm">
+                            Incomplete splits
+                        </CardTitle>
+                        <TriangleAlert
+                            className={`h-4 w-4 ${needsAttention ? 'text-amber-600' : 'text-muted-foreground'}`}
+                        />
+                    </CardHeader>
+                    <CardContent className="max-md:px-4">
+                        <div
+                            className={`text-lg font-bold md:text-2xl ${needsAttention ? 'text-amber-600 dark:text-amber-400' : ''}`}
+                        >
+                            {stats.incomplete_splits.toLocaleString()}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            Works that need attention
+                        </p>
+                    </CardContent>
+                </Card>
+            </Link>
         </div>
     );
 }
