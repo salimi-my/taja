@@ -95,18 +95,18 @@ PHP 8.5, Laravel 13, MySQL 8.4, Inertia 3 + React 19 + TypeScript, Tailwind 4, s
 
 ### 5.1 Overview
 
-| Table              | Purpose                                                                                     |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| `publishers`       | Publisher / client master                                                                   |
-| `writers`          | Writer / interested-party master                                                            |
-| `writer_aliases`   | Up to 4 pseudonyms per writer, each with an IPI number                                      |
-| `works`            | Work (composition) master                                                                   |
-| `work_isrcs`       | One row per ISRC of a work                                                                  |
-| `work_parties`     | A writer or publisher on a work: role, shares, territories, effective dates (temporal rows) |
-| `rights_histories` | Insert-only change log per work                                                             |
-| `csv_imports`      | One row per uploaded CSV: preview state, progress, error list, outcome                      |
-| `csv_import_values`| Scratch table used while a file is processed to detect duplicates inside the file; rows are removed when the pass ends |
-| `countries`        | ISO 3166-1 alpha-2 codes and names (seeded by `CountrySeeder`), used by territory pickers   |
+| Table               | Purpose                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `publishers`        | Publisher / client master                                                                                              |
+| `writers`           | Writer / interested-party master                                                                                       |
+| `writer_aliases`    | Up to 4 pseudonyms per writer, each with an IPI number                                                                 |
+| `works`             | Work (composition) master                                                                                              |
+| `work_isrcs`        | One row per ISRC of a work                                                                                             |
+| `work_parties`      | A writer or publisher on a work: role, shares, territories, effective dates (temporal rows)                            |
+| `rights_histories`  | Insert-only change log per work                                                                                        |
+| `csv_imports`       | One row per uploaded CSV: preview state, progress, error list, outcome                                                 |
+| `csv_import_values` | Scratch table used while a file is processed to detect duplicates inside the file; rows are removed when the pass ends |
+| `countries`         | ISO 3166-1 alpha-2 codes and names (seeded by `CountrySeeder`), used by territory pickers                              |
 
 Every table has `id`, `created_at`, `updated_at`. `works`, `writers` and `publishers` use soft deletes. `rights_histories` rows are never updated or deleted.
 
