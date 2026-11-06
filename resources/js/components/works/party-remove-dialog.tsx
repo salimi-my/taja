@@ -12,6 +12,9 @@ type PartyRemoveDialogProps = {
     party: WorkParty;
     /** The button that opens the dialog. */
     children?: ReactNode;
+    /** Controls the dialog from outside, e.g. from a menu item. */
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -22,18 +25,24 @@ export function PartyRemoveDialog({
     workId,
     party,
     children,
+    open,
+    onOpenChange,
 }: PartyRemoveDialogProps) {
     return (
         <PartyActionDialog
+            open={open}
+            onOpenChange={onOpenChange}
             title={`Remove ${party.contributor_name}`}
             description="The party stays on record until the day before the date, and the removal is added to the history."
             trigger={
-                children ?? (
-                    <Button variant="ghost" size="sm">
-                        <UserMinus />
-                        Remove
-                    </Button>
-                )
+                open === undefined
+                    ? (children ?? (
+                          <Button variant="ghost" size="sm">
+                              <UserMinus />
+                              Remove
+                          </Button>
+                      ))
+                    : undefined
             }
             form={WorkPartyController.destroy.form({
                 work: workId,

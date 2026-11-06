@@ -19,8 +19,11 @@ import { Spinner } from '@/components/ui/spinner';
 type PartyActionDialogProps = {
     title: string;
     description: string;
-    /** The button that opens the dialog. */
-    trigger: ReactNode;
+    /** The button that opens the dialog. Leave out when `open` is controlled. */
+    trigger?: ReactNode;
+    /** Controls the dialog from outside, e.g. from a menu item. */
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
     /** The Wayfinder form definition of the request the dialog sends. */
     form: Pick<ComponentProps<typeof Form>, 'action' | 'method'>;
     submitLabel: string;
@@ -40,17 +43,21 @@ export function PartyActionDialog({
     title,
     description,
     trigger,
+    open: controlledOpen,
+    onOpenChange,
     form,
     submitLabel,
     processingLabel,
     destructive = false,
     children,
 }: PartyActionDialogProps) {
-    const [open, setOpen] = useState(false);
+    const [ownOpen, setOwnOpen] = useState(false);
+    const open = controlledOpen ?? ownOpen;
+    const setOpen = onOpenChange ?? setOwnOpen;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{trigger}</DialogTrigger>
+            {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
             <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>

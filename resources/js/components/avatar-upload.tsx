@@ -161,7 +161,7 @@ export function AvatarUpload({ user }: AvatarUploadProps) {
                                             setShowDeleteDialog(true)
                                         }
                                         disabled={isBusy}
-                                        variant="destructive"
+                                        variant="destructive-hover"
                                         className="cursor-pointer"
                                     >
                                         <Trash2 className="h-4 w-4" />

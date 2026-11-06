@@ -1,13 +1,11 @@
 import { router } from '@inertiajs/react';
-import { CalendarClock, Eraser, Info, UserMinus, X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 import { formatDate } from '@/components/detail-grid';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { PartyAddDialog } from '@/components/works/party-add-dialog';
-import { PartyChangeDialog } from '@/components/works/party-change-dialog';
-import { PartyCorrectDialog } from '@/components/works/party-correct-dialog';
-import { PartyRemoveDialog } from '@/components/works/party-remove-dialog';
+import { PartyRowActions } from '@/components/works/party-row-actions';
 import { WorkPartiesTable } from '@/components/works/work-parties-table';
 import { show } from '@/routes/works';
 import type { WorkParty, WorkPartyOptions } from '@/types';
@@ -97,53 +95,11 @@ export function WorkPartiesPanel({
                 renderActions={
                     canManage
                         ? (party) => (
-                              <>
-                                  {party.effective_end_date === null && (
-                                      <PartyChangeDialog
-                                          workId={workId}
-                                          party={party}
-                                          options={partyOptions}
-                                      >
-                                          <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              title="Change from a date"
-                                          >
-                                              <CalendarClock />
-                                              Change
-                                          </Button>
-                                      </PartyChangeDialog>
-                                  )}
-                                  <PartyCorrectDialog
-                                      workId={workId}
-                                      party={party}
-                                      options={partyOptions}
-                                  >
-                                      <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          title="Correct an entry made in error"
-                                      >
-                                          <Eraser />
-                                          Correct
-                                      </Button>
-                                  </PartyCorrectDialog>
-                                  {party.effective_end_date === null && (
-                                      <PartyRemoveDialog
-                                          workId={workId}
-                                          party={party}
-                                      >
-                                          <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              title="Remove from a date"
-                                          >
-                                              <UserMinus />
-                                              Remove
-                                          </Button>
-                                      </PartyRemoveDialog>
-                                  )}
-                              </>
+                              <PartyRowActions
+                                  workId={workId}
+                                  party={party}
+                                  options={partyOptions}
+                              />
                           )
                         : undefined
                 }

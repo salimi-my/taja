@@ -16,6 +16,9 @@ type PartyCorrectDialogProps = {
     options: WorkPartyOptions;
     /** The button that opens the dialog. */
     children?: ReactNode;
+    /** Controls the dialog from outside, e.g. from a menu item. */
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -28,18 +31,24 @@ export function PartyCorrectDialog({
     party,
     options,
     children,
+    open,
+    onOpenChange,
 }: PartyCorrectDialogProps) {
     return (
         <PartyActionDialog
+            open={open}
+            onOpenChange={onOpenChange}
             title={`Correct entry of ${party.contributor_name}`}
             description="Use this when the row was entered wrongly. The old row is kept in the history but no longer counts. To change rights from a date, use Change instead."
             trigger={
-                children ?? (
-                    <Button variant="ghost" size="sm">
-                        <Eraser />
-                        Correct
-                    </Button>
-                )
+                open === undefined
+                    ? (children ?? (
+                          <Button variant="ghost" size="sm">
+                              <Eraser />
+                              Correct
+                          </Button>
+                      ))
+                    : undefined
             }
             form={WorkPartyController.correct.form({
                 work: workId,

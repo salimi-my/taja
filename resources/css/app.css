@@ -325,6 +325,23 @@ button[data-variant='outline'][aria-invalid='true'] {
     color: var(--primary);
 }
 
+/* The icon of an item follows the purple text instead of the default foreground. */
+[data-slot='dropdown-menu-item']:not([data-variant='destructive']):focus > svg,
+[data-slot='dropdown-menu-item']:not(
+        [data-variant='destructive']
+    )[data-highlighted]
+    > svg,
+[data-slot='dropdown-menu-sub-trigger']:focus > svg,
+[data-slot='dropdown-menu-sub-trigger'][data-highlighted] > svg {
+    color: inherit;
+}
+
+/* Items for deleting something stay neutral and turn red when hovered. */
+[data-slot='dropdown-menu-item'][data-variant='destructive-hover']:focus,
+[data-slot='dropdown-menu-item'][data-variant='destructive-hover'][data-highlighted] {
+    color: var(--destructive);
+}
+
 [data-variant='ghost']:hover,
 [data-variant='ghost'][aria-expanded='true'] {
     background-color: var(--primary-tint-8);

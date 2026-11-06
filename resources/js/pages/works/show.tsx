@@ -58,9 +58,15 @@ export default function WorksShow({
                             </Link>
                         </Button>
                         <WorkDelete work={work}>
-                            <Button variant="outline" size="sm">
-                                <Trash2 />
-                                Delete
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="group"
+                            >
+                                <Trash2 className="group-hover:text-destructive" />
+                                <span className="group-hover:text-destructive">
+                                    Delete
+                                </span>
                             </Button>
                         </WorkDelete>
                     </div>
