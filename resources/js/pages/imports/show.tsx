@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import {
     CircleAlert,
     CircleCheckBig,
+    CircleX,
     FileSpreadsheet,
     ListChecks,
     Rows3,
@@ -50,11 +51,12 @@ function ProgressBar({ percentage }: { percentage: number }) {
     );
 }
 
-type StatTone = 'neutral' | 'success' | 'danger';
+type StatTone = 'neutral' | 'success' | 'warning' | 'danger';
 
 const statTones: Record<StatTone, string> = {
     neutral: 'bg-muted text-muted-foreground',
     success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
     danger: 'bg-destructive/10 text-destructive',
 };
 
@@ -168,14 +170,7 @@ export default function ImportsShow({
                             <ImportStatusBadge csvImport={csvImport} />
                         </div>
 
-                        <div
-                            className={cn(
-                                'grid gap-3 sm:grid-cols-2',
-                                showsImportedCount
-                                    ? 'lg:grid-cols-4'
-                                    : 'lg:grid-cols-3',
-                            )}
-                        >
+                        <div className="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-3">
                             <Stat
                                 label="Rows in file"
                                 value={csvImport.total_rows}
@@ -194,10 +189,20 @@ export default function ImportsShow({
                             <Stat
                                 label="Rows with errors"
                                 value={csvImport.error_rows}
-                                icon={TriangleAlert}
+                                icon={CircleX}
                                 tone={
                                     csvImport.error_rows > 0
                                         ? 'danger'
+                                        : 'neutral'
+                                }
+                            />
+                            <Stat
+                                label="Warnings"
+                                value={csvImport.warnings_total}
+                                icon={TriangleAlert}
+                                tone={
+                                    csvImport.warnings_total > 0
+                                        ? 'warning'
                                         : 'neutral'
                                 }
                             />
