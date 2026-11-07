@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -119,11 +120,25 @@ function SidebarMenuLink({ item }: { item: SidebarNavLink }) {
 function SidebarMenuCollapsible({ item }: { item: SidebarNavCollapsible }) {
     const { setOpenMobile } = useSidebar();
     const activeSubItem = useActiveSubItem(item.items);
+    const activeTitle = activeSubItem?.title;
+    const [isOpen, setIsOpen] = useState(activeTitle !== undefined);
+    const [previousActiveTitle, setPreviousActiveTitle] = useState(activeTitle);
+
+    // Open the menu when a visit makes one of its items active, since the
+    // sidebar stays mounted between Inertia visits.
+    if (previousActiveTitle !== activeTitle) {
+        setPreviousActiveTitle(activeTitle);
+
+        if (activeTitle !== undefined) {
+            setIsOpen(true);
+        }
+    }
 
     return (
         <Collapsible
             asChild
-            defaultOpen={activeSubItem !== undefined}
+            open={isOpen}
+            onOpenChange={setIsOpen}
             className="group/collapsible"
         >
             <SidebarMenuItem>
