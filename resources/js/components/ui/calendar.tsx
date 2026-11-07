@@ -2,6 +2,8 @@
  * CUSTOMIZATIONS MADE TO STANDARD SHADCN CALENDAR COMPONENT:
  *
  * 1. Change table element to month_grid element
+ * 2. Replace the native month/year <select> with the shadcn Select, so a long
+ *    year list scrolls inside a small popover instead of a full-height OS menu.
  *
  * Changes maintain full compatibility with standard shadcn Calendar API while extending functionality.
  */
@@ -10,18 +12,72 @@
 import * as React from "react";
 import {
   DayPicker,
+  Dropdown as DayPickerDropdown,
   getDefaultClassNames,
   type DayButton,
   type Locale,
 } from "react-day-picker";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
+
+/**
+ * Month/year dropdown for the calendar caption. DayPicker reads the new value
+ * from a change event, so the Select value is wrapped in a minimal one.
+ */
+function CalendarDropdown({
+  options,
+  value,
+  onChange,
+  disabled,
+  "aria-label": ariaLabel,
+}: React.ComponentProps<typeof DayPickerDropdown>) {
+  return (
+    <Select
+      value={String(value ?? "")}
+      disabled={disabled}
+      onValueChange={(next) =>
+        onChange?.({
+          target: { value: next },
+        } as React.ChangeEvent<HTMLSelectElement>)
+      }
+    >
+      <SelectTrigger
+        size="sm"
+        aria-label={ariaLabel}
+        className="h-8 gap-0.5 border-0 bg-transparent px-1.5 shadow-none hover:bg-muted dark:bg-transparent"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent
+        position="popper"
+        className="max-h-60 min-w-0 [&_[data-slot=select-item]]:py-1 [&_[data-slot=select-item]]:pr-6 [&_[data-slot=select-item]]:pl-2"
+      >
+        {options?.map((option) => (
+          <SelectItem
+            key={option.value}
+            value={String(option.value)}
+            disabled={option.disabled}
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 function Calendar({
   className,
@@ -62,17 +118,17 @@ function Calendar({
         ),
         month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
         nav: cn(
-          "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
+          "pointer-events-none absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
           defaultClassNames.nav,
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          "size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
+          "pointer-events-auto size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
           defaultClassNames.button_previous,
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
-          "size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
+          "pointer-events-auto size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
           defaultClassNames.button_next,
         ),
         month_caption: cn(
@@ -177,6 +233,7 @@ function Calendar({
             <ChevronDownIcon className={cn("size-4", className)} {...props} />
           );
         },
+        Dropdown: CalendarDropdown,
         DayButton: ({ ...props }) => (
           <CalendarDayButton locale={locale} {...props} />
         ),
