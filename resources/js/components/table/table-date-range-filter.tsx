@@ -105,10 +105,7 @@ export function TableDateRangeFilter({
                         id="date"
                         variant="outline"
                         size="sm"
-                        className={cn(
-                            'h-8 w-[240px] justify-start border-dashed text-left font-normal',
-                            !displayedDate?.from && 'text-muted-foreground',
-                        )}
+                        className="h-8 w-[240px] justify-start border-dashed text-left"
                     >
                         <CalendarIcon />
                         {displayedDate?.from ? (
