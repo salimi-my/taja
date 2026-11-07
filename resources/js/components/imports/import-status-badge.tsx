@@ -4,12 +4,16 @@ import { cn } from '@/lib/utils';
 import type { CsvImport } from '@/types';
 
 const tones: Record<CsvImport['status'], string> = {
-    validating: 'border-amber-500 text-amber-600 dark:text-amber-400',
-    previewed: 'border-sky-500 text-sky-600 dark:text-sky-400',
-    importing: 'border-amber-500 text-amber-600 dark:text-amber-400',
-    imported: 'border-emerald-500 text-emerald-600 dark:text-emerald-400',
-    cancelled: 'text-muted-foreground',
-    failed: 'border-destructive text-destructive',
+    validating:
+        'border-transparent bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    previewed:
+        'border-transparent bg-sky-500/10 text-sky-600 dark:text-sky-400',
+    importing:
+        'border-transparent bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    imported:
+        'border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    cancelled: 'border-transparent bg-muted text-muted-foreground',
+    failed: 'border-transparent bg-destructive/10 text-destructive',
 };
 
 type ImportStatusBadgeProps = {

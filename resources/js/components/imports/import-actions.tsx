@@ -1,10 +1,10 @@
 import { Form, Link } from '@inertiajs/react';
-import { CheckCheck, Download, X } from 'lucide-react';
+import { CheckCheck, X } from 'lucide-react';
 import CsvImportController from '@/actions/App/Http/Controllers/CsvImportController';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { importListRoutes } from '@/lib/imports';
-import { create, errors as errorsFile } from '@/routes/imports';
+import { create } from '@/routes/imports';
 import type { CsvImport } from '@/types';
 
 type ImportActionsProps = {
@@ -18,6 +18,10 @@ export function ImportActions({ csvImport }: ImportActionsProps) {
     const isFinished = ['imported', 'cancelled', 'failed'].includes(
         csvImport.status,
     );
+
+    if (csvImport.status === 'importing') {
+        return null;
+    }
 
     return (
         <div className="flex flex-wrap items-center gap-2">
@@ -79,15 +83,6 @@ export function ImportActions({ csvImport }: ImportActionsProps) {
                         </Link>
                     </Button>
                 </>
-            )}
-
-            {csvImport.has_errors_file && (
-                <Button variant="outline" asChild>
-                    <a href={errorsFile.url(csvImport.id)}>
-                        <Download />
-                        Download errors CSV
-                    </a>
-                </Button>
             )}
         </div>
     );

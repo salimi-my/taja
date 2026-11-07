@@ -14,11 +14,9 @@ import type { LucideIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { ContentCard } from '@/components/content-card';
 import { ImportStatusBadge } from '@/components/imports/import-status-badge';
-import { ImportActions } from '@/components/imports/import-actions';
-import { ImportSampleTable } from '@/components/imports/import-sample-table';
-import { ImportIssuesTable } from '@/components/imports/import-issues-table';
+import { ImportActionBar } from '@/components/imports/import-action-bar';
+import { ImportReview } from '@/components/imports/import-review';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { UserAvatarName } from '@/components/user-avatar-name';
 import { cn } from '@/lib/utils';
@@ -51,6 +49,37 @@ function ProgressBar({ percentage }: { percentage: number }) {
     );
 }
 
+function OutcomeBar({
+    valid,
+    errors,
+    total,
+}: {
+    valid: number;
+    errors: number;
+    total: number;
+}) {
+    if (total === 0) {
+        return null;
+    }
+
+    return (
+        <div
+            role="img"
+            aria-label={`${valid} valid rows and ${errors} rows with errors out of ${total}`}
+            className="flex h-2 w-full gap-0.5 overflow-hidden rounded-full bg-muted"
+        >
+            <div
+                className="h-full bg-emerald-500 transition-all duration-500"
+                style={{ width: `${(valid / total) * 100}%` }}
+            />
+            <div
+                className="h-full bg-destructive transition-all duration-500"
+                style={{ width: `${(errors / total) * 100}%` }}
+            />
+        </div>
+    );
+}
+
 type StatTone = 'neutral' | 'success' | 'warning' | 'danger';
 
 const statTones: Record<StatTone, string> = {
@@ -72,7 +101,7 @@ function Stat({
     tone?: StatTone;
 }) {
     return (
-        <div className="flex items-center gap-3 rounded-lg border p-4">
+        <div className="flex items-center gap-3 rounded-lg border p-3">
             <div
                 className={cn(
                     'flex size-10 shrink-0 items-center justify-center rounded-md',
@@ -182,48 +211,57 @@ export default function ImportsShow({
                             <ImportStatusBadge csvImport={csvImport} />
                         </div>
 
-                        <div className="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-3">
-                            <Stat
-                                label="Rows in file"
-                                value={csvImport.total_rows}
-                                icon={Rows3}
-                            />
-                            <Stat
-                                label="Valid rows"
-                                value={csvImport.valid_rows}
-                                icon={ListChecks}
-                                tone={
-                                    csvImport.valid_rows > 0
-                                        ? 'success'
-                                        : 'neutral'
-                                }
-                            />
-                            <Stat
-                                label="Rows with errors"
-                                value={csvImport.error_rows}
-                                icon={CircleX}
-                                tone={
-                                    csvImport.error_rows > 0
-                                        ? 'danger'
-                                        : 'neutral'
-                                }
-                            />
-                            <Stat
-                                label="Warnings"
-                                value={csvImport.warnings_total}
-                                icon={TriangleAlert}
-                                tone={
-                                    csvImport.warnings_total > 0
-                                        ? 'warning'
-                                        : 'neutral'
-                                }
-                            />
-                            {showsImportedCount && (
+                        <div className="flex flex-col gap-3">
+                            <div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3">
                                 <Stat
-                                    label="Rows imported"
-                                    value={csvImport.imported_count}
-                                    icon={Upload}
-                                    tone="success"
+                                    label="Rows in file"
+                                    value={csvImport.total_rows}
+                                    icon={Rows3}
+                                />
+                                <Stat
+                                    label="Valid rows"
+                                    value={csvImport.valid_rows}
+                                    icon={ListChecks}
+                                    tone={
+                                        csvImport.valid_rows > 0
+                                            ? 'success'
+                                            : 'neutral'
+                                    }
+                                />
+                                <Stat
+                                    label="Rows with errors"
+                                    value={csvImport.error_rows}
+                                    icon={CircleX}
+                                    tone={
+                                        csvImport.error_rows > 0
+                                            ? 'danger'
+                                            : 'neutral'
+                                    }
+                                />
+                                <Stat
+                                    label="Warnings"
+                                    value={csvImport.warnings_total}
+                                    icon={TriangleAlert}
+                                    tone={
+                                        csvImport.warnings_total > 0
+                                            ? 'warning'
+                                            : 'neutral'
+                                    }
+                                />
+                                {showsImportedCount && (
+                                    <Stat
+                                        label="Rows imported"
+                                        value={csvImport.imported_count}
+                                        icon={Upload}
+                                        tone="success"
+                                    />
+                                )}
+                            </div>
+                            {!csvImport.is_processing && (
+                                <OutcomeBar
+                                    valid={csvImport.valid_rows}
+                                    errors={csvImport.error_rows}
+                                    total={csvImport.total_rows}
                                 />
                             )}
                         </div>
@@ -271,18 +309,61 @@ export default function ImportsShow({
                             </Alert>
                         )}
 
-                        {isPreview && !csvImport.layout_error && (
-                            <Alert>
-                                <CircleAlert />
-                                <AlertTitle>
-                                    Nothing has been imported yet
-                                </AlertTitle>
-                                <AlertDescription>
-                                    Only the valid rows are imported. Rows with
-                                    errors are skipped.
-                                </AlertDescription>
-                            </Alert>
-                        )}
+                        {isPreview &&
+                            !csvImport.layout_error &&
+                            csvImport.valid_rows === 0 && (
+                                <Alert variant="destructive">
+                                    <CircleX />
+                                    <AlertTitle>
+                                        No rows can be imported
+                                    </AlertTitle>
+                                    <AlertDescription>
+                                        Every row has an error. Fix them in the
+                                        file and upload it again.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+
+                        {isPreview &&
+                            !csvImport.layout_error &&
+                            csvImport.valid_rows > 0 &&
+                            csvImport.error_rows > 0 && (
+                                <Alert className="border-amber-500/50 text-amber-600 *:data-[slot=alert-description]:text-amber-600/90 dark:text-amber-400 dark:*:data-[slot=alert-description]:text-amber-400/90">
+                                    <TriangleAlert />
+                                    <AlertTitle>
+                                        {csvImport.error_rows.toLocaleString()}{' '}
+                                        of{' '}
+                                        {csvImport.total_rows.toLocaleString()}{' '}
+                                        {csvImport.total_rows === 1
+                                            ? 'row'
+                                            : 'rows'}{' '}
+                                        will be skipped
+                                    </AlertTitle>
+                                    <AlertDescription>
+                                        Only the{' '}
+                                        {csvImport.valid_rows.toLocaleString()}{' '}
+                                        valid{' '}
+                                        {csvImport.valid_rows === 1
+                                            ? 'row is'
+                                            : 'rows are'}{' '}
+                                        imported. Nothing has been imported yet.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+
+                        {isPreview &&
+                            !csvImport.layout_error &&
+                            csvImport.valid_rows > 0 &&
+                            csvImport.error_rows === 0 && (
+                                <Alert variant="success">
+                                    <CircleCheckBig />
+                                    <AlertTitle>All rows are valid</AlertTitle>
+                                    <AlertDescription>
+                                        Nothing has been imported yet. Confirm
+                                        to import them.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
 
                         {csvImport.status === 'imported' && (
                             <Alert variant="success">
@@ -307,56 +388,12 @@ export default function ImportsShow({
                                 </AlertDescription>
                             </Alert>
                         )}
-
-                        <Separator />
-
-                        <ImportActions csvImport={csvImport} />
                     </div>
                 </ContentCard>
 
-                {sample && (
-                    <ContentCard
-                        title="Sample rows"
-                        description="The first rows of the file, as they will be read. Check that each value sits in the right column."
-                    >
-                        <ImportSampleTable
-                            sample={sample}
-                            total={csvImport.total_rows}
-                        />
-                    </ContentCard>
-                )}
+                <ImportReview csvImport={csvImport} sample={sample} />
 
-                {csvImport.errors_total > 0 && (
-                    <ContentCard
-                        title="Errors"
-                        description="These rows are skipped. Fix them in the file and upload it again."
-                    >
-                        <ImportIssuesTable
-                            issues={csvImport.errors}
-                            total={csvImport.errors_total}
-                        />
-                    </ContentCard>
-                )}
-
-                {csvImport.warnings_total > 0 && (
-                    <ContentCard
-                        title="Warnings"
-                        description="These do not stop a row from being imported."
-                    >
-                        <div className="flex flex-col gap-3">
-                            <Alert>
-                                <TriangleAlert />
-                                <AlertDescription>
-                                    Check that each warning is expected.
-                                </AlertDescription>
-                            </Alert>
-                            <ImportIssuesTable
-                                issues={csvImport.warnings}
-                                total={csvImport.warnings_total}
-                            />
-                        </div>
-                    </ContentCard>
-                )}
+                <ImportActionBar csvImport={csvImport} />
             </div>
         </>
     );
