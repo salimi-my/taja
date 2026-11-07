@@ -68,14 +68,18 @@ function OutcomeBar({
             aria-label={`${valid} valid rows and ${errors} rows with errors out of ${total}`}
             className="flex h-2 w-full gap-0.5 overflow-hidden rounded-full bg-muted"
         >
-            <div
-                className="h-full bg-emerald-500 transition-all duration-500"
-                style={{ width: `${(valid / total) * 100}%` }}
-            />
-            <div
-                className="h-full bg-destructive transition-all duration-500"
-                style={{ width: `${(errors / total) * 100}%` }}
-            />
+            {valid > 0 && (
+                <div
+                    className="h-full basis-0 bg-emerald-500 transition-all duration-500"
+                    style={{ flexGrow: valid }}
+                />
+            )}
+            {errors > 0 && (
+                <div
+                    className="h-full basis-0 bg-destructive transition-all duration-500"
+                    style={{ flexGrow: errors }}
+                />
+            )}
         </div>
     );
 }
