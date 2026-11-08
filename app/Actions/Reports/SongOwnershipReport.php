@@ -24,14 +24,18 @@ class SongOwnershipReport
     {
         return Work::query()
             ->with(['parties' => function (HasMany $parties) use ($filters): void {
-                $this->inEffect($parties, $filters['as_of'])->with(['writer', 'publisher']);
+                $this->limitToInEffect($parties, $filters['as_of']);
+                $parties->with(['writer', 'publisher']);
             }])
             ->when($filters['search'] !== '', fn (Builder $query) => $query->search($filters['search']))
             ->when($filters['work_id'] !== null, fn (Builder $query) => $query->whereKey($filters['work_id']))
             ->when($filters['registration_statuses'] !== [], fn (Builder $query) => $query->whereIn('registration_status', $filters['registration_statuses']))
             ->when($filters['conflict_statuses'] !== [], fn (Builder $query) => $query->whereIn('conflict_status', $filters['conflict_statuses']))
             ->when(count($filters['controlled']) === 1, function (Builder $query) use ($filters): void {
-                $hasControlledParty = fn (Builder $parties) => $this->inEffect($parties, $filters['as_of'])->where('is_controlled', true);
+                $hasControlledParty = function (Builder $parties) use ($filters): void {
+                    $this->limitToInEffect($parties, $filters['as_of']);
+                    $parties->where('is_controlled', true);
+                };
 
                 $filters['controlled'][0] === 'yes'
                     ? $query->whereHas('parties', $hasControlledParty)
@@ -44,14 +48,19 @@ class SongOwnershipReport
     /**
      * Limit party rows to those in effect today, or on a date.
      *
-     * @template TQuery of Builder<WorkParty>|HasMany<WorkParty, Work>
+     * The scopes add their constraints to the given query in place.
      *
-     * @param  TQuery  $parties
-     * @return TQuery
+     * @param  Builder<WorkParty>|HasMany<WorkParty, Work>  $parties
      */
-    private function inEffect(Builder|HasMany $parties, ?string $asOf): Builder|HasMany
+    private function limitToInEffect(Builder|HasMany $parties, ?string $asOf): void
     {
-        return $asOf === null ? $parties->current() : $parties->effectiveOn($asOf);
+        if ($asOf === null) {
+            $parties->current();
+
+            return;
+        }
+
+        $parties->effectiveOn($asOf);
     }
 
     /**

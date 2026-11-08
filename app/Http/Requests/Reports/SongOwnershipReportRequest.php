@@ -58,10 +58,20 @@ class SongOwnershipReportRequest extends FormRequest
             'search' => $this->string('search')->trim()->toString(),
             'work_id' => $this->filled('work_id') ? $this->integer('work_id') : null,
             'as_of' => $this->filled('as_of') ? $this->string('as_of')->toString() : null,
-            'registration_statuses' => $this->array('registration_statuses'),
-            'conflict_statuses' => $this->array('conflict_statuses'),
-            'controlled' => $this->array('controlled'),
+            'registration_statuses' => $this->stringList('registration_statuses'),
+            'conflict_statuses' => $this->stringList('conflict_statuses'),
+            'controlled' => $this->stringList('controlled'),
             'per_page' => $this->integer('per_page', 10),
         ];
+    }
+
+    /**
+     * A validated array input as a list of strings.
+     *
+     * @return list<string>
+     */
+    private function stringList(string $key): array
+    {
+        return array_values(array_map(strval(...), $this->array($key)));
     }
 }
