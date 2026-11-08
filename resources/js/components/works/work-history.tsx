@@ -1,7 +1,6 @@
 import { router } from '@inertiajs/react';
 import { ChevronDown, History } from 'lucide-react';
 import { formatDate } from '@/components/detail-grid';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Collapsible,
@@ -17,12 +16,14 @@ import {
 } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatarName } from '@/components/user-avatar-name';
+import { changeTypeStyle } from '@/components/works/change-type-style';
+import {
+    RightsSnapshotDiff,
+    snapshotDiffRows,
+} from '@/components/works/rights-snapshot-diff';
+import { cn } from '@/lib/utils';
 import { show } from '@/routes/works';
-import type {
-    PaginatedResource,
-    RightsHistoryEntry,
-    RightsSnapshot,
-} from '@/types';
+import type { PaginatedResource, RightsHistoryEntry } from '@/types';
 
 type WorkHistoryProps = {
     workId: number;
@@ -34,50 +35,63 @@ type WorkHistoryProps = {
 function HistorySkeleton() {
     return (
         <div
-            className="space-y-3"
+            className="space-y-6"
             aria-busy="true"
             aria-label="Loading history"
         >
             {[0, 1, 2].map((item) => (
-                <div key={item} className="space-y-2 rounded-lg border p-4">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-4 w-3/4" />
+                <div key={item} className="flex gap-4">
+                    <Skeleton className="size-8 shrink-0 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-1/3" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </div>
                 </div>
             ))}
         </div>
     );
 }
 
-function SnapshotBlock({
-    title,
-    snapshot,
-}: {
-    title: string;
-    snapshot: RightsSnapshot | null;
-}) {
-    return (
-        <div className="min-w-0 space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">{title}</p>
-            <pre className="max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs">
-                {snapshot === null ? 'None' : JSON.stringify(snapshot, null, 2)}
-            </pre>
-        </div>
-    );
-}
-
 function HistoryEntry({ entry }: { entry: RightsHistoryEntry }) {
+    const { icon: Icon, classes } = changeTypeStyle(entry.change_type);
+    const changeCount = snapshotDiffRows(
+        entry.previous_snapshot,
+        entry.new_snapshot,
+    ).length;
     const hasSnapshots =
         entry.previous_snapshot !== null || entry.new_snapshot !== null;
 
     return (
-        <li className="space-y-2 rounded-lg border p-4">
-            <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{entry.change_type_label}</Badge>
-                <span className="text-sm font-medium">
-                    Effective {formatDate(entry.effective_date)}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                    Recorded {formatDate(entry.recorded_at)} by{' '}
+        <li className="group/entry relative pb-7 pl-12 last:pb-0">
+            <span
+                aria-hidden="true"
+                className="absolute top-10 bottom-1 left-4 w-px -translate-x-1/2 bg-border group-last/entry:hidden"
+            />
+            <span
+                className={cn(
+                    'absolute top-0 left-0 flex size-8 items-center justify-center rounded-full ring-4 ring-card',
+                    classes,
+                )}
+            >
+                <Icon aria-hidden="true" className="size-4" />
+            </span>
+            <div className="min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="text-sm font-semibold">
+                        {entry.change_type_label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                        Effective {formatDate(entry.effective_date)}
+                    </span>
+                </div>
+                <p className="text-sm">{entry.summary}</p>
+                {entry.remarks && (
+                    <p className="border-l-2 pl-3 text-sm text-muted-foreground italic">
+                        {entry.remarks}
+                    </p>
+                )}
+                <p className="flex flex-wrap items-center gap-x-1 text-xs text-muted-foreground">
+                    <span>Recorded {formatDate(entry.recorded_at)} by</span>
                     {entry.user_name ? (
                         <UserAvatarName
                             name={entry.user_name}
@@ -89,34 +103,28 @@ function HistoryEntry({ entry }: { entry: RightsHistoryEntry }) {
                     ) : (
                         'the system'
                     )}
-                </span>
-            </div>
-            <p className="text-sm">{entry.summary}</p>
-            {entry.remarks && (
-                <p className="text-sm text-muted-foreground">
-                    Remarks: {entry.remarks}
                 </p>
-            )}
-            {hasSnapshots && (
-                <Collapsible>
-                    <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm" className="-ml-2">
-                            <ChevronDown />
-                            Previous and new state
-                        </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2 grid gap-3 sm:grid-cols-2">
-                        <SnapshotBlock
-                            title="Previous"
-                            snapshot={entry.previous_snapshot}
-                        />
-                        <SnapshotBlock
-                            title="New"
-                            snapshot={entry.new_snapshot}
-                        />
-                    </CollapsibleContent>
-                </Collapsible>
-            )}
+                {hasSnapshots && (
+                    <Collapsible>
+                        <CollapsibleTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="group/trigger"
+                            >
+                                <ChevronDown className="transition-transform group-data-[state=open]/trigger:rotate-180" />
+                                Show changes ({changeCount})
+                            </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="pt-2">
+                            <RightsSnapshotDiff
+                                previous={entry.previous_snapshot}
+                                next={entry.new_snapshot}
+                            />
+                        </CollapsibleContent>
+                    </Collapsible>
+                )}
+            </div>
         </li>
     );
 }
@@ -158,7 +166,7 @@ export function WorkHistory({ workId, asOf, history }: WorkHistoryProps) {
 
     return (
         <div className="space-y-4">
-            <ol className="space-y-3">
+            <ol>
                 {history.data.map((entry) => (
                     <HistoryEntry key={entry.id} entry={entry} />
                 ))}

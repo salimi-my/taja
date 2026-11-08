@@ -1,17 +1,5 @@
 import { Link } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
-import {
-    CalendarClock,
-    FilePen,
-    FilePlus2,
-    FileUp,
-    Globe,
-    History,
-    Percent,
-    UserMinus,
-    UserPlus,
-    Wrench,
-} from 'lucide-react';
+import { History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -28,6 +16,7 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { UserAvatarName } from '@/components/user-avatar-name';
+import { changeTypeStyle } from '@/components/works/change-type-style';
 import { cn } from '@/lib/utils';
 import { rightsHistory } from '@/routes/reports';
 import { show } from '@/routes/works';
@@ -37,29 +26,6 @@ import { RelativeTime } from './relative-time';
 type RecentHistoryProps = {
     entries: RightsHistoryEntry[];
 };
-
-const GREEN = 'bg-green-500/10 text-green-700 dark:text-green-400';
-const BLUE = 'bg-blue-500/10 text-blue-700 dark:text-blue-400';
-const AMBER = 'bg-amber-500/10 text-amber-700 dark:text-amber-400';
-const RED = 'bg-destructive/10 text-destructive';
-const NEUTRAL = 'bg-muted text-muted-foreground';
-
-type ChangeTypeStyle = { icon: LucideIcon; classes: string };
-
-/** The icon and tint of each change type: additions are green or blue, removals red, fixes amber. */
-const CHANGE_TYPE_STYLES: Record<string, ChangeTypeStyle> = {
-    work_created: { icon: FilePlus2, classes: GREEN },
-    work_updated: { icon: FilePen, classes: NEUTRAL },
-    party_added: { icon: UserPlus, classes: BLUE },
-    party_removed: { icon: UserMinus, classes: RED },
-    share_updated: { icon: Percent, classes: NEUTRAL },
-    territory_changed: { icon: Globe, classes: NEUTRAL },
-    dates_changed: { icon: CalendarClock, classes: NEUTRAL },
-    correction: { icon: Wrench, classes: AMBER },
-    imported: { icon: FileUp, classes: GREEN },
-};
-
-const FALLBACK_STYLE: ChangeTypeStyle = { icon: History, classes: NEUTRAL };
 
 /** The latest recorded changes to the rights of works. */
 export function RecentHistory({ entries }: RecentHistoryProps) {
@@ -96,9 +62,9 @@ export function RecentHistory({ entries }: RecentHistoryProps) {
                 ) : (
                     <ul className="grid gap-2">
                         {entries.map((entry) => {
-                            const { icon: Icon, classes } =
-                                CHANGE_TYPE_STYLES[entry.change_type] ??
-                                FALLBACK_STYLE;
+                            const { icon: Icon, classes } = changeTypeStyle(
+                                entry.change_type,
+                            );
 
                             return (
                                 <li
