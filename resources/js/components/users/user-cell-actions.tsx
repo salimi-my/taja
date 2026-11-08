@@ -12,14 +12,19 @@ import { UserDelete } from '@/components/users/user-delete';
 import { UserEdit } from '@/components/users/user-edit';
 import { UserResendPasswordReset } from '@/components/users/user-resend-password-reset';
 import { edit as editProfile } from '@/routes/profile';
-import type { ManagedUser, RoleOption } from '@/types';
+import type { ManagedUser, GenderOption, RoleOption } from '@/types';
 
 type UserCellActionsProps = {
     user: ManagedUser;
     roles: RoleOption[];
+    genders: GenderOption[];
 };
 
-export function UserCellActions({ user, roles }: UserCellActionsProps) {
+export function UserCellActions({
+    user,
+    roles,
+    genders,
+}: UserCellActionsProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -48,7 +53,11 @@ export function UserCellActions({ user, roles }: UserCellActionsProps) {
                 ) : (
                     <>
                         <DropdownMenuItem asChild>
-                            <UserEdit user={user} roles={roles} />
+                            <UserEdit
+                                user={user}
+                                roles={roles}
+                                genders={genders}
+                            />
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <UserResendPasswordReset user={user} />

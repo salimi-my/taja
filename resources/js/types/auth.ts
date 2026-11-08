@@ -1,9 +1,13 @@
+import type { Gender } from '@/types/user';
+
 export type UserRole = 'admin' | 'user';
 
 export type User = {
     id: number;
     name: string;
     email: string;
+    phone?: string | null;
+    gender?: Gender | null;
     role: UserRole;
     avatar?: string | null;
     avatar_url?: string | null;

@@ -5,10 +5,13 @@ import {
     CircleX,
     FileSearch,
     Mail,
+    Phone,
     ShieldCheck,
     UserRound,
 } from 'lucide-react';
 import { memo } from 'react';
+import { GenderBadge } from '@/components/gender-badge';
+import { PhoneDisplay } from '@/components/phone-display';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,11 +24,12 @@ import {
 } from '@/components/ui/empty';
 import { useInitials } from '@/hooks/use-initials';
 import { UserCellActions } from '@/components/users/user-cell-actions';
-import type { ManagedUser, RoleOption } from '@/types';
+import type { ManagedUser, GenderOption, RoleOption } from '@/types';
 
 type UserCardRowItemProps = {
     user: ManagedUser;
     roles: RoleOption[];
+    genders: GenderOption[];
     isSelected: boolean;
     onToggleSelect: (id: number) => void;
 };
@@ -33,6 +37,7 @@ type UserCardRowItemProps = {
 const UserCardRowItem = memo(function UserCardRowItem({
     user,
     roles,
+    genders,
     isSelected,
     onToggleSelect,
 }: UserCardRowItemProps) {
@@ -91,7 +96,11 @@ const UserCardRowItem = memo(function UserCardRowItem({
                                         {user.role_label}
                                     </Badge>
                                 </div>
-                                <UserCellActions user={user} roles={roles} />
+                                <UserCellActions
+                                    user={user}
+                                    roles={roles}
+                                    genders={genders}
+                                />
                             </div>
                         </div>
                     </div>
@@ -106,7 +115,22 @@ const UserCardRowItem = memo(function UserCardRowItem({
                         </a>
                     </div>
 
+                    {user.phone && (
+                        <div className="flex items-center gap-2 text-xs">
+                            <Phone className="size-3 flex-shrink-0 text-muted-foreground" />
+                            <PhoneDisplay phone={user.phone} />
+                        </div>
+                    )}
+
                     <div className="flex flex-wrap items-center gap-2">
+                        {user.gender && (
+                            <GenderBadge
+                                gender={user.gender}
+                                label={user.gender_label}
+                                className="px-1.5 text-[10px] leading-none [&>svg]:size-3!"
+                            />
+                        )}
+
                         {user.email_verified_at ? (
                             <Badge
                                 variant="outline"
@@ -145,6 +169,7 @@ const UserCardRowItem = memo(function UserCardRowItem({
 type UsersCardRowProps = {
     users: ManagedUser[];
     roles: RoleOption[];
+    genders: GenderOption[];
     selectedIds: Set<number>;
     handleToggleSelect: (id: number) => void;
 };
@@ -152,6 +177,7 @@ type UsersCardRowProps = {
 export function UsersCardRow({
     users,
     roles,
+    genders,
     selectedIds,
     handleToggleSelect,
 }: UsersCardRowProps) {
@@ -179,6 +205,7 @@ export function UsersCardRow({
                     key={user.id}
                     user={user}
                     roles={roles}
+                    genders={genders}
                     isSelected={selectedIds.has(user.id)}
                     onToggleSelect={handleToggleSelect}
                 />

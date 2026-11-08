@@ -10,15 +10,20 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import type { RoleOption } from '@/types';
+import type { GenderOption, RoleOption } from '@/types';
 
 type UserCreateProps = {
     roles: RoleOption[];
+    genders: GenderOption[];
     /** Render an icon-only button, used in the mobile toolbar. */
     compact?: boolean;
 };
 
-export function UserCreate({ roles, compact = false }: UserCreateProps) {
+export function UserCreate({
+    roles,
+    genders,
+    compact = false,
+}: UserCreateProps) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -39,11 +44,15 @@ export function UserCreate({ roles, compact = false }: UserCreateProps) {
                 <DialogHeader>
                     <DialogTitle>Create User</DialogTitle>
                     <DialogDescription>
-                        Create a new user here and click create when you're
-                        done.
+                        Create a new user here. They will get an email to set
+                        their own password.
                     </DialogDescription>
                 </DialogHeader>
-                <UserForm roles={roles} onSuccess={() => setOpen(false)} />
+                <UserForm
+                    roles={roles}
+                    genders={genders}
+                    onSuccess={() => setOpen(false)}
+                />
             </DialogContent>
         </Dialog>
     );

@@ -15,7 +15,7 @@ class UserIndexRequest extends FormRequest
      *
      * @var list<string>
      */
-    public const SORTABLE_COLUMNS = ['name', 'email', 'role', 'email_verified_at', 'created_at'];
+    public const SORTABLE_COLUMNS = ['name', 'email', 'phone', 'gender', 'role', 'email_verified_at', 'created_at'];
 
     /**
      * The email verification statuses the user list can be filtered by.

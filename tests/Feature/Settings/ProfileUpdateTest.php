@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Gender;
 use App\Models\User;
 
 test('profile page is displayed', function () {
@@ -82,4 +83,33 @@ test('correct password must be provided to delete account', function () {
         ->assertRedirect(route('profile.edit'));
 
     expect($user->fresh())->not->toBeNull();
+});
+
+test('phone number and gender can be updated', function () {
+    $user = User::factory()->create(['phone' => null, 'gender' => null]);
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => '012-345 6789',
+            'gender' => 'female',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($user->refresh()->phone)->toBe('+60123456789')
+        ->and($user->gender)->toBe(Gender::Female);
+});
+
+test('phone number and gender are validated', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => '+12',
+            'gender' => 'robot',
+        ])
+        ->assertSessionHasErrors(['phone', 'gender']);
 });

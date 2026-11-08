@@ -8,6 +8,8 @@ import {
     UserRound,
 } from 'lucide-react';
 import { memo, useCallback, useState } from 'react';
+import { GenderBadge } from '@/components/gender-badge';
+import { PhoneDisplay } from '@/components/phone-display';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -30,11 +32,12 @@ import { useInitials } from '@/hooks/use-initials';
 import { UserCellActions } from '@/components/users/user-cell-actions';
 import { UserForm } from '@/components/users/user-form';
 import { edit as editProfile } from '@/routes/profile';
-import type { ManagedUser, RoleOption } from '@/types';
+import type { ManagedUser, GenderOption, RoleOption } from '@/types';
 
 type UserTableRowItemProps = {
     user: ManagedUser;
     roles: RoleOption[];
+    genders: GenderOption[];
     isSelected: boolean;
     onToggleSelect: (id: number) => void;
     onUserClick: (user: ManagedUser) => void;
@@ -43,6 +46,7 @@ type UserTableRowItemProps = {
 const UserTableRowItem = memo(function UserTableRowItem({
     user,
     roles,
+    genders,
     isSelected,
     onToggleSelect,
     onUserClick,
@@ -99,6 +103,20 @@ const UserTableRowItem = memo(function UserTableRowItem({
                 </a>
             </TableCell>
             <TableCell>
+                <PhoneDisplay phone={user.phone} />
+            </TableCell>
+            <TableCell>
+                {user.gender ? (
+                    <GenderBadge
+                        gender={user.gender}
+                        label={user.gender_label}
+                        className="min-w-20"
+                    />
+                ) : (
+                    <span className="text-muted-foreground">-</span>
+                )}
+            </TableCell>
+            <TableCell>
                 <Badge
                     variant={isAdmin ? 'default' : 'outline'}
                     className="min-w-20 text-nowrap"
@@ -130,7 +148,7 @@ const UserTableRowItem = memo(function UserTableRowItem({
                     : 'N/A'}
             </TableCell>
             <TableCell>
-                <UserCellActions user={user} roles={roles} />
+                <UserCellActions user={user} roles={roles} genders={genders} />
             </TableCell>
         </TableRow>
     );
@@ -139,6 +157,7 @@ const UserTableRowItem = memo(function UserTableRowItem({
 type UsersTableRowProps = {
     users: ManagedUser[];
     roles: RoleOption[];
+    genders: GenderOption[];
     selectedIds: Set<number>;
     handleToggleSelect: (id: number) => void;
 };
@@ -146,6 +165,7 @@ type UsersTableRowProps = {
 export function UsersTableRow({
     users,
     roles,
+    genders,
     selectedIds,
     handleToggleSelect,
 }: UsersTableRowProps) {
@@ -170,6 +190,7 @@ export function UsersTableRow({
                     key={user.id}
                     user={user}
                     roles={roles}
+                    genders={genders}
                     isSelected={selectedIds.has(user.id)}
                     onToggleSelect={handleToggleSelect}
                     onUserClick={handleUserClick}
@@ -209,6 +230,7 @@ export function UsersTableRow({
                             key={selectedUser.id}
                             user={selectedUser}
                             roles={roles}
+                            genders={genders}
                             onSuccess={() => setEditDialogOpen(false)}
                         />
                     )}

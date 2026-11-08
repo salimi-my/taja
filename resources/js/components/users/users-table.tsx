@@ -33,18 +33,29 @@ import { paramsFromServer } from '@/lib/table';
 import type { ServerFilters } from '@/lib/table';
 import { STATUS_OPTIONS, USER_COLUMN_LABELS } from '@/lib/users';
 import { index } from '@/routes/users';
-import type { ManagedUser, PaginatedResource, RoleOption } from '@/types';
+import type {
+    ManagedUser,
+    PaginatedResource,
+    GenderOption,
+    RoleOption,
+} from '@/types';
 
 type UsersTableProps = {
     users: PaginatedResource<ManagedUser>;
     filters: ServerFilters;
     roles: RoleOption[];
+    genders: GenderOption[];
 };
 
 /** Only these props are refreshed when the table state changes. */
 const REFRESHED_PROPS = ['users', 'filters'];
 
-export function UsersTable({ users, filters, roles }: UsersTableProps) {
+export function UsersTable({
+    users,
+    filters,
+    roles,
+    genders,
+}: UsersTableProps) {
     const isMobile = useIsMobile();
 
     const {
@@ -128,7 +139,9 @@ export function UsersTable({ users, filters, roles }: UsersTableProps) {
                     }
                     filterConfigs={mobileFilterConfigs}
                     columnLabels={USER_COLUMN_LABELS}
-                    actions={<UserCreate roles={roles} compact />}
+                    actions={
+                        <UserCreate roles={roles} genders={genders} compact />
+                    }
                 />
             ) : (
                 <TableDesktopToolbar
@@ -164,7 +177,7 @@ export function UsersTable({ users, filters, roles }: UsersTableProps) {
                                     entityName="user"
                                 />
                             )}
-                            <UserCreate roles={roles} />
+                            <UserCreate roles={roles} genders={genders} />
                         </>
                     }
                 />
@@ -178,11 +191,13 @@ export function UsersTable({ users, filters, roles }: UsersTableProps) {
                 onRetry={retry}
                 skeleton={
                     <TableSkeleton
-                        columnCount={7}
+                        columnCount={9}
                         cellWidths={[
                             '2.5rem',
                             '12rem',
                             '12rem',
+                            '10rem',
+                            '6rem',
                             '8rem',
                             '8rem',
                             '8rem',
@@ -200,6 +215,7 @@ export function UsersTable({ users, filters, roles }: UsersTableProps) {
                                 <UsersCardRow
                                     users={data.data}
                                     roles={roles}
+                                    genders={genders}
                                     selectedIds={selectedIds}
                                     handleToggleSelect={handleToggleSelect}
                                 />
@@ -244,6 +260,22 @@ export function UsersTable({ users, filters, roles }: UsersTableProps) {
                                         </TableHead>
                                         <TableHead>
                                             <TableColumnHeader
+                                                title="Phone"
+                                                column="phone"
+                                                params={params}
+                                                setParams={setParams}
+                                            />
+                                        </TableHead>
+                                        <TableHead>
+                                            <TableColumnHeader
+                                                title="Gender"
+                                                column="gender"
+                                                params={params}
+                                                setParams={setParams}
+                                            />
+                                        </TableHead>
+                                        <TableHead>
+                                            <TableColumnHeader
                                                 title="Role"
                                                 column="role"
                                                 params={params}
@@ -273,6 +305,7 @@ export function UsersTable({ users, filters, roles }: UsersTableProps) {
                                     <UsersTableRow
                                         users={data.data}
                                         roles={roles}
+                                        genders={genders}
                                         selectedIds={selectedIds}
                                         handleToggleSelect={handleToggleSelect}
                                     />

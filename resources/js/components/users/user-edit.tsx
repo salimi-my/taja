@@ -10,14 +10,15 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { UserForm } from '@/components/users/user-form';
-import type { ManagedUser, RoleOption } from '@/types';
+import type { ManagedUser, GenderOption, RoleOption } from '@/types';
 
 type UserEditProps = {
     user: ManagedUser;
     roles: RoleOption[];
+    genders: GenderOption[];
 };
 
-export function UserEdit({ user, roles }: UserEditProps) {
+export function UserEdit({ user, roles, genders }: UserEditProps) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -38,6 +39,7 @@ export function UserEdit({ user, roles }: UserEditProps) {
                 <UserForm
                     user={user}
                     roles={roles}
+                    genders={genders}
                     onSuccess={() => setOpen(false)}
                 />
             </DialogContent>

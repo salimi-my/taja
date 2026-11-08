@@ -1,10 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, LogIn, UserPlus } from 'lucide-react';
+import { LayoutDashboard, LogIn } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { AuthFooter } from '@/components/auth-footer';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Button } from '@/components/ui/button';
-import { dashboard, login, register } from '@/routes';
+import { dashboard, login } from '@/routes';
 
 export default function Welcome() {
     const { auth, name } = usePage().props;
@@ -47,12 +47,6 @@ export default function Welcome() {
                                     <Link href={login()}>
                                         <LogIn />
                                         Log in
-                                    </Link>
-                                </Button>
-                                <Button variant="outline" asChild>
-                                    <Link href={register()}>
-                                        <UserPlus />
-                                        Register
                                     </Link>
                                 </Button>
                             </>

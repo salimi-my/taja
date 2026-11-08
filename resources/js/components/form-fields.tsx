@@ -1,4 +1,4 @@
-import { CheckIcon } from 'lucide-react';
+import { CheckIcon, Mars, Transgender, Venus } from 'lucide-react';
 import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox } from '@/components/ui/combobox';
@@ -20,10 +20,71 @@ import {
 } from '@/components/ui/input-group';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { PhoneInput } from '@/components/ui/phone-input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import type { Gender, GenderOption } from '@/types';
 
 export type Errors = Record<string, string | undefined>;
+
+export const GENDER_ICONS: Record<Gender, typeof Mars> = {
+    male: Mars,
+    female: Venus,
+    other: Transgender,
+};
+
+type GenderFieldProps = {
+    options: GenderOption[];
+    errors: Errors;
+    defaultValue?: Gender | null;
+};
+
+/** Gender radio cards. Submits the chosen value as `gender`. */
+export function GenderField({
+    options,
+    errors,
+    defaultValue,
+}: GenderFieldProps) {
+    return (
+        <Field data-invalid={!!errors.gender}>
+            <FieldLabel>Gender</FieldLabel>
+            <RadioGroup
+                name="gender"
+                defaultValue={defaultValue ?? undefined}
+                className="grid-cols-3 gap-2"
+            >
+                {options.map((option) => {
+                    const Icon = GENDER_ICONS[option.value];
+
+                    return (
+                        <FieldLabel
+                            key={option.value}
+                            htmlFor={`gender-${option.value}`}
+                        >
+                            <Field
+                                orientation="horizontal"
+                                className="items-center px-3 py-2"
+                            >
+                                <Icon
+                                    className="size-4 shrink-0"
+                                    aria-hidden="true"
+                                />
+                                <span className="flex-1 font-medium">
+                                    {option.label}
+                                </span>
+                                <RadioGroupItem
+                                    id={`gender-${option.value}`}
+                                    value={option.value}
+                                />
+                            </Field>
+                        </FieldLabel>
+                    );
+                })}
+            </RadioGroup>
+            <FieldError>{errors.gender}</FieldError>
+        </Field>
+    );
+}
 
 /**
  * Turn Laravel's dotted error keys (`parties.0.role`) into the bracket names

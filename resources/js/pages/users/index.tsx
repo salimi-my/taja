@@ -3,15 +3,21 @@ import { ContentCard } from '@/components/content-card';
 import { UsersTable } from '@/components/users/users-table';
 import type { ServerFilters } from '@/lib/table';
 import { index } from '@/routes/users';
-import type { ManagedUser, PaginatedResource, RoleOption } from '@/types';
+import type {
+    ManagedUser,
+    PaginatedResource,
+    GenderOption,
+    RoleOption,
+} from '@/types';
 
 type Props = {
     users: PaginatedResource<ManagedUser>;
     filters: ServerFilters;
     roles: RoleOption[];
+    genders: GenderOption[];
 };
 
-export default function UsersIndex({ users, filters, roles }: Props) {
+export default function UsersIndex({ users, filters, roles, genders }: Props) {
     return (
         <>
             <Head title="Users" />
@@ -20,7 +26,12 @@ export default function UsersIndex({ users, filters, roles }: Props) {
                 title="Users List"
                 description="Here's the listing of all the users."
             >
-                <UsersTable users={users} filters={filters} roles={roles} />
+                <UsersTable
+                    users={users}
+                    filters={filters}
+                    roles={roles}
+                    genders={genders}
+                />
             </ContentCard>
         </>
     );

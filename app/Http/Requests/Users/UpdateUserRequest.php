@@ -2,18 +2,16 @@
 
 namespace App\Http\Requests\Users;
 
-use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Concerns\UserManagementRules;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class UpdateUserRequest extends FormRequest
 {
-    use PasswordValidationRules, ProfileValidationRules;
+    use ProfileValidationRules, UserManagementRules;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -35,8 +33,7 @@ class UpdateUserRequest extends FormRequest
 
         return [
             ...$this->profileRules($user->id),
-            'role' => ['required', Rule::enum(UserRole::class)],
-            'password' => ['nullable', 'string', Password::default(), 'confirmed'],
+            ...$this->managedUserRules(),
         ];
     }
 

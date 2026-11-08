@@ -4,12 +4,13 @@ import { AvatarUpload } from '@/components/avatar-upload';
 import { ContentCard } from '@/components/content-card';
 import DeleteUser from '@/components/delete-user';
 import { Button } from '@/components/ui/button';
+import { GenderField, PhoneField } from '@/components/form-fields';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
-import type { Auth } from '@/types';
+import type { Auth, GenderOption } from '@/types';
 
 type PageProps = {
     auth: Auth;
@@ -18,9 +19,11 @@ type PageProps = {
 export default function Profile({
     mustVerifyEmail,
     status,
+    genders,
 }: {
     mustVerifyEmail: boolean;
     status?: string;
+    genders: GenderOption[];
 }) {
     const { auth } = usePage<PageProps>().props;
 
@@ -103,6 +106,19 @@ export default function Profile({
                                             )}
                                         </div>
                                     )}
+
+                                <PhoneField
+                                    name="phone"
+                                    label="Phone number"
+                                    errors={errors}
+                                    defaultValue={auth.user.phone}
+                                />
+
+                                <GenderField
+                                    options={genders}
+                                    errors={errors}
+                                    defaultValue={auth.user.gender}
+                                />
 
                                 <Field>
                                     <FieldLabel htmlFor="role">Role</FieldLabel>

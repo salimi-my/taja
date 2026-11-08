@@ -2,27 +2,28 @@ import { Form } from '@inertiajs/react';
 import { useState } from 'react';
 import UserController from '@/actions/App/Http/Controllers/UserController';
 import { Button } from '@/components/ui/button';
+import { GenderField, PhoneField } from '@/components/form-fields';
 import { Combobox } from '@/components/ui/combobox';
 import { DialogClose } from '@/components/ui/dialog';
 import {
     Field,
-    FieldDescription,
     FieldError,
     FieldGroup,
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import type { ManagedUser, RoleOption } from '@/types';
+import type { GenderOption, ManagedUser, RoleOption } from '@/types';
 
 type UserFormProps = {
     /** The user being edited. Leave empty to create a new user. */
     user?: ManagedUser;
     roles: RoleOption[];
+    genders: GenderOption[];
     onSuccess: () => void;
 };
 
-export function UserForm({ user, roles, onSuccess }: UserFormProps) {
+export function UserForm({ user, roles, genders, onSuccess }: UserFormProps) {
     const [role, setRole] = useState<string>(
         user?.role ?? roles[0]?.value ?? '',
     );
@@ -68,6 +69,19 @@ export function UserForm({ user, roles, onSuccess }: UserFormProps) {
                             <FieldError>{errors.email}</FieldError>
                         </Field>
 
+                        <PhoneField
+                            name="phone"
+                            label="Phone Number"
+                            errors={errors}
+                            defaultValue={user?.phone}
+                        />
+
+                        <GenderField
+                            options={genders}
+                            errors={errors}
+                            defaultValue={user?.gender}
+                        />
+
                         <Field data-invalid={!!errors.role}>
                             <FieldLabel>Role</FieldLabel>
                             <input type="hidden" name="role" value={role} />
@@ -87,43 +101,6 @@ export function UserForm({ user, roles, onSuccess }: UserFormProps) {
                                 disabled={user?.is_current_user}
                             />
                             <FieldError>{errors.role}</FieldError>
-                        </Field>
-
-                        <Field data-invalid={!!errors.password}>
-                            <FieldLabel htmlFor="user-password">
-                                Password
-                            </FieldLabel>
-                            <Input
-                                id="user-password"
-                                name="password"
-                                type="password"
-                                placeholder={
-                                    isEditing
-                                        ? 'Leave blank to keep current'
-                                        : 'Enter password'
-                                }
-                                autoComplete="new-password"
-                                aria-invalid={!!errors.password}
-                            />
-                            {isEditing && (
-                                <FieldDescription>
-                                    Only fill this in to change the password.
-                                </FieldDescription>
-                            )}
-                            <FieldError>{errors.password}</FieldError>
-                        </Field>
-
-                        <Field>
-                            <FieldLabel htmlFor="user-password-confirmation">
-                                Confirm password
-                            </FieldLabel>
-                            <Input
-                                id="user-password-confirmation"
-                                name="password_confirmation"
-                                type="password"
-                                placeholder="Confirm password"
-                                autoComplete="new-password"
-                            />
                         </Field>
                     </FieldGroup>
 

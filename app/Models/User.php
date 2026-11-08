@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Casts\PhoneNumber;
+use App\Enums\Gender;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -20,6 +22,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property string|null $phone
+ * @property Gender|null $gender
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property UserRole $role
@@ -32,7 +36,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'role', 'avatar'])]
+#[Fillable(['name', 'email', 'phone', 'gender', 'password', 'role', 'avatar'])]
 #[Appends(['avatar_url'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
@@ -51,6 +55,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'phone' => PhoneNumber::class,
+            'gender' => Gender::class,
             'two_factor_confirmed_at' => 'datetime',
         ];
     }

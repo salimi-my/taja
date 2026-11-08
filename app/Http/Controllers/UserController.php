@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Gender;
 use App\Enums\UserRole;
 use App\Http\Requests\Users\StoreUserRequest;
 use App\Http\Requests\Users\UpdateUserRequest;
@@ -11,6 +12,8 @@ use App\Models\User;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -60,6 +63,7 @@ class UserController extends Controller
             'users' => UserResource::collection($users),
             'filters' => $filters,
             'roles' => UserRole::options(),
+            'genders' => Gender::options(),
             'perPageOptions' => UserIndexRequest::PER_PAGE_OPTIONS,
         ]);
     }
@@ -69,11 +73,18 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $user = User::create($request->validated());
+        $user = User::create([
+            ...$request->validated(),
+            'password' => Str::random(32),
+        ]);
 
         $user->markEmailAsVerified();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('User created.')]);
+        $status = Password::sendResetLink(['email' => $user->email]);
+
+        Inertia::flash('toast', $status === Password::RESET_LINK_SENT
+            ? ['type' => 'success', 'message' => __('User created. An email was sent for them to set their password.')]
+            : ['type' => 'error', 'message' => __('User created, but the password email could not be sent. Use "Resend password reset" on the user.')]);
 
         return back();
     }
@@ -83,11 +94,7 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $user->fill($request->safe()->except('password'));
-
-        if ($request->filled('password')) {
-            $user->password = $request->validated('password');
-        }
+        $user->fill($request->validated());
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;

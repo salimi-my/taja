@@ -1,7 +1,11 @@
 <?php
 
+use App\Enums\Gender;
 use App\Enums\UserRole;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -32,6 +36,7 @@ describe('index', function () {
                 ->where('filters.sort', 'created_at')
                 ->where('filters.direction', 'desc')
                 ->has('roles', 2)
+                ->has('genders', 3)
             );
     });
 
@@ -115,7 +120,7 @@ describe('index', function () {
             ->get(route('users.index', ['sort' => $column, 'direction' => 'asc']))
             ->assertOk()
             ->assertSessionHasNoErrors();
-    })->with(['name', 'email', 'role', 'email_verified_at', 'created_at']);
+    })->with(['name', 'email', 'phone', 'gender', 'role', 'email_verified_at', 'created_at']);
 
     test('rejects a column that cannot be sorted', function () {
         $this->actingAs($this->admin)
@@ -125,14 +130,16 @@ describe('index', function () {
 });
 
 describe('store', function () {
-    test('admins can create a verified user', function () {
+    test('admins can create a verified user and email them a password setup link', function () {
+        Notification::fake();
+
         $this->actingAs($this->admin)
             ->post(route('users.store'), [
                 'name' => 'New Person',
                 'email' => 'new@example.com',
+                'phone' => '+60 11-000 0003',
+                'gender' => 'female',
                 'role' => 'admin',
-                'password' => 'password',
-                'password_confirmation' => 'password',
             ])
             ->assertSessionHasNoErrors()
             ->assertRedirect();
@@ -140,40 +147,85 @@ describe('store', function () {
         $user = User::where('email', 'new@example.com')->firstOrFail();
 
         expect($user->name)->toBe('New Person')
+            ->and($user->phone)->toBe('+60110000003')
+            ->and($user->gender)->toBe(Gender::Female)
             ->and($user->role)->toBe(UserRole::Admin)
+            ->and($user->password)->not->toBeEmpty()
             ->and($user->hasVerifiedEmail())->toBeTrue();
+
+        Notification::assertSentTo($user, ResetPassword::class);
     });
 
-    test('requires every field', function () {
+    test('ignores a password sent with the request', function () {
+        Notification::fake();
+
+        $this->actingAs($this->admin)
+            ->post(route('users.store'), [
+                'name' => 'New Person',
+                'email' => 'new@example.com',
+                'role' => 'user',
+                'password' => 'chosen-by-admin-123',
+                'password_confirmation' => 'chosen-by-admin-123',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $user = User::where('email', 'new@example.com')->firstOrFail();
+
+        expect(Hash::check('chosen-by-admin-123', $user->password))->toBeFalse();
+    });
+
+    test('phone and gender are optional', function () {
+        Notification::fake();
+
+        $this->actingAs($this->admin)
+            ->post(route('users.store'), [
+                'name' => 'New Person',
+                'email' => 'new@example.com',
+                'phone' => '',
+                'gender' => '',
+                'role' => 'user',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $user = User::where('email', 'new@example.com')->firstOrFail();
+
+        expect($user->phone)->toBeNull()
+            ->and($user->gender)->toBeNull();
+    });
+
+    test('requires a name, email and role', function () {
         $this->actingAs($this->admin)
             ->post(route('users.store'), [])
-            ->assertSessionHasErrors(['name', 'email', 'role', 'password']);
+            ->assertSessionHasErrors(['name', 'email', 'role'])
+            ->assertSessionDoesntHaveErrors(['phone', 'gender', 'password']);
     });
 
-    test('rejects a duplicate email and an unknown role', function () {
+    test('rejects a duplicate email, an unknown role, gender and a malformed phone number', function () {
         $this->actingAs($this->admin)
             ->post(route('users.store'), [
                 'name' => 'Duplicate',
                 'email' => $this->admin->email,
+                'phone' => '+12',
+                'gender' => 'robot',
                 'role' => 'superuser',
-                'password' => 'password',
-                'password_confirmation' => 'password',
             ])
-            ->assertSessionHasErrors(['email', 'role']);
+            ->assertSessionHasErrors(['email', 'phone', 'gender', 'role']);
     });
 
     test('regular users are forbidden', function () {
+        Notification::fake();
+
         $this->actingAs(User::factory()->create())
             ->post(route('users.store'), [
                 'name' => 'New Person',
                 'email' => 'new@example.com',
                 'role' => 'admin',
-                'password' => 'password',
-                'password_confirmation' => 'password',
             ])
             ->assertForbidden();
 
         expect(User::where('email', 'new@example.com')->exists())->toBeFalse();
+
+        Notification::assertNothingSent();
     });
 });
 
@@ -194,24 +246,26 @@ describe('update', function () {
             ->and($user->hasVerifiedEmail())->toBeTrue();
     });
 
-    test('keeps the existing password when none is provided', function () {
-        $user = User::factory()->create();
-        $originalHash = $user->password;
+    test('admins can update the phone number and gender', function () {
+        $user = User::factory()->create(['phone' => null, 'gender' => null]);
 
         $this->actingAs($this->admin)
             ->put(route('users.update', $user), [
                 'name' => $user->name,
                 'email' => $user->email,
+                'phone' => '0123456789',
+                'gender' => 'other',
                 'role' => 'user',
-                'password' => '',
             ])
             ->assertSessionHasNoErrors();
 
-        expect($user->refresh()->password)->toBe($originalHash);
+        expect($user->refresh()->phone)->toBe('+60123456789')
+            ->and($user->gender)->toBe(Gender::Other);
     });
 
-    test('changes the password when one is provided', function () {
+    test('never changes the password', function () {
         $user = User::factory()->create();
+        $originalHash = $user->password;
 
         $this->actingAs($this->admin)
             ->put(route('users.update', $user), [
@@ -223,7 +277,7 @@ describe('update', function () {
             ])
             ->assertSessionHasNoErrors();
 
-        expect(Hash::check('new-password-123', $user->refresh()->password))->toBeTrue();
+        expect($user->refresh()->password)->toBe($originalHash);
     });
 
     test('unverifies the email address when it changes', function () {
