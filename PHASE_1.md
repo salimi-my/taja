@@ -453,7 +453,7 @@ Notes:
 5. **Duplicate party** (same writer/publisher + same role + overlapping effective period + overlapping territories) on one work is rejected (D8).
 6. **A work needs at least one party** to be saved by import. The form can save a draft work without parties; it appears in the Incomplete Split report.
 7. **Unique keys:** `tap_number`, `macp_work_id`, `publishers.company_registration_number`, `writers.ipi_name_number`, `publishers.ipi_name_number`, `(work_id, isrc)`.
-8. **Deleting:** works/writers/publishers are soft-deleted. A writer or publisher with any party row cannot be deleted (show a clear message). History rows are never deleted.
+8. **Deleting:** works/writers/publishers are soft-deleted. A writer or publisher that is still a party of a work (a row in effect, on a work that exists) cannot be deleted (show a clear message). Ended and superseded rows do not block it, and the rows are kept. History rows are never deleted.
 9. **Generated codes** (`TAP-`, `WRT-`, `PUB-`) are zero-padded to 6 digits, derived race-safely (e.g. from the row id inside the creating transaction), unique and never reused.
 10. **Correction vs change:** the party edit form offers _Change from a date_ (new row, old row ended the day before) and _Correct entry_ (old row superseded, new row keeps the old effective dates). Both write history.
 

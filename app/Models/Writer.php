@@ -11,6 +11,7 @@ use App\Enums\RightsType;
 use Carbon\CarbonImmutable;
 use Database\Factories\WriterFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -161,6 +162,18 @@ class Writer extends Model
     public function parties(): HasMany
     {
         return $this->hasMany(WorkParty::class);
+    }
+
+    /**
+     * Whether the writer is still a party of a work that exists. Rows that
+     * ended, were superseded, or sit on a deleted work do not count.
+     */
+    public function hasCurrentParties(): bool
+    {
+        return $this->parties()
+            ->current()
+            ->whereHas('work', fn (Builder $work) => $work->withoutTrashed())
+            ->exists();
     }
 
     protected static function generatedCodeColumn(): string

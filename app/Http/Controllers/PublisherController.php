@@ -164,10 +164,10 @@ class PublisherController extends Controller
             return back();
         }
 
-        if ($publisher->parties()->exists()) {
+        if ($publisher->hasCurrentParties()) {
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => __('This publisher is a party of one or more works. Remove the publisher from those works first.'),
+                'message' => __('This publisher is still a party of one or more works. Remove the publisher from those works first.'),
             ]);
 
             return back();

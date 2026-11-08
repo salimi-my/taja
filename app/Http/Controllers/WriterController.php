@@ -171,10 +171,10 @@ class WriterController extends Controller
     {
         Gate::authorize('delete', $writer);
 
-        if ($writer->parties()->exists()) {
+        if ($writer->hasCurrentParties()) {
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => __('This writer is a party of one or more works. Remove the writer from those works first.'),
+                'message' => __('This writer is still a party of one or more works. Remove the writer from those works first.'),
             ]);
 
             return back();

@@ -561,7 +561,7 @@ describe('destroy', function () {
         expect(Publisher::find($publisher->id))->not->toBeNull();
     });
 
-    test('a publisher that is a party of a work cannot be deleted', function () {
+    test('a publisher that is still a party of a work cannot be deleted', function () {
         $publisher = Publisher::factory()->create();
         WorkParty::factory()->forPublisher($publisher)->create(['work_id' => Work::factory()]);
 
@@ -571,6 +571,18 @@ describe('destroy', function () {
             ->assertSessionHas('inertia.flash_data.toast.type', 'error');
 
         expect(Publisher::find($publisher->id))->not->toBeNull();
+    });
+
+    test('a publisher can be deleted once removed from every work, and the party rows are kept', function () {
+        $publisher = Publisher::factory()->create();
+        $party = WorkParty::factory()->forPublisher($publisher)->ended()->create(['work_id' => Work::factory()]);
+
+        $this->actingAs($this->admin)
+            ->delete(route('publishers.destroy', $publisher))
+            ->assertRedirect(route('publishers.index'));
+
+        expect(Publisher::find($publisher->id))->toBeNull()
+            ->and(WorkParty::find($party->id))->not->toBeNull();
     });
 
     test('a publisher can be deleted once its writers are deleted', function () {

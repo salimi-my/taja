@@ -773,9 +773,9 @@ describe('destroy', function () {
             ->and($writer->aliases()->count())->toBe(1);
     });
 
-    test('a writer that is a party of a work cannot be deleted', function () {
+    test('a writer that is still a party of a work cannot be deleted', function () {
         $writer = Writer::factory()->create();
-        WorkParty::factory()->forWriter($writer)->ended()->create(['work_id' => Work::factory()]);
+        WorkParty::factory()->forWriter($writer)->create(['work_id' => Work::factory()]);
 
         $this->actingAs($this->admin)
             ->delete(route('writers.destroy', $writer))
@@ -783,6 +783,31 @@ describe('destroy', function () {
             ->assertSessionHas('inertia.flash_data.toast.type', 'error');
 
         expect(Writer::find($writer->id))->not->toBeNull();
+    });
+
+    test('a writer can be deleted once removed from every work, and the party rows are kept', function () {
+        $writer = Writer::factory()->create();
+        $party = WorkParty::factory()->forWriter($writer)->ended()->create(['work_id' => Work::factory()]);
+
+        $this->actingAs($this->admin)
+            ->delete(route('writers.destroy', $writer))
+            ->assertRedirect(route('writers.index'));
+
+        expect(Writer::find($writer->id))->toBeNull()
+            ->and(WorkParty::find($party->id))->not->toBeNull();
+    });
+
+    test('a writer on a deleted work can be deleted', function () {
+        $writer = Writer::factory()->create();
+        $work = Work::factory()->create();
+        WorkParty::factory()->forWriter($writer)->create(['work_id' => $work]);
+        $work->delete();
+
+        $this->actingAs($this->admin)
+            ->delete(route('writers.destroy', $writer))
+            ->assertRedirect(route('writers.index'));
+
+        expect(Writer::find($writer->id))->toBeNull();
     });
 
     test('regular users are forbidden', function () {
