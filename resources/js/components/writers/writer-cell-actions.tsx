@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Eye, Ellipsis, Trash2 } from 'lucide-react';
+import { Edit, Ellipsis, Eye, Trash2 } from 'lucide-react';
 import { WriterDelete } from '@/components/writers/writer-delete';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useIsAdmin } from '@/hooks/use-is-admin';
-import { show } from '@/routes/writers';
+import { edit, show } from '@/routes/writers';
 import type { Writer } from '@/types';
 
 type WriterCellActionsProps = {
@@ -43,6 +43,18 @@ export function WriterCellActions({ writer }: WriterCellActionsProps) {
                 </DropdownMenuItem>
                 {isAdmin && (
                     <>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href={edit(writer.id)}
+                                className="cursor-pointer text-sm font-medium"
+                            >
+                                <Edit
+                                    className="mr-2 size-4"
+                                    aria-hidden="true"
+                                />
+                                Edit
+                            </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                             <WriterDelete writer={writer}>
