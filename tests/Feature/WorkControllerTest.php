@@ -371,7 +371,7 @@ describe('create', function () {
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('works/create')
-                ->has('roles', 6)
+                ->has('roles', 7)
                 ->has('writers', 1)
                 ->where('writers.0.id', $writer->id)
                 ->where('writers.0.default_role', 'CA')

@@ -22,7 +22,7 @@ class WorkPartyResource extends JsonResource
             'id' => $this->id,
             'work_id' => $this->work_id,
             'role' => $this->role->value,
-            'role_label' => $this->role->label(),
+            'role_label' => $this->role->displayLabel(),
             'party_type' => $this->writer_id !== null ? 'writer' : 'publisher',
             'party_id' => $this->writer_id ?? $this->publisher_id,
             'party_code' => $this->writer_id !== null

@@ -16,13 +16,21 @@ test('options lists every case as a value and label pair', function (string $enu
             'label' => $enum::cases()[0]->label(),
         ]);
 })->with([
-    PartyRole::class,
     MasterStatus::class,
     RightsType::class,
     RegistrationStatus::class,
     ConflictStatus::class,
     RightsChangeType::class,
 ]);
+
+test('party role options are labelled with the role name and code', function () {
+    expect(PartyRole::options())->toHaveCount(count(PartyRole::cases()))
+        ->and(PartyRole::options()[0])->toBe(['value' => 'C', 'label' => 'Composer (C)'])
+        ->and(PartyRole::SE->displayLabel())->toBe('Sub-Publisher (SE)')
+        ->and(PartyRole::E->displayLabel())->toBe('Original Publisher (E)')
+        ->and(PartyRole::CA->displayLabel())->toBe('Composer/Author (CA)')
+        ->and(PartyRole::SA->displayLabel())->toBe('Sub-Author (SA)');
+});
 
 test('party roles are split into writer and publisher roles', function (PartyRole $role, bool $isWriter, bool $isPublisher) {
     expect($role->isWriterRole())->toBe($isWriter)
@@ -32,6 +40,7 @@ test('party roles are split into writer and publisher roles', function (PartyRol
     'author' => [PartyRole::A, true, false],
     'composer author' => [PartyRole::CA, true, false],
     'arranger' => [PartyRole::AR, true, false],
+    'sub author' => [PartyRole::SA, true, false],
     'original publisher' => [PartyRole::E, false, true],
     'sub publisher' => [PartyRole::SE, false, true],
 ]);
@@ -49,6 +58,7 @@ test('fromImport finds a case from loosely written text', function (string $text
 test('fromImport finds role codes and returns null for unknown or blank text', function () {
     expect(PartyRole::fromImport('ca'))->toBe(PartyRole::CA)
         ->and(PartyRole::fromImport('Sub-Publisher'))->toBe(PartyRole::SE)
+        ->and(PartyRole::fromImport('Sub-Author'))->toBe(PartyRole::SA)
         ->and(PartyRole::fromImport('X'))->toBeNull()
         ->and(PartyRole::fromImport('  '))->toBeNull();
 });

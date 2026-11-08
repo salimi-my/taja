@@ -15,7 +15,7 @@ export const YES_NO = [
     { value: '0', label: 'No' },
 ];
 
-export const WRITER_ROLES = ['C', 'A', 'CA', 'AR'];
+export const WRITER_ROLES = ['C', 'A', 'CA', 'AR', 'SA'];
 
 /**
  * The input name of a party field. Dialogs submit plain names (`role`), while
@@ -85,7 +85,7 @@ export function PartyIdentityFields({
                     id={`field-${roleName}`}
                     options={options.roles.map((item) => ({
                         value: item.value,
-                        label: `${item.value} · ${item.label}`,
+                        label: item.label,
                     }))}
                     value={role}
                     onValueChange={(next) => {
@@ -235,6 +235,6 @@ export function sameTypeRoleOptions(
         )
         .map((role) => ({
             value: role.value,
-            label: `${role.value} · ${role.label}`,
+            label: role.label,
         }));
 }

@@ -92,7 +92,7 @@ export function WorkPartiesTable({
                             </TableCell>
                             <TableCell>
                                 <Badge variant="secondary">
-                                    {party.role} · {party.role_label}
+                                    {party.role_label}
                                 </Badge>
                             </TableCell>
                             <TableCell className="text-right">

@@ -28,7 +28,7 @@ class WriterResource extends JsonResource
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
             'default_role' => $this->default_role?->value,
-            'default_role_label' => $this->default_role?->label(),
+            'default_role_label' => $this->default_role?->displayLabel(),
             'publisher' => $this->publisher === null ? null : [
                 'id' => $this->publisher->id,
                 'name' => $this->publisher->name,

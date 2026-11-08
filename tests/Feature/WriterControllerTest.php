@@ -62,7 +62,7 @@ describe('index', function () {
                 ->where('filters.direction', 'desc')
                 ->where('societies', ['MACP'])
                 ->where('publishers.0.id', $publisher->id)
-                ->has('roles', 4)
+                ->has('roles', 5)
                 ->has('rightsTypes', 5)
                 ->has('statuses', 2)
             );
@@ -341,7 +341,7 @@ describe('create', function () {
                 ->component('writers/create')
                 ->has('rightsTypes', 5)
                 ->has('statuses', 2)
-                ->has('roles', 4)
+                ->has('roles', 5)
                 ->has('countries', 249)
             );
     });
