@@ -10,7 +10,7 @@ export function ShareCell({ value }: { value: string | null }) {
     return (
         <TableCell className="text-right tabular-nums">
             {value === null ? (
-                <span className="text-muted-foreground">-</span>
+                <span className="text-muted-foreground">N/A</span>
             ) : (
                 formatShare(value)
             )}

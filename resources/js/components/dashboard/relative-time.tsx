@@ -16,8 +16,10 @@ export function RelativeTime({ iso, className }: RelativeTimeProps) {
     const text = useSyncExternalStore(
         subscribeToNothing,
         () =>
-            iso ? formatDistanceToNow(parseISO(iso), { addSuffix: true }) : '-',
-        () => (iso ? format(parseISO(iso), 'dd MMM yyyy') : '-'),
+            iso
+                ? formatDistanceToNow(parseISO(iso), { addSuffix: true })
+                : 'N/A',
+        () => (iso ? format(parseISO(iso), 'dd MMM yyyy') : 'N/A'),
     );
 
     return (

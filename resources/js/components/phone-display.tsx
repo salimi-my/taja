@@ -13,7 +13,7 @@ type PhoneDisplayProps = {
 export function PhoneDisplay({ phone, className }: PhoneDisplayProps) {
     if (!phone) {
         return (
-            <span className={cn('text-muted-foreground', className)}>-</span>
+            <span className={cn('text-muted-foreground', className)}>N/A</span>
         );
     }
 

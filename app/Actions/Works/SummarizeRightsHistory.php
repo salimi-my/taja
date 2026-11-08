@@ -66,7 +66,7 @@ class SummarizeRightsHistory
     private function format(string $key, mixed $value): string
     {
         if ($value === null || $value === '' || $value === []) {
-            return 'none';
+            return 'N/A';
         }
 
         if (is_bool($value)) {
@@ -82,6 +82,6 @@ class SummarizeRightsHistory
 
     private function plain(mixed $share): string
     {
-        return $share === null ? '-' : rtrim(rtrim(number_format((float) $share, 2, '.', ''), '0'), '.');
+        return $share === null ? 'N/A' : rtrim(rtrim(number_format((float) $share, 2, '.', ''), '0'), '.');
     }
 }

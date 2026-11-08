@@ -43,7 +43,7 @@ export function ImportFieldGuide({ columns }: ImportFieldGuideProps) {
                             {column.format}
                         </TableCell>
                         <TableCell className="font-mono text-xs">
-                            {column.example === '' ? '-' : column.example}
+                            {column.example === '' ? 'N/A' : column.example}
                         </TableCell>
                     </TableRow>
                 ))}

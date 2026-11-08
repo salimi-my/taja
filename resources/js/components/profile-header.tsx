@@ -77,7 +77,7 @@ export function ProfileHeader({
                                 {label}
                             </div>
                             <div className="text-sm font-medium break-words">
-                                {value || '-'}
+                                {value || 'N/A'}
                             </div>
                         </div>
                     </div>

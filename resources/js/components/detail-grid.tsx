@@ -17,7 +17,7 @@ export function DetailItem({ label, children }: DetailItemProps) {
             </dt>
             <dd className="text-sm font-medium break-words whitespace-pre-line">
                 {isEmpty ? (
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-muted-foreground">N/A</span>
                 ) : (
                     children
                 )}

@@ -81,7 +81,7 @@ const ImportTableRowItem = memo(function ImportTableRowItem({
                         avatarUrl={csvImport.uploaded_by_avatar_url}
                     />
                 ) : (
-                    '-'
+                    'N/A'
                 )}
             </TableCell>
             <TableCell className="text-nowrap">
@@ -90,7 +90,7 @@ const ImportTableRowItem = memo(function ImportTableRowItem({
                           new Date(csvImport.created_at),
                           'dd MMM yyyy, HH:mm',
                       )
-                    : '-'}
+                    : 'N/A'}
             </TableCell>
             <TableCell>
                 <ImportCellActions csvImport={csvImport} />

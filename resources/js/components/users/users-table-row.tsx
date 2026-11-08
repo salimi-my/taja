@@ -113,7 +113,7 @@ const UserTableRowItem = memo(function UserTableRowItem({
                         className="min-w-20"
                     />
                 ) : (
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-muted-foreground">N/A</span>
                 )}
             </TableCell>
             <TableCell>

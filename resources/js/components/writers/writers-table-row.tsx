@@ -43,7 +43,7 @@ const WriterTableRowItem = memo(function WriterTableRowItem({
             </TableCell>
             <TableCell>{writer.cmo_society}</TableCell>
             <TableCell className="font-mono text-xs">
-                {writer.ipi_name_number ?? '-'}
+                {writer.ipi_name_number ?? 'N/A'}
             </TableCell>
             <TableCell>
                 {writer.publisher ? (
@@ -54,7 +54,7 @@ const WriterTableRowItem = memo(function WriterTableRowItem({
                         {writer.publisher.name}
                     </Link>
                 ) : (
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-muted-foreground">N/A</span>
                 )}
             </TableCell>
             <TableCell>

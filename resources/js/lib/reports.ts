@@ -29,5 +29,5 @@ export function isCompleteTotal(total: number | null): boolean {
 
 /** Format a total such as `80` as `80%`, or a dash when it is empty. */
 export function formatTotal(total: number | null): string {
-    return total === null ? '-' : `${total}%`;
+    return total === null ? 'N/A' : `${total}%`;
 }

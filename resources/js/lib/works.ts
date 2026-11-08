@@ -42,7 +42,7 @@ export const MAX_PARTIES = 50;
 
 /** Format a share such as `25.00` as `25%`, or a dash when it is empty. */
 export function formatShare(value: string | null): string {
-    return value === null ? '-' : `${Number(value)}%`;
+    return value === null ? 'N/A' : `${Number(value)}%`;
 }
 
 /** Today as `YYYY-MM-DD`, the default of the effective date fields. */

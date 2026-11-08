@@ -286,7 +286,7 @@ export default function RightsHistoryReport({
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="min-w-[10rem] whitespace-normal text-muted-foreground">
-                                                        {entry.remarks}
+                                                        {entry.remarks || 'N/A'}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

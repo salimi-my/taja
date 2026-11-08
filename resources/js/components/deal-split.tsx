@@ -56,12 +56,12 @@ export function DealSplit({ taja, other, otherLabel }: DealSplitProps) {
     );
 }
 
-/** The two shares as short text, e.g. `60% / 40%`, or `-` when there is no deal. */
+/** The two shares as short text, e.g. `60% / 40%`, or `N/A` when there is no deal. */
 export function formatDealSplit(
     taja: string | null,
     other: string | null,
 ): string {
     return taja !== null && other !== null
         ? `${Number(taja)}% / ${Number(other)}%`
-        : '-';
+        : 'N/A';
 }

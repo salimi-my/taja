@@ -102,7 +102,7 @@ function SnapshotValue({
     tone: Tone;
 }) {
     if (isEmpty(value)) {
-        return <span className="text-muted-foreground">None</span>;
+        return <span className="text-muted-foreground">N/A</span>;
     }
 
     if (Array.isArray(value)) {
@@ -172,7 +172,7 @@ export function snapshotDiffRows(
 /**
  * A readable before and after of a history entry. A change lists only the
  * fields that differ; a creation or removal lists every value that was set,
- * with "None" on the side where it did not exist.
+ * with "N/A" on the side where it did not exist.
  */
 export function RightsSnapshotDiff({
     previous,

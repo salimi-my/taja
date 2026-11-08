@@ -168,7 +168,7 @@ export function RecentImports({ imports }: RecentImportsProps) {
                                                     size="compact"
                                                 />
                                             ) : (
-                                                'Unknown'
+                                                'N/A'
                                             )}
                                             <span aria-hidden="true">·</span>
                                             <RelativeTime

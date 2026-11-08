@@ -58,13 +58,13 @@ const WorkTableRowItem = memo(function WorkTableRowItem({
             </TableCell>
             <TableCell className="max-w-[16rem] truncate text-sm">
                 {formatContributors(work) || (
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-muted-foreground">N/A</span>
                 )}
             </TableCell>
             <TableCell>
                 <WorkRegistrationBadge work={work} />
             </TableCell>
-            <TableCell>{formatDate(work.registration_date) ?? '-'}</TableCell>
+            <TableCell>{formatDate(work.registration_date) ?? 'N/A'}</TableCell>
             <TableCell>
                 <WorkCellActions work={work} />
             </TableCell>
