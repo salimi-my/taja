@@ -116,6 +116,18 @@ describe('index', function () {
         'nric' => 'NRIC-333',
     ]);
 
+    test('writers can be searched by an nric typed with dashes', function () {
+        Writer::factory()->create(['name' => 'Needle Writer', 'nric' => '900101-01-1234']);
+        Writer::factory()->count(2)->create();
+
+        $this->actingAs($this->admin)
+            ->get(route('writers.index', ['search' => '900101-01']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('writers.data', 1)
+                ->where('writers.data.0.name', 'Needle Writer')
+            );
+    });
+
     test('writers can be searched by their code', function () {
         $writer = Writer::factory()->create();
         Writer::factory()->create();
@@ -447,7 +459,28 @@ describe('store', function () {
         'bad email' => ['email', 'not-an-email', 'email'],
         'percent above 100' => ['taja_percentage_deal', '120', 'taja_percentage_deal'],
         'unknown publisher' => ['publisher_id', 999, 'publisher_id'],
+        'phone without a country code' => ['phone', '+12', 'phone'],
+        'phone with letters' => ['phone', 'call me', 'phone'],
+        'heir mobile number with letters' => ['heir_mobile_number', 'abc', 'heir_mobile_number'],
     ]);
+
+    test('saves nric and phone numbers without dashes', function () {
+        $this->actingAs($this->admin)
+            ->post(route('writers.store'), writerPayload([
+                'nric' => '900101-01-1234',
+                'heir_nric' => 'A-123-456',
+                'phone' => '+6011-000 0003',
+                'heir_mobile_number' => '011-000 0004',
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $writer = Writer::query()->firstOrFail();
+
+        expect($writer->getRawOriginal('nric'))->toBe('900101011234')
+            ->and($writer->getRawOriginal('heir_nric'))->toBe('A123456')
+            ->and($writer->getRawOriginal('phone'))->toBe('+60110000003')
+            ->and($writer->getRawOriginal('heir_mobile_number'))->toBe('+60110000004');
+    });
 
     test('rejects a deleted publisher', function () {
         $publisher = Publisher::factory()->create();
@@ -595,6 +628,26 @@ describe('update', function () {
         expect($writer->refresh()->name)->toBe('Renamed Writer')
             ->and($writer->status)->toBe(MasterStatus::Inactive)
             ->and($writer->writer_code)->toBe('WRT-000001');
+    });
+
+    test('updating normalizes nric and phone numbers and an empty value clears them', function () {
+        $writer = Writer::factory()->create();
+
+        $this->actingAs($this->admin)
+            ->put(route('writers.update', $writer), writerPayload([
+                'nric' => '900202-02-8888',
+                'phone' => '+60 11-000 0005',
+                'heir_nric' => '',
+                'heir_mobile_number' => '',
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $writer->refresh();
+
+        expect($writer->nric)->toBe('900202028888')
+            ->and($writer->phone)->toBe('+60110000005')
+            ->and($writer->heir_nric)->toBeNull()
+            ->and($writer->heir_mobile_number)->toBeNull();
     });
 
     test('the publisher link can be changed and cleared', function () {

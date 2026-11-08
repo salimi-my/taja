@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Casts\IdentityNumber;
 use App\Enums\MasterStatus;
 use App\Enums\PartyRole;
 use App\Enums\RightsType;
@@ -44,13 +45,15 @@ class WriterController extends Controller
             ->with(['publisher', 'aliases'])
             ->when($filters['search'] !== '', function (Builder $query) use ($filters): void {
                 $term = '%'.addcslashes($filters['search'], '%_\\').'%';
+                $nricDigits = IdentityNumber::normalize($filters['search']);
 
-                $query->where(function (Builder $query) use ($term): void {
+                $query->where(function (Builder $query) use ($term, $nricDigits): void {
                     $query->where('name', 'like', $term)
                         ->orWhere('writer_code', 'like', $term)
                         ->orWhere('ipi_name_number', 'like', $term)
                         ->orWhere('ipi_base_number', 'like', $term)
                         ->orWhere('nric', 'like', $term)
+                        ->when($nricDigits !== null, fn (Builder $query) => $query->orWhere('nric', 'like', '%'.addcslashes($nricDigits, '%_\\').'%'))
                         ->orWhereHas('aliases', function (Builder $query) use ($term): void {
                             $query->where('name', 'like', $term)
                                 ->orWhere('ipi_base_number', 'like', $term);

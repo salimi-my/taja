@@ -73,6 +73,18 @@ test('optional columns can be left blank', function () {
         ->and($publisher->taja_percentage_deal)->toBeNull();
 });
 
+test('the person in charge NRIC and mobile number are saved without dashes', function () {
+    importPublishers($this, [importPublisherRow(1, [
+        'Person_In_Charge_NRIC' => '900101-01-9999',
+        'Person_In_Charge_Mobile_No' => '011-000 0001',
+    ])]);
+
+    $publisher = Publisher::query()->firstOrFail();
+
+    expect($publisher->getRawOriginal('person_in_charge_nric'))->toBe('900101019999')
+        ->and($publisher->getRawOriginal('person_in_charge_mobile_no'))->toBe('+60110000001');
+});
+
 test('a bad value is reported against its column and line', function (string $header, string $value, string $expected) {
     uploadCsv($this, CsvImportType::Publishers, [
         importPublisherRow(1),
@@ -89,6 +101,7 @@ test('a bad value is reported against its column and line', function (string $he
     'percent with a sign' => ['Taja_Percentage_Deal', '60%', 'percent'],
     'percent above 100' => ['Taja_Percentage_Deal', '120', 'percent'],
     'email' => ['Official_Email', 'not-an-email', 'Official_Email'],
+    'mobile number' => ['Person_In_Charge_Mobile_No', 'abc', 'international number'],
     'unknown country' => ['Territories_Granted', 'ZZ', 'unknown country code'],
     'worldwide mixed with a country' => ['Territories_Granted', 'WW|MY', 'WW'],
     'IPI number length' => ['IPI_Name_Number', '123', '11 digits'],

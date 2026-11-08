@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Casts\IdentityNumber;
+use App\Casts\PhoneNumber;
 use App\Concerns\HasGeneratedCode;
 use App\Enums\MasterStatus;
 use App\Enums\PartyRole;
@@ -111,6 +113,10 @@ class Writer extends Model
     protected function casts(): array
     {
         return [
+            'nric' => IdentityNumber::class,
+            'heir_nric' => IdentityNumber::class,
+            'phone' => PhoneNumber::class,
+            'heir_mobile_number' => PhoneNumber::class,
             'default_role' => PartyRole::class,
             'status' => MasterStatus::class,
             'controlled_territories' => 'array',

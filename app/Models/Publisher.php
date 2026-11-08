@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Casts\IdentityNumber;
+use App\Casts\PhoneNumber;
 use App\Concerns\HasGeneratedCode;
 use App\Enums\MasterStatus;
 use App\Enums\RightsType;
@@ -101,6 +103,8 @@ class Publisher extends Model
     protected function casts(): array
     {
         return [
+            'person_in_charge_nric' => IdentityNumber::class,
+            'person_in_charge_mobile_no' => PhoneNumber::class,
             'rights_types_granted' => AsEnumCollection::of(RightsType::class),
             'territories_granted' => 'array',
             'status' => MasterStatus::class,

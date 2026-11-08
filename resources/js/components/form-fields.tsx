@@ -19,6 +19,7 @@ import {
     InputGroupText,
 } from '@/components/ui/input-group';
 import { MultiSelect } from '@/components/ui/multi-select';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
@@ -82,6 +83,50 @@ export function TextField({
                 type={type}
                 defaultValue={defaultValue ?? ''}
                 placeholder={placeholder}
+                autoComplete="off"
+                aria-invalid={!!errors[name]}
+            />
+            {description && <FieldDescription>{description}</FieldDescription>}
+            <FieldError>{errors[name]}</FieldError>
+        </Field>
+    );
+}
+
+type PhoneFieldProps = {
+    name: string;
+    label: string;
+    errors: Errors;
+    /** The saved number in E.164 format, e.g. `+60110000003`. */
+    defaultValue?: string | null;
+    description?: string;
+    className?: string;
+};
+
+/**
+ * A phone input with a country picker. It shows the number formatted, but
+ * submits the E.164 value through a hidden input, so the server never receives
+ * the formatted text.
+ */
+export function PhoneField({
+    name,
+    label,
+    errors,
+    defaultValue,
+    description,
+    className,
+}: PhoneFieldProps) {
+    const [value, setValue] = useState(defaultValue ?? '');
+    const id = `field-${name}`;
+
+    return (
+        <Field data-invalid={!!errors[name]} className={className}>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <input type="hidden" name={name} value={value} />
+            <PhoneInput
+                id={id}
+                defaultCountry="MY"
+                value={value}
+                onChange={setValue}
                 autoComplete="off"
                 aria-invalid={!!errors[name]}
             />

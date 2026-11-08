@@ -106,6 +106,42 @@ test('a repeated IPI number in the file or the database is rejected', function (
         ->and(CsvImport::query()->firstOrFail()->valid_rows)->toBe(1);
 });
 
+test('NRIC and phone numbers are saved without dashes', function () {
+    importWriters($this, [importWriterRow(1, [
+        'NRIC' => '900101-01-1234',
+        'Heir_NRIC' => 'A-123-456',
+        'Phone' => '+6011-000 0003',
+        'Heir_Mobile_Number' => '011-000 0004',
+    ])]);
+
+    $writer = Writer::query()->firstOrFail();
+
+    expect($writer->getRawOriginal('nric'))->toBe('900101011234')
+        ->and($writer->getRawOriginal('heir_nric'))->toBe('A123456')
+        ->and($writer->getRawOriginal('phone'))->toBe('+60110000003')
+        ->and($writer->getRawOriginal('heir_mobile_number'))->toBe('+60110000004');
+});
+
+test('a phone number that is not international is reported against its column', function () {
+    uploadCsv($this, CsvImportType::Writers, [
+        importWriterRow(1),
+        importWriterRow(2, ['Phone' => 'call me']),
+    ]);
+
+    expect(latestImportIssues())->toHaveKey('3:Phone')
+        ->and(CsvImport::query()->firstOrFail()->valid_rows)->toBe(1);
+});
+
+test('an NRIC repeated with and without dashes is still a warning', function () {
+    Writer::factory()->create(['nric' => '900101011234']);
+
+    importWriters($this, [
+        importWriterRow(1, ['NRIC' => '900101-01-1234']),
+    ]);
+
+    expect(latestImportIssues('warnings'))->toHaveKey('2:NRIC');
+});
+
 test('a repeated NRIC is only a warning and the writers are still imported', function () {
     $existing = Writer::factory()->create(['nric' => 'SAME-NRIC']);
 

@@ -7,6 +7,7 @@ import {
     CheckboxGroupField,
     DateField,
     PercentageField,
+    PhoneField,
     SelectField,
     TerritoryField,
     TextAreaField,
@@ -251,7 +252,7 @@ export function WriterForm({ writer, options, cancelHref }: WriterFormProps) {
                                 errors={errors}
                                 defaultValue={writer?.email}
                             />
-                            <TextField
+                            <PhoneField
                                 name="phone"
                                 label="Phone"
                                 errors={errors}
@@ -440,7 +441,7 @@ export function WriterForm({ writer, options, cancelHref }: WriterFormProps) {
                                 errors={errors}
                                 defaultValue={writer?.heir_relationship}
                             />
-                            <TextField
+                            <PhoneField
                                 name="heir_mobile_number"
                                 label="Mobile number"
                                 errors={errors}

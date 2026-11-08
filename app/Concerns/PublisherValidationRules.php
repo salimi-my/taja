@@ -2,9 +2,12 @@
 
 namespace App\Concerns;
 
+use App\Casts\IdentityNumber;
+use App\Casts\PhoneNumber;
 use App\Enums\MasterStatus;
 use App\Enums\RightsType;
 use App\Models\Publisher;
+use App\Rules\InternationalPhone;
 use App\Rules\IpiNameNumber;
 use App\Rules\Percent;
 use App\Rules\TerritoryList;
@@ -58,7 +61,7 @@ trait PublisherValidationRules
             'person_in_charge_name' => ['nullable', 'string', 'max:255'],
             'person_in_charge_title' => ['nullable', 'string', 'max:255'],
             'person_in_charge_nric' => ['nullable', 'string', 'max:255'],
-            'person_in_charge_mobile_no' => ['nullable', 'string', 'max:255'],
+            'person_in_charge_mobile_no' => ['nullable', 'string', new InternationalPhone],
             'person_in_charge_email' => ['nullable', 'string', 'email', 'max:255'],
             'taja_percentage_deal' => ['nullable', new Percent],
             'client_percentage_deal' => ['nullable', new Percent],
@@ -68,10 +71,19 @@ trait PublisherValidationRules
     }
 
     /**
-     * Turn the territory text typed in the form (`MY, SG`) into a list.
+     * Turn the territory text typed in the form (`MY, SG`) into a list, and
+     * store the NRIC and mobile number without dashes.
      */
     protected function prepareForValidation(): void
     {
+        if ($this->has('person_in_charge_nric')) {
+            $this->merge(['person_in_charge_nric' => IdentityNumber::normalize($this->input('person_in_charge_nric'))]);
+        }
+
+        if ($this->has('person_in_charge_mobile_no')) {
+            $this->merge(['person_in_charge_mobile_no' => PhoneNumber::normalize($this->input('person_in_charge_mobile_no'))]);
+        }
+
         if ($this->has('territories_granted')) {
             $this->merge([
                 'territories_granted' => TerritoryList::parse($this->input('territories_granted')),

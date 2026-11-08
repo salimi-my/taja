@@ -5,6 +5,7 @@ import {
     CheckboxGroupField,
     DateField,
     PercentageField,
+    PhoneField,
     SelectField,
     TerritoryField,
     TextAreaField,
@@ -266,7 +267,7 @@ export function PublisherForm({
                                 errors={errors}
                                 defaultValue={publisher?.person_in_charge_nric}
                             />
-                            <TextField
+                            <PhoneField
                                 name="person_in_charge_mobile_no"
                                 label="Mobile number"
                                 errors={errors}

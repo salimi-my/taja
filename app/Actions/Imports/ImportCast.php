@@ -16,4 +16,6 @@ enum ImportCast
     case RightsTypes;
     case Status;
     case Role;
+    case Phone;
+    case Nric;
 }

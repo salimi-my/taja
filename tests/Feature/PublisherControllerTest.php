@@ -379,7 +379,31 @@ describe('store', function () {
         'wrong date format' => ['agreement_start_date', '01/02/2026', 'agreement_start_date'],
         'bad email' => ['official_email', 'not-an-email', 'official_email'],
         'percent above 100' => ['taja_percentage_deal', '120', 'taja_percentage_deal'],
+        'mobile number without a country code' => ['person_in_charge_mobile_no', '+12', 'person_in_charge_mobile_no'],
+        'mobile number with letters' => ['person_in_charge_mobile_no', 'abc', 'person_in_charge_mobile_no'],
     ]);
+
+    test('saves the nric and mobile number without dashes', function () {
+        $this->actingAs($this->admin)
+            ->post(route('publishers.store'), publisherPayload([
+                'person_in_charge_nric' => '900101-01-9999',
+                'person_in_charge_mobile_no' => '+6011-000 0001',
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $publisher = Publisher::query()->firstOrFail();
+
+        expect($publisher->getRawOriginal('person_in_charge_nric'))->toBe('900101019999')
+            ->and($publisher->getRawOriginal('person_in_charge_mobile_no'))->toBe('+60110000001');
+    });
+
+    test('a national mobile number starting with 0 is saved as a Malaysian number', function () {
+        $this->actingAs($this->admin)
+            ->post(route('publishers.store'), publisherPayload(['person_in_charge_mobile_no' => '011-000 0002']))
+            ->assertSessionHasNoErrors();
+
+        expect(Publisher::query()->firstOrFail()->person_in_charge_mobile_no)->toBe('+60110000002');
+    });
 
     test('rejects an end date before the start date', function () {
         $this->actingAs($this->admin)

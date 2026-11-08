@@ -1,5 +1,5 @@
 import { Check, Loader2, PlusCircle } from 'lucide-react';
-import { useMemo, type Dispatch, type SetStateAction } from 'react';
+import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -125,6 +125,8 @@ export function TableFacetedFilter({
             .filter((option) => option !== undefined);
     }, [knownOptions, options, selectedItems]);
 
+    const [localSearch, setLocalSearch] = useState('');
+
     const toggleSelection = (id: number | string) => {
         setParams((prevParams: Params) => {
             if (multiple) {
@@ -156,7 +158,13 @@ export function TableFacetedFilter({
     };
 
     return (
-        <Popover>
+        <Popover
+            onOpenChange={(open) => {
+                if (!open) {
+                    setLocalSearch('');
+                }
+            }}
+        >
             <PopoverTrigger asChild>
                 <Button
                     aria-label={`Filter ${title}`}
@@ -229,8 +237,8 @@ export function TableFacetedFilter({
                     <div className="relative">
                         <CommandInput
                             placeholder={title}
-                            value={searchValue ?? ''}
-                            onValueChange={onSearch}
+                            value={onSearch ? (searchValue ?? '') : localSearch}
+                            onValueChange={onSearch ?? setLocalSearch}
                         />
                         {isFetching && onSearch && (
                             <Loader2 className="absolute top-1/2 right-3 size-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />

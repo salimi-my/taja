@@ -21,6 +21,8 @@ class WriterImportDefinition extends RowImportDefinition
 
     private const PERCENT = 'Number from 0 to 100';
 
+    private const PHONE = 'International number such as +60110000000, or a Malaysian number starting with 0';
+
     private const ALIAS_COUNT = 4;
 
     /** @var array<string, int> Publisher id by uppercase `PUB-` code. */
@@ -41,7 +43,7 @@ class WriterImportDefinition extends RowImportDefinition
             new ImportColumn('Writer_Role', false, 'C, A, CA or AR', 'CA', 'default_role', ImportCast::Role),
             new ImportColumn('IPI_Base_Number', false, 'Text', 'I-000000001-1', 'ipi_base_number'),
             new ImportColumn('IPI_Name_Number', false, '11 digits, unique', '00000000011', 'ipi_name_number'),
-            new ImportColumn('NRIC', false, 'NRIC or passport number', '000000-00-0001', 'nric'),
+            new ImportColumn('NRIC', false, 'NRIC or passport number, saved without dashes', '000000000001', 'nric', ImportCast::Nric),
             new ImportColumn('Date_Of_Birth', false, self::DATE, '1990-05-20', 'date_of_birth'),
             new ImportColumn('Date_Of_Death', false, self::DATE, '', 'date_of_death'),
             new ImportColumn('Nationality', false, 'Text', 'Malaysian', 'nationality'),
@@ -51,7 +53,7 @@ class WriterImportDefinition extends RowImportDefinition
             new ImportColumn('Rights_Types_Controlled', false, 'Pipe-separated: Performance, Mechanical, Sync, Lyrics, Digital', 'Performance|Mechanical', 'rights_types_controlled', ImportCast::RightsTypes),
             new ImportColumn('TIN_Number', false, 'Text', 'TIN000000011', 'tin_number'),
             new ImportColumn('Email', false, 'Valid email', 'writer@fake-writer.test', 'email'),
-            new ImportColumn('Phone', false, 'Text', '+60110000000', 'phone'),
+            new ImportColumn('Phone', false, self::PHONE, '+60110000000', 'phone', ImportCast::Phone),
             new ImportColumn('Address', false, 'Text', '3 Jalan Fake, 50000 Kuala Lumpur', 'address'),
             new ImportColumn('Status', true, 'Active or Inactive', 'Active', 'status', ImportCast::Status),
             new ImportColumn('Agreement_Start_Date', true, self::DATE, '2026-01-01', 'agreement_start_date'),
@@ -66,9 +68,9 @@ class WriterImportDefinition extends RowImportDefinition
             new ImportColumn('Swift_Code', false, 'Text', 'FAKEMYKL', 'swift_code'),
             new ImportColumn('Bank_Address', false, 'Text', '4 Jalan Fake, 50000 Kuala Lumpur', 'bank_address'),
             new ImportColumn('Heir_Name', false, 'Text', 'Fake Heir', 'heir_name'),
-            new ImportColumn('Heir_NRIC', false, 'NRIC or passport number', '000000-00-0002', 'heir_nric'),
+            new ImportColumn('Heir_NRIC', false, 'NRIC or passport number, saved without dashes', '000000000002', 'heir_nric', ImportCast::Nric),
             new ImportColumn('Heir_Relationship', false, 'Text', 'Spouse', 'heir_relationship'),
-            new ImportColumn('Heir_Mobile_Number', false, 'Text', '+60120000000', 'heir_mobile_number'),
+            new ImportColumn('Heir_Mobile_Number', false, self::PHONE, '+60120000000', 'heir_mobile_number', ImportCast::Phone),
             new ImportColumn('Heir_Email', false, 'Valid email', 'heir@fake-writer.test', 'heir_email'),
             new ImportColumn('Source_System', false, 'Text', 'Manual', 'source_system'),
             new ImportColumn('Notes', false, 'Text', 'Fake example row', 'notes'),
@@ -93,9 +95,9 @@ class WriterImportDefinition extends RowImportDefinition
                 'Name' => 'Another Fake Writer',
                 'Writer_Role' => 'A',
                 'IPI_Name_Number' => '00000000012',
-                'NRIC' => '000000-00-0003',
+                'NRIC' => '000000000003',
                 'Email' => 'writer@another-fake-writer.test',
-                'Heir_NRIC' => '000000-00-0004',
+                'Heir_NRIC' => '000000000004',
                 'Pseudonym_Stage_Name_1' => '',
                 'IPI_Base_Number_1' => '',
             ]),

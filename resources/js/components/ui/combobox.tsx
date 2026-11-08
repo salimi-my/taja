@@ -102,11 +102,23 @@ function Combobox({
   renderOptionLeading,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
+  const [localSearch, setLocalSearch] = React.useState("");
+  const isServerSearch = onSearch !== undefined;
 
   const selectedOption = options.find((opt) => opt.value === value);
 
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={true}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+
+        if (!next) {
+          setLocalSearch("");
+        }
+      }}
+      modal={true}
+    >
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -143,12 +155,21 @@ function Combobox({
         className="w-(--radix-popover-trigger-width) p-0"
         align="start"
       >
-        <Command shouldFilter={!onSearch}>
+        <Command
+          shouldFilter={!isServerSearch}
+          filter={(_value, search, keywords) =>
+            keywords?.some((keyword) =>
+              keyword.toLowerCase().includes(search.trim().toLowerCase()),
+            )
+              ? 1
+              : 0
+          }
+        >
           <div className="relative">
             <CommandInput
               placeholder={searchPlaceholder}
-              value={searchValue ?? ""}
-              onValueChange={onSearch}
+              value={isServerSearch ? (searchValue ?? "") : localSearch}
+              onValueChange={isServerSearch ? onSearch : setLocalSearch}
             />
             {isFetching && onSearch && (
               <Loader2 className="text-muted-foreground absolute top-1/2 right-3 size-3.5 -translate-y-1/2 animate-spin" />
@@ -183,6 +204,7 @@ function Combobox({
                 <CommandItem
                   key={option.value}
                   value={String(option.value)}
+                  keywords={[option.label]}
                   data-checked={option.value === value ? "true" : undefined}
                   onSelect={() => {
                     onValueChange?.(option.value);

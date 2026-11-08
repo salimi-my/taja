@@ -2,10 +2,13 @@
 
 namespace App\Concerns;
 
+use App\Casts\IdentityNumber;
+use App\Casts\PhoneNumber;
 use App\Enums\MasterStatus;
 use App\Enums\PartyRole;
 use App\Enums\RightsType;
 use App\Models\Writer;
+use App\Rules\InternationalPhone;
 use App\Rules\IpiNameNumber;
 use App\Rules\Percent;
 use App\Rules\TerritoryList;
@@ -57,7 +60,7 @@ trait WriterValidationRules
             'rights_types_controlled.*' => ['string', Rule::enum(RightsType::class)],
             'tin_number' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', new InternationalPhone],
             'address' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::enum(MasterStatus::class)],
             'agreement_start_date' => ['required', 'date_format:Y-m-d'],
@@ -74,7 +77,7 @@ trait WriterValidationRules
             'heir_name' => ['nullable', 'string', 'max:255'],
             'heir_nric' => ['nullable', 'string', 'max:255'],
             'heir_relationship' => ['nullable', 'string', 'max:255'],
-            'heir_mobile_number' => ['nullable', 'string', 'max:255'],
+            'heir_mobile_number' => ['nullable', 'string', new InternationalPhone],
             'heir_email' => ['nullable', 'string', 'email', 'max:255'],
             'source_system' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:5000'],
@@ -85,11 +88,24 @@ trait WriterValidationRules
     }
 
     /**
-     * Turn the territory text typed in the form (`MY, SG`) into a list, and
-     * drop pseudonym rows that were left completely blank.
+     * Turn the territory text typed in the form (`MY, SG`) into a list, drop
+     * pseudonym rows that were left completely blank, and store NRIC and phone
+     * numbers without dashes.
      */
     protected function prepareForValidation(): void
     {
+        foreach (['nric', 'heir_nric'] as $field) {
+            if ($this->has($field)) {
+                $this->merge([$field => IdentityNumber::normalize($this->input($field))]);
+            }
+        }
+
+        foreach (['phone', 'heir_mobile_number'] as $field) {
+            if ($this->has($field)) {
+                $this->merge([$field => PhoneNumber::normalize($this->input($field))]);
+            }
+        }
+
         if ($this->has('controlled_territories')) {
             $territories = TerritoryList::parse($this->input('controlled_territories'));
 

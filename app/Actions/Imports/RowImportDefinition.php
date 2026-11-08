@@ -2,6 +2,8 @@
 
 namespace App\Actions\Imports;
 
+use App\Casts\IdentityNumber;
+use App\Casts\PhoneNumber;
 use App\Enums\MasterStatus;
 use App\Enums\PartyRole;
 use App\Enums\RightsType;
@@ -232,6 +234,8 @@ abstract class RowImportDefinition extends ImportDefinition
             ImportCast::RightsTypes => $this->castRightsTypes($value),
             ImportCast::Status => $this->enumValueOrText(MasterStatus::fromImport($value), $value),
             ImportCast::Role => $this->enumValueOrText(PartyRole::fromImport($value), $value),
+            ImportCast::Phone => PhoneNumber::normalize($value),
+            ImportCast::Nric => IdentityNumber::normalize($value),
         };
     }
 
