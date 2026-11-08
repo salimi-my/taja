@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { Building2, Calendar, FileSearch } from 'lucide-react';
+import { Calendar, Disc3, FileSearch } from 'lucide-react';
 import { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -56,7 +56,7 @@ const WriterCardRowItem = memo(function WriterCardRowItem({
                         variant="secondary"
                         className="text-[10px] font-normal text-nowrap"
                     >
-                        <Building2 className="size-3" />
+                        <Disc3 className="size-3" />
                         {writer.publisher.name}
                     </Badge>
                 )}

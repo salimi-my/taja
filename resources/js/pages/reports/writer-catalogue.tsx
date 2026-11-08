@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { PenLine, X } from 'lucide-react';
+import { UserPen, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { ContentCard } from '@/components/content-card';
 import { ReportActions } from '@/components/reports/report-actions';
@@ -138,7 +138,7 @@ export default function WriterCatalogueReport({
 
                     {writer && (
                         <ReportSummaryBar>
-                            <PenLine className="size-4 text-muted-foreground" />
+                            <UserPen className="size-4 text-muted-foreground" />
                             <span className="font-medium">{writer.name}</span>
                             <span className="font-mono text-xs text-muted-foreground">
                                 {writer.code}
@@ -158,7 +158,7 @@ export default function WriterCatalogueReport({
                         <Empty>
                             <EmptyHeader>
                                 <EmptyMedia variant="icon">
-                                    <PenLine />
+                                    <UserPen />
                                 </EmptyMedia>
                                 <EmptyTitle>Choose a writer</EmptyTitle>
                                 <EmptyDescription>

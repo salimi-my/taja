@@ -1,11 +1,11 @@
 import {
-    BarChart3,
-    Building2,
+    Disc3,
     History,
     LayoutGrid,
     Music,
-    PenLine,
     Settings,
+    TableProperties,
+    UserPen,
     Users,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
@@ -66,7 +66,7 @@ export const navGroups: SidebarNavGroup[] = [
         ],
     },
     {
-        title: 'Catalogue',
+        title: 'Content',
         items: [
             {
                 title: 'Works',
@@ -86,14 +86,9 @@ export const navGroups: SidebarNavGroup[] = [
                     },
                 ],
             },
-        ],
-    },
-    {
-        title: 'Masters',
-        items: [
             {
                 title: 'Writers',
-                icon: PenLine,
+                icon: UserPen,
                 items: [
                     {
                         title: 'Create New',
@@ -111,7 +106,7 @@ export const navGroups: SidebarNavGroup[] = [
             },
             {
                 title: 'Publishers',
-                icon: Building2,
+                icon: Disc3,
                 items: [
                     {
                         title: 'Create New',
@@ -127,32 +122,22 @@ export const navGroups: SidebarNavGroup[] = [
                     },
                 ],
             },
-        ],
-    },
-    {
-        title: 'Imports',
-        items: [
-            {
-                title: 'Import History',
-                href: importsIndex(),
-                icon: History,
-                exact: true,
-                adminOnly: true,
-            },
-        ],
-    },
-    {
-        title: 'Reports',
-        items: [
             {
                 title: 'Reports',
-                icon: BarChart3,
+                icon: TableProperties,
                 items: [
                     { title: 'Writer Catalogue', href: writerCatalogue() },
                     { title: 'Song Ownership Split', href: songOwnership() },
                     { title: 'Rights History', href: rightsHistory() },
                     { title: 'Incomplete Split', href: incompleteSplit() },
                 ],
+            },
+            {
+                title: 'Import History',
+                href: importsIndex(),
+                icon: History,
+                exact: true,
+                adminOnly: true,
             },
         ],
     },

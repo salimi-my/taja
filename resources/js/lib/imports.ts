@@ -1,13 +1,13 @@
 import {
-    Building2,
     Calendar,
+    Disc3,
     FileText,
     Hash,
     Layers,
     type LucideIcon,
     Music,
-    PenLine,
     ShieldCheck,
+    UserPen,
 } from 'lucide-react';
 import type { SortColumn } from '@/components/table/table-filter-drawer';
 import { index as publishersIndex } from '@/routes/publishers';
@@ -55,6 +55,6 @@ export const IMPORT_COLUMN_LABELS = {
 /** The icon of each import type, the same as its sidebar menu item. */
 export const importTypeIcons: Record<ImportType, LucideIcon> = {
     works: Music,
-    writers: PenLine,
-    publishers: Building2,
+    writers: UserPen,
+    publishers: Disc3,
 };

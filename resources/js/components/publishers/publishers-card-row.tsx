@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { Calendar, FileSearch, Globe } from 'lucide-react';
+import { Calendar, Earth, FileSearch } from 'lucide-react';
 import { memo } from 'react';
 import {
     PublisherStatusBadge,
@@ -59,7 +59,7 @@ const PublisherCardRowItem = memo(function PublisherCardRowItem({
                     variant="secondary"
                     className="text-[10px] font-normal text-nowrap"
                 >
-                    <Globe className="size-3" />
+                    <Earth className="size-3" />
                     {formatTerritories(publisher.territories_granted)}
                 </Badge>
                 <Badge

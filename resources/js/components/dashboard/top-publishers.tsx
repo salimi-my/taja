@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Building2 } from 'lucide-react';
+import { Disc3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -45,7 +45,7 @@ export function TopPublishers({ data }: TopPublishersProps) {
                     <Empty className="h-full border">
                         <EmptyHeader>
                             <EmptyMedia variant="icon">
-                                <Building2 />
+                                <Disc3 />
                             </EmptyMedia>
                             <EmptyTitle>No publishers on works yet</EmptyTitle>
                             <EmptyDescription>

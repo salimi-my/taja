@@ -1,4 +1,4 @@
-import { Building2, Music, PenLine, TriangleAlert } from 'lucide-react';
+import { Disc3, Music, TriangleAlert, UserPen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { index as publishersIndex } from '@/routes/publishers';
 import { incompleteSplit } from '@/routes/reports';
@@ -34,7 +34,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
             <StatCard
                 title="Writers"
                 value={stats.writers}
-                icon={PenLine}
+                icon={UserPen}
                 iconClassName="text-violet-600"
                 href={writersIndex()}
             >
@@ -48,7 +48,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
             <StatCard
                 title="Publishers"
                 value={stats.publishers}
-                icon={Building2}
+                icon={Disc3}
                 iconClassName="text-green-600"
                 href={publishersIndex()}
             >

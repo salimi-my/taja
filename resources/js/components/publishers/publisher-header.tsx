@@ -1,4 +1,4 @@
-import { CalendarRange, Globe, Landmark, Percent } from 'lucide-react';
+import { CalendarRange, Earth, Landmark, Percent } from 'lucide-react';
 import { formatDealSplit } from '@/components/deal-split';
 import { formatDate } from '@/components/detail-grid';
 import { PublisherStatusBadge } from '@/components/publishers/publisher-badges';
@@ -32,7 +32,7 @@ export function PublisherHeader({ publisher }: { publisher: PublisherDetail }) {
                     value: publisher.society_cmo,
                 },
                 {
-                    icon: Globe,
+                    icon: Earth,
                     label: 'Territories',
                     value: formatTerritories(publisher.territories_granted),
                 },

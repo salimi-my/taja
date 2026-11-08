@@ -1,10 +1,10 @@
-import { Building2, Calendar, Flag, Hash, ShieldCheck } from 'lucide-react';
+import { Calendar, Disc3, Flag, Hash, ShieldCheck } from 'lucide-react';
 import type { SortColumn } from '@/components/table/table-filter-drawer';
 
 /** The sortable columns of the publishers table, shown in the mobile filter drawer. */
 export const PUBLISHER_SORT_COLUMNS: SortColumn[] = [
     { value: 'publisher_code', label: 'Code', icon: Hash },
-    { value: 'name', label: 'Name', icon: Building2 },
+    { value: 'name', label: 'Name', icon: Disc3 },
     { value: 'society_cmo', label: 'Society', icon: Flag },
     { value: 'status', label: 'Status', icon: ShieldCheck },
     { value: 'agreement_start_date', label: 'Agreement Start', icon: Calendar },

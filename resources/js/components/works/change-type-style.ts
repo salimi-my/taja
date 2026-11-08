@@ -1,10 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 import {
     CalendarClock,
+    Earth,
     FilePen,
     FilePlus2,
     FileUp,
-    Globe,
     History,
     Percent,
     UserMinus,
@@ -27,7 +27,7 @@ const CHANGE_TYPE_STYLES: Record<string, ChangeTypeStyle> = {
     party_added: { icon: UserPlus, classes: BLUE },
     party_removed: { icon: UserMinus, classes: RED },
     share_updated: { icon: Percent, classes: NEUTRAL },
-    territory_changed: { icon: Globe, classes: NEUTRAL },
+    territory_changed: { icon: Earth, classes: NEUTRAL },
     dates_changed: { icon: CalendarClock, classes: NEUTRAL },
     correction: { icon: Wrench, classes: AMBER },
     imported: { icon: FileUp, classes: GREEN },

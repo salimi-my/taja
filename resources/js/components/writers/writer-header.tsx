@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Building2, CalendarRange, Landmark, Percent } from 'lucide-react';
+import { CalendarRange, Disc3, Landmark, Percent } from 'lucide-react';
 import { formatDealSplit } from '@/components/deal-split';
 import { formatDate } from '@/components/detail-grid';
 import { CodeChip, ProfileHeader } from '@/components/profile-header';
@@ -41,7 +41,7 @@ export function WriterHeader({ writer }: { writer: WriterDetail }) {
                     value: writer.cmo_society,
                 },
                 {
-                    icon: Building2,
+                    icon: Disc3,
                     label: 'Publisher',
                     value: writer.publisher && (
                         <Link
