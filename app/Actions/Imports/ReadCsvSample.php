@@ -19,7 +19,7 @@ class ReadCsvSample
     public const MAX_ROWS = 100;
 
     /**
-     * @return array{headers: list<string>, rows: list<array{line: int, data: array<string, string|null>, errors: list<string>}>}|null Null when the file cannot be read.
+     * @return array{headers: list<string>, rows: list<array{line: int, data: array<string, string|null>, errors: list<string>, error_columns: list<string>}>}|null Null when the file cannot be read.
      */
     public function __invoke(CsvImport $csvImport, int $limit = self::ROWS): ?array
     {
@@ -53,9 +53,14 @@ class ReadCsvSample
         }
 
         $errorsByLine = [];
+        $errorColumnsByLine = [];
 
         foreach ($csvImport->errors ?? [] as $error) {
             $errorsByLine[$error['line']][] = ($error['column'] !== null ? "{$error['column']}: " : '').$error['message'];
+
+            if ($error['column'] !== null) {
+                $errorColumnsByLine[$error['line']][$error['column']] = $error['column'];
+            }
         }
 
         return [
@@ -63,6 +68,7 @@ class ReadCsvSample
             'rows' => array_map(fn (array $row): array => [
                 ...$row,
                 'errors' => $errorsByLine[$row['line']] ?? [],
+                'error_columns' => array_values($errorColumnsByLine[$row['line']] ?? []),
             ], $rows),
         ];
     }

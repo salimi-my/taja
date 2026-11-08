@@ -154,8 +154,10 @@ describe('upload', function (): void {
                 ->where('sample.rows.0.line', 2)
                 ->where('sample.rows.0.data.Publisher_Name', 'Fake Publisher 1')
                 ->where('sample.rows.0.errors', [])
+                ->where('sample.rows.0.error_columns', [])
                 ->where('sample.rows.1.line', 3)
                 ->has('sample.rows.1.errors', 1)
+                ->where('sample.rows.1.error_columns', ['Official_Email'])
             );
     });
 

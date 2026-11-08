@@ -94,10 +94,10 @@ export function ImportSampleTable({
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted hover:bg-muted">
-                            <TableHead className="sticky left-0 z-10 w-16 bg-muted pl-4">
+                            <TableHead className="sticky left-0 z-10 w-16 max-w-16 min-w-16 bg-muted pl-4">
                                 Line
                             </TableHead>
-                            <TableHead className="sticky left-16 z-10 w-28 bg-muted shadow-[1px_0_0_0_var(--border)]">
+                            <TableHead className="sticky left-16 z-10 w-28 min-w-28 bg-muted shadow-[1px_0_0_0_var(--border)]">
                                 Result
                             </TableHead>
                             {sample.headers.map((header) => (
@@ -124,10 +124,10 @@ export function ImportSampleTable({
                                             highlightedRow,
                                     )}
                                 >
-                                    <TableCell className="sticky left-0 z-10 bg-inherit pl-4 text-muted-foreground tabular-nums">
+                                    <TableCell className="sticky left-0 z-10 w-16 max-w-16 min-w-16 bg-inherit pl-4 text-muted-foreground tabular-nums">
                                         {row.line}
                                     </TableCell>
-                                    <TableCell className="sticky left-16 z-10 bg-inherit shadow-[1px_0_0_0_var(--border)]">
+                                    <TableCell className="sticky left-16 z-10 w-28 min-w-28 bg-inherit shadow-[1px_0_0_0_var(--border)]">
                                         {hasErrors ? (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
@@ -160,13 +160,27 @@ export function ImportSampleTable({
                                     {sample.headers.map((header) => (
                                         <TableCell
                                             key={header}
-                                            className="max-w-56 truncate"
+                                            className={cn(
+                                                'max-w-56 truncate',
+                                                row.error_columns.includes(
+                                                    header,
+                                                ) &&
+                                                    'font-medium text-destructive',
+                                            )}
                                             title={
                                                 row.data[header] ?? undefined
                                             }
                                         >
                                             {row.data[header] ?? (
-                                                <span className="text-muted-foreground">
+                                                <span
+                                                    className={
+                                                        row.error_columns.includes(
+                                                            header,
+                                                        )
+                                                            ? undefined
+                                                            : 'text-muted-foreground'
+                                                    }
+                                                >
                                                     -
                                                 </span>
                                             )}

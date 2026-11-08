@@ -59,6 +59,8 @@ export type ImportSample = {
         line: number;
         data: Record<string, string | null>;
         errors: string[];
+        /** The headers of the cells that have an error. */
+        error_columns: string[];
     }[];
 };
 
