@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Reports;
 
+use App\Enums\ConflictStatus;
+use App\Enums\RegistrationStatus;
 use App\Models\Work;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -35,6 +37,12 @@ class SongOwnershipReportRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:100'],
             'work_id' => ['nullable', 'integer', 'exists:works,id'],
             'as_of' => ['nullable', 'date_format:Y-m-d'],
+            'registration_statuses' => ['nullable', 'array'],
+            'registration_statuses.*' => ['string', Rule::enum(RegistrationStatus::class)],
+            'conflict_statuses' => ['nullable', 'array'],
+            'conflict_statuses.*' => ['string', Rule::enum(ConflictStatus::class)],
+            'controlled' => ['nullable', 'array'],
+            'controlled.*' => ['string', Rule::in(['yes', 'no'])],
             'per_page' => ['nullable', Rule::in(self::PER_PAGE_OPTIONS)],
         ];
     }
@@ -42,7 +50,7 @@ class SongOwnershipReportRequest extends FormRequest
     /**
      * The filters of the report, as the screen and the CSV export both use them.
      *
-     * @return array{search: string, work_id: int|null, as_of: string|null, per_page: int}
+     * @return array{search: string, work_id: int|null, as_of: string|null, registration_statuses: list<string>, conflict_statuses: list<string>, controlled: list<string>, per_page: int}
      */
     public function filters(): array
     {
@@ -50,6 +58,9 @@ class SongOwnershipReportRequest extends FormRequest
             'search' => $this->string('search')->trim()->toString(),
             'work_id' => $this->filled('work_id') ? $this->integer('work_id') : null,
             'as_of' => $this->filled('as_of') ? $this->string('as_of')->toString() : null,
+            'registration_statuses' => $this->array('registration_statuses'),
+            'conflict_statuses' => $this->array('conflict_statuses'),
+            'controlled' => $this->array('controlled'),
             'per_page' => $this->integer('per_page', 10),
         ];
     }

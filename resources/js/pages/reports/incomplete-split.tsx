@@ -1,7 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import { CircleCheck } from 'lucide-react';
+import { CircleCheck, ListChecks, TriangleAlert } from 'lucide-react';
 import { ContentCard } from '@/components/content-card';
 import { ReportActions } from '@/components/reports/report-actions';
+import { ReportSummaryBar } from '@/components/reports/report-summary-bar';
+import { ShareTotalCell } from '@/components/reports/share-total-cell';
 import { TableColumnHeader } from '@/components/table/table-column-header';
 import { TablePagination } from '@/components/table/table-pagination';
 import { TableSearchbar } from '@/components/table/table-searchbar';
@@ -26,12 +28,7 @@ import {
 } from '@/components/ui/table';
 import { WorkRegistrationBadge } from '@/components/works/work-badges';
 import { useTableParams } from '@/hooks/use-table-params';
-import {
-    exportQuery,
-    formatTotal,
-    isCompleteTotal,
-    reportDefaults,
-} from '@/lib/reports';
+import { exportQuery, reportDefaults } from '@/lib/reports';
 import { paramsFromServer } from '@/lib/table';
 import type { ServerFilters } from '@/lib/table';
 import { incompleteSplit } from '@/routes/reports';
@@ -46,22 +43,6 @@ type Props = {
 
 const DEFAULTS = reportDefaults('tap_number.asc');
 const REFRESHED_PROPS = ['rows', 'filters'];
-
-function TotalCell({
-    total,
-    hasParties,
-}: {
-    total: number | null;
-    hasParties: boolean;
-}) {
-    return (
-        <TableCell
-            className={`text-right ${hasParties && !isCompleteTotal(total) ? 'font-medium text-amber-600 dark:text-amber-400' : ''}`}
-        >
-            {hasParties ? formatTotal(total) : '-'}
-        </TableCell>
-    );
-}
 
 export default function IncompleteSplitReport({ rows, filters }: Props) {
     const { params, setParams, isLoading, hasError, retry } = useTableParams({
@@ -93,11 +74,19 @@ export default function IncompleteSplitReport({ rows, filters }: Props) {
                         </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground">
-                        Totals are over the parties in effect today. Performance
-                        and mechanical are always checked. Sync and lyrics are
-                        only checked when a party has a value.
-                    </p>
+                    <ReportSummaryBar note="Performance and mechanical are always checked. Sync and lyrics only when a party has a value.">
+                        <ListChecks className="size-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">
+                            Totals over the parties in effect today
+                        </span>
+                        <span aria-hidden className="text-muted-foreground">
+                            ·
+                        </span>
+                        <span className="font-medium">
+                            {rows.meta.total}{' '}
+                            {rows.meta.total === 1 ? 'work' : 'works'} to fix
+                        </span>
+                    </ReportSummaryBar>
 
                     <TableQueryState
                         isLoading={isLoading}
@@ -132,14 +121,6 @@ export default function IncompleteSplitReport({ rows, filters }: Props) {
                                                     <TableColumnHeader
                                                         title="TAP"
                                                         column="tap_number"
-                                                        params={params}
-                                                        setParams={setParams}
-                                                    />
-                                                </TableHead>
-                                                <TableHead>
-                                                    <TableColumnHeader
-                                                        title="MACP Work ID"
-                                                        column="macp_work_id"
                                                         params={params}
                                                         setParams={setParams}
                                                     />
@@ -184,26 +165,33 @@ export default function IncompleteSplitReport({ rows, filters }: Props) {
                                                     <TableCell className="font-mono text-xs">
                                                         {row.tap_number}
                                                     </TableCell>
-                                                    <TableCell className="font-mono text-xs">
-                                                        {row.macp_work_id}
-                                                    </TableCell>
-                                                    <TableCell className="max-w-[14rem] truncate">
+                                                    <TableCell className="max-w-[14rem]">
                                                         <Link
                                                             href={show(row.id)}
-                                                            className="link-hover font-semibold after:h-[2px]"
+                                                            className="link-hover block truncate font-semibold after:h-[2px]"
                                                         >
                                                             {row.title}
                                                         </Link>
+                                                        <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                                                            {row.macp_work_id}
+                                                        </p>
                                                     </TableCell>
                                                     <TableCell>
                                                         <WorkRegistrationBadge
                                                             work={row}
                                                         />
                                                     </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {row.parties_count}
+                                                    <TableCell className="text-right tabular-nums">
+                                                        {row.parties_count ===
+                                                        0 ? (
+                                                            <span className="font-medium text-amber-600 dark:text-amber-400">
+                                                                0
+                                                            </span>
+                                                        ) : (
+                                                            row.parties_count
+                                                        )}
                                                     </TableCell>
-                                                    <TotalCell
+                                                    <ShareTotalCell
                                                         total={
                                                             row.totals
                                                                 .performance
@@ -213,7 +201,7 @@ export default function IncompleteSplitReport({ rows, filters }: Props) {
                                                             0
                                                         }
                                                     />
-                                                    <TotalCell
+                                                    <ShareTotalCell
                                                         total={
                                                             row.totals
                                                                 .mechanical
@@ -223,14 +211,14 @@ export default function IncompleteSplitReport({ rows, filters }: Props) {
                                                             0
                                                         }
                                                     />
-                                                    <TotalCell
+                                                    <ShareTotalCell
                                                         total={row.totals.sync}
                                                         hasParties={
                                                             row.parties_count >
                                                             0
                                                         }
                                                     />
-                                                    <TotalCell
+                                                    <ShareTotalCell
                                                         total={
                                                             row.totals.lyrics
                                                         }
@@ -239,8 +227,22 @@ export default function IncompleteSplitReport({ rows, filters }: Props) {
                                                             0
                                                         }
                                                     />
-                                                    <TableCell className="min-w-[14rem] whitespace-normal">
-                                                        {row.reasons.join('. ')}
+                                                    <TableCell className="min-w-[13rem] whitespace-normal">
+                                                        <ul className="space-y-1">
+                                                            {row.reasons.map(
+                                                                (reason) => (
+                                                                    <li
+                                                                        key={
+                                                                            reason
+                                                                        }
+                                                                        className="flex items-start gap-1.5 text-xs"
+                                                                    >
+                                                                        <TriangleAlert className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                                                                        {reason}
+                                                                    </li>
+                                                                ),
+                                                            )}
+                                                        </ul>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

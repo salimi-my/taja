@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Reports;
 
 use App\Actions\Reports\SongOwnershipReport;
 use App\Actions\Reports\StreamCsv;
+use App\Enums\ConflictStatus;
+use App\Enums\RegistrationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reports\SongOwnershipReportRequest;
 use App\Http\Resources\WorkOwnershipResource;
@@ -37,6 +39,8 @@ class SongOwnershipReportController extends Controller
                 'tap_number' => $work->tap_number,
                 'title' => $work->displayTitle(),
             ],
+            'registrationStatuses' => RegistrationStatus::options(),
+            'conflictStatuses' => ConflictStatus::options(),
             'perPageOptions' => SongOwnershipReportRequest::PER_PAGE_OPTIONS,
         ]);
     }

@@ -60,6 +60,49 @@ describe('screen', function () {
             ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.title', 'Beta Fake'));
     });
 
+    test('works can be narrowed by registration and conflict status', function () {
+        Work::factory()->create(['registration_status' => 'accepted', 'conflict_status' => 'no_conflict']);
+        $rejected = Work::factory()->create(['registration_status' => 'rejected', 'conflict_status' => 'share_conflict']);
+        Work::factory()->create(['registration_status' => 'draft', 'conflict_status' => 'duplicate']);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.song-ownership', ['registration_statuses' => ['accepted', 'rejected']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 2));
+
+        $this->actingAs($this->user)
+            ->get(route('reports.song-ownership', ['conflict_statuses' => ['share_conflict']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $rejected->id));
+
+        $this->actingAs($this->user)
+            ->get(route('reports.song-ownership', ['registration_statuses' => ['accepted'], 'conflict_statuses' => ['share_conflict']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 0));
+    });
+
+    test('the controlled filter looks at the parties in effect on the date', function () {
+        $controlled = Work::factory()->create();
+        WorkParty::factory()->create(['work_id' => $controlled->id, 'is_controlled' => true, 'effective_start_date' => '2024-01-01']);
+        $uncontrolled = Work::factory()->create();
+        WorkParty::factory()->create(['work_id' => $uncontrolled->id, 'is_controlled' => false, 'effective_start_date' => '2024-01-01']);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.song-ownership', ['controlled' => ['yes']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $controlled->id));
+
+        $this->actingAs($this->user)
+            ->get(route('reports.song-ownership', ['controlled' => ['no']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $uncontrolled->id));
+
+        $this->actingAs($this->user)
+            ->get(route('reports.song-ownership', ['controlled' => ['yes'], 'as_of' => '2023-06-01']))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 0));
+    });
+
+    test('rejects an unknown status', function () {
+        $this->actingAs($this->user)
+            ->get(route('reports.song-ownership', ['registration_statuses' => ['nonsense']]))
+            ->assertSessionHasErrors('registration_statuses.0');
+    });
+
     test('rejects a malformed date', function () {
         $this->actingAs($this->user)
             ->get(route('reports.song-ownership', ['as_of' => '06/01/2023']))
@@ -68,6 +111,19 @@ describe('screen', function () {
 });
 
 describe('export', function () {
+    test('applies the same filters as the screen', function () {
+        $kept = Work::factory()->create(['registration_status' => 'accepted']);
+        WorkParty::factory()->create(['work_id' => $kept->id, 'contributor_name' => 'Kept Fake Composer']);
+        $dropped = Work::factory()->create(['registration_status' => 'draft']);
+        WorkParty::factory()->create(['work_id' => $dropped->id, 'contributor_name' => 'Dropped Fake Composer']);
+
+        $content = $this->actingAs($this->user)
+            ->get(route('reports.export.song-ownership', ['registration_statuses' => ['accepted']]))
+            ->streamedContent();
+
+        expect($content)->toContain('Kept Fake Composer')->not->toContain('Dropped Fake Composer');
+    });
+
     test('downloads one row per party in effect', function () {
         $work = Work::factory()->create();
         WorkParty::factory()->create(['work_id' => $work->id, 'contributor_name' => 'Fake Composer', 'performance_share' => 50]);

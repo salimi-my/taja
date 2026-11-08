@@ -17,21 +17,41 @@ class SongOwnershipReport
     /**
      * The works with the party rows in effect loaded on each.
      *
-     * @param  array{search: string, work_id: int|null, as_of: string|null}  $filters
+     * @param  array{search: string, work_id: int|null, as_of: string|null, registration_statuses: list<string>, conflict_statuses: list<string>, controlled: list<string>}  $filters
      * @return Builder<Work>
      */
     public function query(array $filters): Builder
     {
         return Work::query()
             ->with(['parties' => function (HasMany $parties) use ($filters): void {
-                $filters['as_of'] === null ? $parties->current() : $parties->effectiveOn($filters['as_of']);
-
-                $parties->with(['writer', 'publisher']);
+                $this->inEffect($parties, $filters['as_of'])->with(['writer', 'publisher']);
             }])
             ->when($filters['search'] !== '', fn (Builder $query) => $query->search($filters['search']))
             ->when($filters['work_id'] !== null, fn (Builder $query) => $query->whereKey($filters['work_id']))
+            ->when($filters['registration_statuses'] !== [], fn (Builder $query) => $query->whereIn('registration_status', $filters['registration_statuses']))
+            ->when($filters['conflict_statuses'] !== [], fn (Builder $query) => $query->whereIn('conflict_status', $filters['conflict_statuses']))
+            ->when(count($filters['controlled']) === 1, function (Builder $query) use ($filters): void {
+                $hasControlledParty = fn (Builder $parties) => $this->inEffect($parties, $filters['as_of'])->where('is_controlled', true);
+
+                $filters['controlled'][0] === 'yes'
+                    ? $query->whereHas('parties', $hasControlledParty)
+                    : $query->whereDoesntHave('parties', $hasControlledParty);
+            })
             ->orderBy('tap_number')
             ->orderBy('id');
+    }
+
+    /**
+     * Limit party rows to those in effect today, or on a date.
+     *
+     * @template TQuery of Builder<WorkParty>|HasMany<WorkParty, Work>
+     *
+     * @param  TQuery  $parties
+     * @return TQuery
+     */
+    private function inEffect(Builder|HasMany $parties, ?string $asOf): Builder|HasMany
+    {
+        return $asOf === null ? $parties->current() : $parties->effectiveOn($asOf);
     }
 
     /**

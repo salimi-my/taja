@@ -3,6 +3,7 @@ import { PenLine, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { ContentCard } from '@/components/content-card';
 import { ReportActions } from '@/components/reports/report-actions';
+import { ReportSummaryBar } from '@/components/reports/report-summary-bar';
 import { TablePagination } from '@/components/table/table-pagination';
 import { TableQueryState } from '@/components/table/table-shell';
 import { TableSkeleton } from '@/components/table/table-skeleton';
@@ -136,18 +137,21 @@ export default function WriterCatalogueReport({
                     </div>
 
                     {writer && (
-                        <p className="text-sm text-muted-foreground">
-                            Writer:{' '}
-                            <span className="font-medium text-foreground">
-                                {writer.name}
-                            </span>{' '}
-                            <span className="font-mono text-xs">
+                        <ReportSummaryBar>
+                            <PenLine className="size-4 text-muted-foreground" />
+                            <span className="font-medium">{writer.name}</span>
+                            <span className="font-mono text-xs text-muted-foreground">
                                 {writer.code}
                             </span>
-                            {params.include_ended === '1'
-                                ? ' (including ended involvement)'
-                                : ' (current involvement)'}
-                        </p>
+                            <span aria-hidden className="text-muted-foreground">
+                                ·
+                            </span>
+                            <span className="text-muted-foreground">
+                                {params.include_ended === '1'
+                                    ? 'Including ended involvement'
+                                    : 'Current involvement'}
+                            </span>
+                        </ReportSummaryBar>
                     )}
 
                     {writer === null ? (

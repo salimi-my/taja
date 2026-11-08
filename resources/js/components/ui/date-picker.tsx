@@ -22,6 +22,9 @@ interface DatePickerProps {
   placeholder?: string;
   /** Shows a clear button, for dates that are optional. */
   clearable?: boolean;
+  /** Extra classes for the trigger button, e.g. to size it like a toolbar filter. */
+  className?: string;
+  "aria-label"?: string;
   "aria-invalid"?: boolean;
 }
 
@@ -39,6 +42,8 @@ export function DatePicker({
   id,
   placeholder = "Pick a date",
   clearable = true,
+  className,
+  "aria-label": ariaLabel,
   "aria-invalid": ariaInvalid,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
@@ -52,10 +57,12 @@ export function DatePicker({
           type="button"
           variant="outline"
           disabled={disabled}
+          aria-label={ariaLabel}
           aria-invalid={ariaInvalid}
           className={cn(
             "w-full justify-start text-left font-normal",
             !date && "text-muted-foreground",
+            className,
           )}
         >
           <CalendarIcon className="size-4 shrink-0" />

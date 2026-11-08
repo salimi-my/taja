@@ -20,29 +20,46 @@ import {
 import { cn } from '@/lib/utils';
 import type { Params } from '@/types';
 
+/** The params that can hold either end of a date range. */
+type DateRangeParamKey =
+    | 'start_date'
+    | 'end_date'
+    | 'effective_from'
+    | 'effective_to'
+    | 'recorded_from'
+    | 'recorded_to';
+
 interface TableDateRangeFilterProps extends HTMLAttributes<HTMLDivElement> {
     params: Params;
     setParams: Dispatch<SetStateAction<Params>>;
+    /** The param holding the start of the range. Defaults to `start_date`. */
+    startKey?: DateRangeParamKey;
+    /** The param holding the end of the range. Defaults to `end_date`. */
+    endKey?: DateRangeParamKey;
+    /** The text shown while no range is picked. */
+    placeholder?: string;
 }
 
 export function TableDateRangeFilter({
     params,
     setParams,
+    startKey = 'start_date',
+    endKey = 'end_date',
+    placeholder = 'Select date range',
     className,
 }: TableDateRangeFilterProps) {
+    const startValue = params[startKey];
+    const endValue = params[endKey];
+
     const committedDate: DateRange | undefined = useMemo(
         () =>
-            params.start_date || params.end_date
+            startValue || endValue
                 ? {
-                      from: params.start_date
-                          ? new Date(params.start_date)
-                          : undefined,
-                      to: params.end_date
-                          ? new Date(params.end_date)
-                          : undefined,
+                      from: startValue ? new Date(startValue) : undefined,
+                      to: endValue ? new Date(endValue) : undefined,
                   }
                 : undefined,
-        [params.end_date, params.start_date],
+        [endValue, startValue],
     );
     const [draftDate, setDraftDate] = useState<DateRange | undefined>(
         undefined,
@@ -56,15 +73,15 @@ export function TableDateRangeFilter({
             setParams((prev: Params) => ({
                 ...prev,
                 page: 1,
-                start_date: newDate?.from
+                [startKey]: newDate?.from
                     ? format(newDate.from, 'yyyy-MM-dd')
                     : undefined,
-                end_date: newDate?.to
+                [endKey]: newDate?.to
                     ? format(newDate.to, 'yyyy-MM-dd')
                     : undefined,
             }));
         },
-        [setParams],
+        [endKey, setParams, startKey],
     );
 
     const handleSelect = useCallback(
@@ -115,7 +132,7 @@ export function TableDateRangeFilter({
                                 format(displayedDate.from, 'dd MMM yyyy')
                             )
                         ) : (
-                            <span>Select date range</span>
+                            <span>{placeholder}</span>
                         )}
                     </Button>
                 </PopoverTrigger>
@@ -126,6 +143,9 @@ export function TableDateRangeFilter({
                         selected={displayedDate}
                         onSelect={handleSelect}
                         numberOfMonths={2}
+                        captionLayout="dropdown"
+                        startMonth={new Date(1900, 0)}
+                        endMonth={new Date(new Date().getFullYear() + 30, 11)}
                     />
                 </PopoverContent>
             </Popover>

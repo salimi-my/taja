@@ -1,16 +1,21 @@
 import { Head, Link } from '@inertiajs/react';
-import { Music, X } from 'lucide-react';
+import { useMemo } from 'react';
+import { CalendarDays, Music, TriangleAlert } from 'lucide-react';
 import { ContentCard } from '@/components/content-card';
 import { formatDate } from '@/components/detail-grid';
 import { ReportActions } from '@/components/reports/report-actions';
 import { ReportDateFilter } from '@/components/reports/report-date-filter';
+import { ReportSummaryBar } from '@/components/reports/report-summary-bar';
 import { ReportWorkBadge } from '@/components/reports/report-work-badge';
+import { ShareTotalCell } from '@/components/reports/share-total-cell';
+import { TableFacetedFilter } from '@/components/table/table-faceted-filter';
 import { TablePagination } from '@/components/table/table-pagination';
-import { TableSearchbar } from '@/components/table/table-searchbar';
-import { TableQueryState } from '@/components/table/table-shell';
+import {
+    TableDesktopToolbar,
+    TableQueryState,
+} from '@/components/table/table-shell';
 import { TableSkeleton } from '@/components/table/table-skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     Empty,
     EmptyDescription,
@@ -27,25 +32,22 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { WorkStatuses } from '@/components/works/work-badges';
 import {
-    WorkConflictBadge,
-    WorkRegistrationBadge,
-} from '@/components/works/work-badges';
+    PartyPeriodCell,
+    PartyTerritoriesCell,
+    ShareCell,
+} from '@/components/works/party-cells';
 import { useTableParams } from '@/hooks/use-table-params';
-import { formatTerritories } from '@/lib/publishers';
-import {
-    exportQuery,
-    formatTotal,
-    isCompleteTotal,
-    reportDefaults,
-} from '@/lib/reports';
+import { exportQuery, isCompleteTotal, reportDefaults } from '@/lib/reports';
 import { paramsFromServer } from '@/lib/table';
 import type { ServerFilters } from '@/lib/table';
-import { formatShare } from '@/lib/works';
+import { YES_NO_FILTER_OPTIONS } from '@/lib/works';
 import { songOwnership } from '@/routes/reports';
 import { songOwnership as exportSongOwnership } from '@/routes/reports/export';
 import { show } from '@/routes/works';
 import type {
+    EnumOption,
     PaginatedResource,
     ReportWorkFilter,
     WorkOwnershipRow,
@@ -55,133 +57,175 @@ type Props = {
     rows: PaginatedResource<WorkOwnershipRow>;
     filters: ServerFilters;
     work: ReportWorkFilter | null;
+    registrationStatuses: EnumOption[];
+    conflictStatuses: EnumOption[];
 };
 
 const DEFAULTS = reportDefaults('tap_number.asc');
 const REFRESHED_PROPS = ['rows', 'filters', 'work'];
 
-function TotalCell({ total }: { total: number | null }) {
-    return (
-        <TableCell
-            className={`text-right font-medium ${isCompleteTotal(total) ? '' : 'text-amber-600 dark:text-amber-400'}`}
-        >
-            {formatTotal(total)}
-        </TableCell>
-    );
-}
+const SHARE_COLUMNS = [
+    {
+        label: 'Perf.',
+        title: 'Performance',
+        key: 'performance_share',
+        total: 'performance',
+    },
+    {
+        label: 'Mech.',
+        title: 'Mechanical',
+        key: 'mechanical_share',
+        total: 'mechanical',
+    },
+    { label: 'Sync', title: 'Sync', key: 'sync_share', total: 'sync' },
+    { label: 'Lyrics', title: 'Lyrics', key: 'lyrics_share', total: 'lyrics' },
+] as const;
 
 function WorkOwnership({ row }: { row: WorkOwnershipRow }) {
-    return (
-        <section className="break-inside-avoid space-y-2">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="font-mono text-xs">{row.tap_number}</span>
-                <span className="font-mono text-xs text-muted-foreground">
-                    {row.macp_work_id}
-                </span>
-                <Link
-                    href={show(row.id)}
-                    className="link-hover font-semibold after:h-[2px]"
-                >
-                    {row.title}
-                </Link>
-                <WorkRegistrationBadge work={row} />
-                <WorkConflictBadge work={row} />
-            </div>
+    const hasIncompleteSplit = !Object.values(row.totals).every(
+        isCompleteTotal,
+    );
 
-            <div className="overflow-hidden rounded-lg border">
-                <Table>
-                    <TableHeader>
+    return (
+        <section className="break-inside-avoid overflow-hidden rounded-md border bg-card">
+            <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b bg-muted/40 px-4 py-3">
+                <div className="min-w-0">
+                    <Link
+                        href={show(row.id)}
+                        className="link-hover font-semibold after:h-[2px]"
+                    >
+                        {row.title}
+                    </Link>
+                    <p className="mt-0.5 flex flex-wrap items-center gap-x-2 font-mono text-xs text-muted-foreground">
+                        <span>{row.tap_number}</span>
+                        <span aria-hidden>·</span>
+                        <span>{row.macp_work_id}</span>
+                    </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    {hasIncompleteSplit && (
+                        <Badge
+                            variant="outline"
+                            className="gap-1 border-amber-500 text-amber-600 dark:border-amber-400 dark:text-amber-400"
+                        >
+                            <TriangleAlert />
+                            Incomplete split
+                        </Badge>
+                    )}
+                    <WorkStatuses work={row} />
+                </div>
+            </header>
+
+            <Table>
+                <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                        <TableHead>Contributor</TableHead>
+                        {SHARE_COLUMNS.map((column) => (
+                            <TableHead
+                                key={column.key}
+                                title={column.title}
+                                className="text-right"
+                            >
+                                {column.label}
+                            </TableHead>
+                        ))}
+                        <TableHead>Territories</TableHead>
+                        <TableHead>Effective</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {row.parties.length === 0 ? (
                         <TableRow>
-                            <TableHead>Contributor</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead className="text-right">Perf.</TableHead>
-                            <TableHead className="text-right">Mech.</TableHead>
-                            <TableHead className="text-right">Sync</TableHead>
-                            <TableHead className="text-right">Lyrics</TableHead>
-                            <TableHead>Controlled</TableHead>
-                            <TableHead>Territories</TableHead>
-                            <TableHead>Effective</TableHead>
+                            <TableCell
+                                colSpan={7}
+                                className="py-6 text-center text-muted-foreground"
+                            >
+                                No parties in effect.
+                            </TableCell>
                         </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {row.parties.length === 0 ? (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={9}
-                                    className="text-center text-muted-foreground"
-                                >
-                                    No parties in effect.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            row.parties.map((party) => (
-                                <TableRow key={party.id}>
-                                    <TableCell>
+                    ) : (
+                        row.parties.map((party) => (
+                            <TableRow key={party.id}>
+                                <TableCell>
+                                    <div className="font-medium">
                                         {party.contributor_name}
+                                    </div>
+                                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                                        <span>{party.role_label}</span>
                                         {party.party_code && (
-                                            <span className="ml-2 font-mono text-xs text-muted-foreground">
+                                            <span className="font-mono">
                                                 {party.party_code}
                                             </span>
                                         )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary">
-                                            {party.role}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {formatShare(party.performance_share)}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {formatShare(party.mechanical_share)}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {formatShare(party.sync_share)}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {formatShare(party.lyrics_share)}
-                                    </TableCell>
-                                    <TableCell>
-                                        {party.is_controlled ? 'Yes' : 'No'}
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap">
-                                        {formatTerritories(
-                                            party.territories_controlled,
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="whitespace-nowrap">
-                                        {formatDate(party.effective_start_date)}
-                                        {' to '}
-                                        {formatDate(party.effective_end_date) ??
-                                            'present'}
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                    <TableFooter>
-                        <TableRow>
-                            <TableCell colSpan={2}>Total</TableCell>
-                            <TotalCell total={row.totals.performance} />
-                            <TotalCell total={row.totals.mechanical} />
-                            <TotalCell total={row.totals.sync} />
-                            <TotalCell total={row.totals.lyrics} />
-                            <TableCell colSpan={3} />
-                        </TableRow>
-                    </TableFooter>
-                </Table>
-            </div>
+                                    </div>
+                                </TableCell>
+                                {SHARE_COLUMNS.map((column) => (
+                                    <ShareCell
+                                        key={column.key}
+                                        value={party[column.key]}
+                                    />
+                                ))}
+                                <PartyTerritoriesCell party={party} />
+                                <PartyPeriodCell party={party} />
+                            </TableRow>
+                        ))
+                    )}
+                </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TableCell className="font-semibold">Total</TableCell>
+                        {SHARE_COLUMNS.map((column) => (
+                            <ShareTotalCell
+                                key={column.total}
+                                total={row.totals[column.total]}
+                            />
+                        ))}
+                        <TableCell colSpan={2} />
+                    </TableRow>
+                </TableFooter>
+            </Table>
         </section>
     );
 }
 
-export default function SongOwnershipReport({ rows, filters, work }: Props) {
-    const { params, setParams, isLoading, hasError, retry } = useTableParams({
+export default function SongOwnershipReport({
+    rows,
+    filters,
+    work,
+    registrationStatuses,
+    conflictStatuses,
+}: Props) {
+    const {
+        params,
+        setParams,
+        isFiltered,
+        isLoading,
+        hasError,
+        resetFilters,
+        retry,
+    } = useTableParams({
         url: songOwnership().url,
         initialParams: paramsFromServer(filters, rows.meta.current_page),
         defaultParams: DEFAULTS,
         only: REFRESHED_PROPS,
     });
+
+    const registrationOptions = useMemo(
+        () =>
+            registrationStatuses.map((item) => ({
+                id: item.value,
+                name: item.label,
+            })),
+        [registrationStatuses],
+    );
+    const conflictOptions = useMemo(
+        () =>
+            conflictStatuses.map((item) => ({
+                id: item.value,
+                name: item.label,
+            })),
+        [conflictStatuses],
+    );
 
     return (
         <>
@@ -192,49 +236,78 @@ export default function SongOwnershipReport({ rows, filters, work }: Props) {
                 description="Who owns each work and the shares they hold, today or as of a date."
             >
                 <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-3 print:hidden">
-                        <TableSearchbar params={params} setParams={setParams} />
-                        <ReportDateFilter
-                            label="As of"
+                    <div className="print:hidden">
+                        <TableDesktopToolbar
                             params={params}
                             setParams={setParams}
-                            fromKey="as_of"
+                            isFiltered={isFiltered}
+                            onResetFilters={resetFilters}
+                            filters={
+                                <>
+                                    <ReportDateFilter
+                                        label="As of"
+                                        params={params}
+                                        setParams={setParams}
+                                        paramKey="as_of"
+                                    />
+                                    <ReportWorkBadge
+                                        work={work}
+                                        setParams={setParams}
+                                    />
+                                    <TableFacetedFilter
+                                        title="Registration"
+                                        column="registration_statuses"
+                                        params={params}
+                                        setParams={setParams}
+                                        options={registrationOptions}
+                                    />
+                                    <TableFacetedFilter
+                                        title="Conflict"
+                                        column="conflict_statuses"
+                                        params={params}
+                                        setParams={setParams}
+                                        options={conflictOptions}
+                                    />
+                                    <TableFacetedFilter
+                                        title="Controlled"
+                                        column="controlled"
+                                        params={params}
+                                        setParams={setParams}
+                                        options={YES_NO_FILTER_OPTIONS}
+                                    />
+                                </>
+                            }
+                            actions={
+                                <ReportActions
+                                    exportUrl={
+                                        exportSongOwnership({
+                                            query: exportQuery(
+                                                params,
+                                                DEFAULTS,
+                                            ),
+                                        }).url
+                                    }
+                                />
+                            }
                         />
-                        {params.as_of && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                    setParams((previous) => ({
-                                        ...previous,
-                                        page: 1,
-                                        as_of: undefined,
-                                    }))
-                                }
-                            >
-                                Today
-                                <X />
-                            </Button>
-                        )}
-                        <ReportWorkBadge work={work} setParams={setParams} />
-                        <div className="ml-auto">
-                            <ReportActions
-                                exportUrl={
-                                    exportSongOwnership({
-                                        query: exportQuery(params, DEFAULTS),
-                                    }).url
-                                }
-                            />
-                        </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground">
-                        Ownership{' '}
-                        {params.as_of
-                            ? `as of ${formatDate(params.as_of)}`
-                            : 'today'}
-                        . Totals other than 100% are shown in amber.
-                    </p>
+                    <ReportSummaryBar note="A total other than 100% means the split is incomplete.">
+                        <CalendarDays className="size-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Ownership</span>
+                        <span className="font-medium">
+                            {params.as_of
+                                ? `as of ${formatDate(params.as_of)}`
+                                : 'today'}
+                        </span>
+                        <span aria-hidden className="text-muted-foreground">
+                            ·
+                        </span>
+                        <span className="text-muted-foreground">
+                            {rows.meta.total}{' '}
+                            {rows.meta.total === 1 ? 'work' : 'works'}
+                        </span>
+                    </ReportSummaryBar>
 
                     <TableQueryState
                         isLoading={isLoading}
@@ -253,7 +326,8 @@ export default function SongOwnershipReport({ rows, filters, work }: Props) {
                                         </EmptyMedia>
                                         <EmptyTitle>No works found</EmptyTitle>
                                         <EmptyDescription>
-                                            No work matches the search.
+                                            No work matches the search or
+                                            filters.
                                         </EmptyDescription>
                                     </EmptyHeader>
                                 </Empty>

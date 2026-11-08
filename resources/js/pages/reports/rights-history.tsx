@@ -4,19 +4,18 @@ import { useMemo } from 'react';
 import { ContentCard } from '@/components/content-card';
 import { formatDate } from '@/components/detail-grid';
 import { ReportActions } from '@/components/reports/report-actions';
-import { ReportDateFilter } from '@/components/reports/report-date-filter';
 import { ReportWorkBadge } from '@/components/reports/report-work-badge';
 import { TableColumnHeader } from '@/components/table/table-column-header';
+import { TableDateRangeFilter } from '@/components/table/table-date-range-filter';
 import { TableFacetedFilter } from '@/components/table/table-faceted-filter';
 import { TablePagination } from '@/components/table/table-pagination';
-import { TableSearchbar } from '@/components/table/table-searchbar';
 import {
     TableDesktopFrame,
+    TableDesktopToolbar,
     TableQueryState,
 } from '@/components/table/table-shell';
 import { TableSkeleton } from '@/components/table/table-skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     Empty,
     EmptyDescription,
@@ -102,50 +101,59 @@ export default function RightsHistoryReport({
                 description="Every recorded change to the rights of a work, newest first."
             >
                 <div className="space-y-4">
-                    <div className="space-y-3 print:hidden">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <TableSearchbar
-                                params={params}
-                                setParams={setParams}
-                            />
-                            <TableFacetedFilter
-                                title="Change type"
-                                column="change_types"
-                                params={params}
-                                setParams={setParams}
-                                options={changeTypeOptions}
-                            />
-                            <TableFacetedFilter
-                                title="User"
-                                column="users"
-                                params={params}
-                                setParams={setParams}
-                                options={userOptions}
-                                renderOptionLeading={(option) => (
-                                    <UserAvatar
-                                        name={option.name}
-                                        avatarUrl={
-                                            avatarUrlsByUserId.get(
-                                                String(option.id),
-                                            ) ?? null
-                                        }
+                    <div className="print:hidden">
+                        <TableDesktopToolbar
+                            params={params}
+                            setParams={setParams}
+                            isFiltered={isFiltered}
+                            onResetFilters={resetFilters}
+                            filters={
+                                <>
+                                    <TableFacetedFilter
+                                        title="Change type"
+                                        column="change_types"
+                                        params={params}
+                                        setParams={setParams}
+                                        options={changeTypeOptions}
                                     />
-                                )}
-                            />
-                            <ReportWorkBadge
-                                work={work}
-                                setParams={setParams}
-                            />
-                            {isFiltered && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={resetFilters}
-                                >
-                                    Reset
-                                </Button>
-                            )}
-                            <div className="ml-auto">
+                                    <TableFacetedFilter
+                                        title="User"
+                                        column="users"
+                                        params={params}
+                                        setParams={setParams}
+                                        options={userOptions}
+                                        renderOptionLeading={(option) => (
+                                            <UserAvatar
+                                                name={option.name}
+                                                avatarUrl={
+                                                    avatarUrlsByUserId.get(
+                                                        String(option.id),
+                                                    ) ?? null
+                                                }
+                                            />
+                                        )}
+                                    />
+                                    <ReportWorkBadge
+                                        work={work}
+                                        setParams={setParams}
+                                    />
+                                    <TableDateRangeFilter
+                                        params={params}
+                                        setParams={setParams}
+                                        startKey="effective_from"
+                                        endKey="effective_to"
+                                        placeholder="Effective date range"
+                                    />
+                                    <TableDateRangeFilter
+                                        params={params}
+                                        setParams={setParams}
+                                        startKey="recorded_from"
+                                        endKey="recorded_to"
+                                        placeholder="Recorded date range"
+                                    />
+                                </>
+                            }
+                            actions={
                                 <ReportActions
                                     exportUrl={
                                         exportRightsHistory({
@@ -156,24 +164,8 @@ export default function RightsHistoryReport({
                                         }).url
                                     }
                                 />
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                            <ReportDateFilter
-                                label="Effective"
-                                params={params}
-                                setParams={setParams}
-                                fromKey="effective_from"
-                                toKey="effective_to"
-                            />
-                            <ReportDateFilter
-                                label="Recorded"
-                                params={params}
-                                setParams={setParams}
-                                fromKey="recorded_from"
-                                toKey="recorded_to"
-                            />
-                        </div>
+                            }
+                        />
                     </div>
 
                     <TableQueryState

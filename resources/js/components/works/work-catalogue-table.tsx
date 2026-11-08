@@ -1,5 +1,4 @@
 import { Link } from '@inertiajs/react';
-import { formatDate } from '@/components/detail-grid';
 import { Badge } from '@/components/ui/badge';
 import {
     Table,
@@ -10,11 +9,11 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import {
-    WorkConflictBadge,
-    WorkRegistrationBadge,
-} from '@/components/works/work-badges';
-import { formatTerritories } from '@/lib/publishers';
-import { formatShare } from '@/lib/works';
+    PartyPeriodCell,
+    PartyTerritoriesCell,
+    ShareCell,
+} from '@/components/works/party-cells';
+import { WorkStatuses } from '@/components/works/work-badges';
 import { show } from '@/routes/works';
 import type { WorkParty } from '@/types';
 
@@ -24,75 +23,61 @@ import type { WorkParty } from '@/types';
  */
 export function WorkCatalogueTable({ rows }: { rows: WorkParty[] }) {
     return (
-        <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-hidden rounded-md border bg-card">
             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>TAP</TableHead>
-                        <TableHead>MACP Work ID</TableHead>
-                        <TableHead>Title</TableHead>
+                <TableHeader className="bg-muted/40">
+                    <TableRow className="hover:bg-transparent">
+                        <TableHead>Work</TableHead>
                         <TableHead>Role</TableHead>
-                        <TableHead className="text-right">Perf.</TableHead>
-                        <TableHead className="text-right">Mech.</TableHead>
+                        <TableHead className="text-right" title="Performance">
+                            Perf.
+                        </TableHead>
+                        <TableHead className="text-right" title="Mechanical">
+                            Mech.
+                        </TableHead>
                         <TableHead className="text-right">Sync</TableHead>
                         <TableHead className="text-right">Lyrics</TableHead>
                         <TableHead>Territories</TableHead>
                         <TableHead>Effective</TableHead>
-                        <TableHead>Registration</TableHead>
-                        <TableHead>Conflict</TableHead>
+                        <TableHead>Status</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {rows.map((row) =>
                         row.work ? (
                             <TableRow key={row.id}>
-                                <TableCell className="font-mono text-xs">
-                                    {row.work.tap_number}
-                                </TableCell>
-                                <TableCell className="font-mono text-xs">
-                                    {row.work.macp_work_id}
-                                </TableCell>
-                                <TableCell className="max-w-[14rem] truncate">
+                                <TableCell className="max-w-[16rem]">
                                     <Link
                                         href={show(row.work.id)}
-                                        className="link-hover font-semibold after:h-[2px]"
+                                        className="link-hover block truncate font-semibold after:h-[2px]"
                                     >
                                         {row.work.title}
                                     </Link>
+                                    <p className="mt-0.5 flex flex-wrap items-center gap-x-2 font-mono text-xs text-muted-foreground">
+                                        <span>{row.work.tap_number}</span>
+                                        <span aria-hidden>·</span>
+                                        <span>{row.work.macp_work_id}</span>
+                                    </p>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant="secondary">
+                                    <Badge
+                                        variant="secondary"
+                                        title={row.role_label}
+                                    >
                                         {row.role}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="text-right">
-                                    {formatShare(row.performance_share)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    {formatShare(row.mechanical_share)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    {formatShare(row.sync_share)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    {formatShare(row.lyrics_share)}
-                                </TableCell>
-                                <TableCell className="whitespace-nowrap">
-                                    {formatTerritories(
-                                        row.territories_controlled,
-                                    )}
-                                </TableCell>
-                                <TableCell className="whitespace-nowrap">
-                                    {formatDate(row.effective_start_date)}
-                                    {' to '}
-                                    {formatDate(row.effective_end_date) ??
-                                        'present'}
-                                </TableCell>
+                                <ShareCell value={row.performance_share} />
+                                <ShareCell value={row.mechanical_share} />
+                                <ShareCell value={row.sync_share} />
+                                <ShareCell value={row.lyrics_share} />
+                                <PartyTerritoriesCell party={row} />
+                                <PartyPeriodCell party={row} />
                                 <TableCell>
-                                    <WorkRegistrationBadge work={row.work} />
-                                </TableCell>
-                                <TableCell>
-                                    <WorkConflictBadge work={row.work} />
+                                    <WorkStatuses
+                                        work={row.work}
+                                        className="flex-col items-start"
+                                    />
                                 </TableCell>
                             </TableRow>
                         ) : null,
