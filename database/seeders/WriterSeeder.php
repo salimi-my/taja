@@ -9,7 +9,8 @@ use Illuminate\Database\Seeder;
 class WriterSeeder extends Seeder
 {
     /**
-     * Seed fake writers, some with pseudonyms and some linked to a publisher.
+     * Seed fake writers, some with pseudonyms, some linked to a publisher and a few
+     * with a birthday coming up for the dashboard reminder.
      * Run after the `PublisherSeeder`.
      */
     public function run(): void
@@ -25,5 +26,11 @@ class WriterSeeder extends Seeder
         );
 
         Writer::factory()->inactive()->create();
+
+        foreach ([0, 0, 1, 3] as $daysAhead) {
+            Writer::factory()->create([
+                'date_of_birth' => now()->addDays($daysAhead)->subYears(fake()->numberBetween(25, 70))->toDateString(),
+            ]);
+        }
     }
 }

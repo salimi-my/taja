@@ -248,7 +248,7 @@ The spec is `PHASE_1.md`. The three client workbooks it describes are the source
 - **Domain logic** lives in `app/Actions/{Area}` (`Works`, `Imports`, `Reports`), not in controllers. Generated codes come from the `HasGeneratedCode` trait, so do not seed with `WithoutModelEvents`.
 - **CSV import:** one `ImportDefinition` per type in `app/Actions/Imports` drives the template, the field guide and the validation. Flow: upload, preview, confirm. Imports are create-only and processed by `ProcessCsvImportJob`.
 - **Reports:** `app/Actions/Reports/*Report` builds the query (and the CSV headers and rows) once. The report controller's `index` renders the datatable and `export` streams the same filters through `StreamCsv`, so the screen and the file cannot drift. Report filters are read by a Form Request `filters()` method. Reports are read-only and open to every signed-in user.
-- **Dashboard:** counts, the incomplete split count (`IncompleteSplitReport::count()`), the registration status chart, recent rights history, and recent imports for admins.
+- **Dashboard:** counts, the incomplete split count (`IncompleteSplitReport::count()`), the registration status chart, upcoming writer birthdays (`UpcomingBirthdays`, a banner plus a card, visible to every role), recent rights history, and recent imports for admins.
 
 ### Frontend
 

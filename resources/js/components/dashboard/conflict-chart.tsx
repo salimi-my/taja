@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/chart';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { ConflictBreakdownItem } from '@/types';
+import { ChartLegend } from './chart-legend';
 import { ConflictChartSkeleton } from './dashboard-skeletons';
 
 type ConflictChartProps = {
@@ -22,12 +23,12 @@ type ConflictChartProps = {
     data: ConflictBreakdownItem[] | undefined;
 };
 
-/** Give each status a color that fits it: green when clear, rose and amber for conflicts. */
+/** Give each status a color that fits it: the brand color when clear, rose and amber for conflicts. */
 const STATUS_COLORS: Record<string, string> = {
-    no_conflict: 'var(--chart-5)',
+    no_conflict: 'var(--chart-1)',
     share_conflict: 'var(--chart-4)',
     ownership_conflict: 'var(--chart-3)',
-    duplicate: 'var(--chart-1)',
+    duplicate: 'var(--chart-5)',
     society_query: 'var(--chart-2)',
 };
 
@@ -70,10 +71,10 @@ export function ConflictChart({ data }: ConflictChartProps) {
                     Share, ownership and society queries on the catalogue
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 px-4 ps-1.5 md:px-6">
+            <CardContent className="flex flex-1 flex-col gap-4 px-4 ps-1.5 md:px-6">
                 <ChartContainer
                     config={chartConfig}
-                    className="block aspect-auto h-[240px] w-full min-w-0 max-md:h-[200px]"
+                    className="block aspect-auto h-[240px] w-full min-w-0 max-md:h-[200px] xl:mt-4"
                 >
                     <BarChart
                         accessibilityLayer
@@ -109,6 +110,14 @@ export function ConflictChart({ data }: ConflictChartProps) {
                         </Bar>
                     </BarChart>
                 </ChartContainer>
+                <ChartLegend
+                    items={data.map((item) => ({
+                        key: item.value,
+                        label: item.label,
+                        total: item.total,
+                        color: chartConfig[item.value]?.color,
+                    }))}
+                />
             </CardContent>
             <CardFooter className="text-sm text-muted-foreground max-md:px-4 max-md:text-xs">
                 {inConflict === 0 ? (

@@ -26,6 +26,19 @@ export type AttentionItem = {
     target_id: number | null;
 };
 
+/** A writer with a birthday today or in the next few days. */
+export type WriterBirthday = {
+    id: number;
+    name: string;
+    writer_code: string | null;
+    /** The day of the birthday, as Y-m-d. */
+    date: string;
+    /** 0 for today, 1 for tomorrow and so on. */
+    days_until: number;
+    /** The age the writer turns. */
+    turning_age: number;
+};
+
 /** Works added and rights changes recorded on one day. */
 export type ActivityPoint = {
     date: string;
@@ -44,14 +57,6 @@ export type RegistrationBreakdownItem = {
 export type ConflictBreakdownItem = {
     value: string;
     label: string;
-    total: number;
-};
-
-/** A publisher with the number of works it is a current party of. */
-export type TopPublisher = {
-    id: number;
-    name: string;
-    code: string;
     total: number;
 };
 

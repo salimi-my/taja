@@ -3,12 +3,13 @@ import { FileUp, History, Plus } from 'lucide-react';
 import { useState, useSyncExternalStore } from 'react';
 import { ActivityChart } from '@/components/dashboard/activity-chart';
 import { AttentionList } from '@/components/dashboard/attention-list';
+import { BirthdayBanner } from '@/components/dashboard/birthday-banner';
 import { ConflictChart } from '@/components/dashboard/conflict-chart';
 import { RecentHistory } from '@/components/dashboard/recent-history';
 import { RecentImports } from '@/components/dashboard/recent-imports';
 import { RegistrationChart } from '@/components/dashboard/registration-chart';
 import { StatsCards } from '@/components/dashboard/stats-cards';
-import { TopPublishers } from '@/components/dashboard/top-publishers';
+import { UpcomingBirthdays } from '@/components/dashboard/upcoming-birthdays';
 import { Button } from '@/components/ui/button';
 import { useIsAdmin } from '@/hooks/use-is-admin';
 import { dashboard } from '@/routes';
@@ -25,12 +26,13 @@ import type {
     RecentImport,
     RegistrationBreakdownItem,
     RightsHistoryEntry,
-    TopPublisher,
+    WriterBirthday,
 } from '@/types';
 
 type Props = {
     stats: DashboardStats;
     attention: AttentionItem[];
+    upcomingBirthdays: WriterBirthday[];
     registrationBreakdown: RegistrationBreakdownItem[];
     recentHistory: Pick<PaginatedResource<RightsHistoryEntry>, 'data'>;
     /** Only sent to admins. */
@@ -39,7 +41,6 @@ type Props = {
     /** The charts are deferred, so they are undefined until they have loaded. */
     activity?: ActivityPoint[];
     conflictBreakdown?: ConflictBreakdownItem[];
-    topPublishers?: TopPublisher[];
 };
 
 function getGreeting(): string {
@@ -65,13 +66,13 @@ const subscribeToNothing = () => () => {};
 export default function Dashboard({
     stats,
     attention,
+    upcomingBirthdays,
     registrationBreakdown,
     recentHistory,
     recentImports,
     activityDays,
     activity,
     conflictBreakdown,
-    topPublishers,
 }: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
     const isAdmin = useIsAdmin();
@@ -138,6 +139,8 @@ export default function Dashboard({
                     </div>
                 </div>
 
+                <BirthdayBanner birthdays={upcomingBirthdays} />
+
                 <StatsCards stats={stats} />
 
                 <div className="grid gap-4 max-md:gap-3 xl:grid-cols-12">
@@ -155,10 +158,14 @@ export default function Dashboard({
                 </div>
 
                 <div className="grid gap-4 max-md:gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    <RegistrationChart breakdown={registrationBreakdown} />
-                    <ConflictChart data={conflictBreakdown} />
+                    <div className="md:col-span-2 lg:col-span-1">
+                        <RegistrationChart breakdown={registrationBreakdown} />
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-1">
+                        <ConflictChart data={conflictBreakdown} />
+                    </div>
                     <div className="md:col-span-2 xl:col-span-1">
-                        <TopPublishers data={topPublishers} />
+                        <UpcomingBirthdays birthdays={upcomingBirthdays} />
                     </div>
                 </div>
 

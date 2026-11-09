@@ -1,4 +1,4 @@
-import { Bar, BarChart, LabelList, XAxis, YAxis } from 'recharts';
+import { RadialBar, RadialBarChart } from 'recharts';
 import {
     Card,
     CardContent,
@@ -13,47 +13,68 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from '@/components/ui/chart';
-import { useIsMobile } from '@/hooks/use-mobile';
 import type { RegistrationBreakdownItem } from '@/types';
+import { ChartLegend } from './chart-legend';
 
 type RegistrationChartProps = {
     breakdown: RegistrationBreakdownItem[];
 };
 
-/** Give each status a color that fits it: green accepted, rose rejected, amber conflict. */
-const STATUS_COLORS: Record<string, string> = {
-    draft: 'var(--muted-foreground)',
-    submitted: 'var(--chart-2)',
-    accepted: 'var(--chart-5)',
-    rejected: 'var(--chart-4)',
-    conflict: 'var(--chart-3)',
-    amended: 'var(--chart-1)',
-    relinquished:
-        'color-mix(in oklab, var(--chart-4) 40%, var(--muted-foreground))',
-};
+/** Each ring takes one of the five chart colors, by rank. */
+const colorFor = (index: number) => `var(--chart-${(index % 5) + 1})`;
 
-/** Fall back to cycling the five chart colors for a status without its own. */
-const colorFor = (status: string, index: number) =>
-    STATUS_COLORS[status] ?? `var(--chart-${(index % 5) + 1})`;
+/** How many statuses get their own ring before the rest are grouped as "Others". */
+const VISIBLE_STATUSES = 4;
+
+type ChartSlice = { status: string; label: string; total: number };
+
+/**
+ * Keep the largest statuses and combine every remaining one into a single "Others" slice.
+ * Slices are sorted largest first, so the fullest ring is the innermost.
+ */
+function topSlices(breakdown: RegistrationBreakdownItem[]): ChartSlice[] {
+    const ranked = breakdown
+        .filter((item) => item.total > 0)
+        .sort((a, b) => b.total - a.total);
+
+    if (ranked.length <= VISIBLE_STATUSES + 1) {
+        return ranked;
+    }
+
+    const others = ranked.slice(VISIBLE_STATUSES);
+
+    return [
+        ...ranked.slice(0, VISIBLE_STATUSES),
+        {
+            status: 'others',
+            label: 'Others',
+            total: others.reduce((sum, item) => sum + item.total, 0),
+        },
+    ].sort((a, b) => b.total - a.total);
+}
 
 /** The number of works per registration status. */
 export function RegistrationChart({ breakdown }: RegistrationChartProps) {
-    const isMobile = useIsMobile();
     const total = breakdown.reduce((sum, item) => sum + item.total, 0);
     const accepted =
         breakdown.find((item) => item.status === 'accepted')?.total ?? 0;
 
-    const chartConfig = Object.fromEntries(
-        breakdown.map((item, index) => [
-            item.status,
-            { label: item.label, color: colorFor(item.status, index) },
-        ]),
-    ) satisfies ChartConfig;
+    const slices = topSlices(breakdown);
 
-    const chartData = breakdown.map((item) => ({
-        status: item.status,
-        total: item.total,
-        fill: `var(--color-${item.status})`,
+    const chartConfig: ChartConfig = {
+        total: { label: 'Works' },
+        ...Object.fromEntries(
+            slices.map((slice, index) => [
+                slice.status,
+                { label: slice.label, color: colorFor(index) },
+            ]),
+        ),
+    };
+
+    const chartData = slices.map((slice) => ({
+        status: slice.status,
+        total: slice.total,
+        fill: `var(--color-${slice.status})`,
     }));
 
     return (
@@ -66,45 +87,44 @@ export function RegistrationChart({ breakdown }: RegistrationChartProps) {
                     Where each work stands with the society
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 px-4 ps-1.5 md:px-6">
-                <ChartContainer
-                    config={chartConfig}
-                    className="block aspect-auto h-[260px] w-full min-w-0 max-md:h-[220px]"
-                >
-                    <BarChart
-                        accessibilityLayer
-                        data={chartData}
-                        layout="vertical"
-                        margin={{ left: 0, right: 32 }}
-                    >
-                        <YAxis
-                            dataKey="status"
-                            type="category"
-                            tick={{ fontSize: isMobile ? 10 : 12 }}
-                            tickLine={false}
-                            tickMargin={10}
-                            axisLine={false}
-                            width={isMobile ? 78 : 96}
-                            tickFormatter={(value: string) =>
-                                chartConfig[value]?.label ?? value
-                            }
+            <CardContent className="flex flex-1 flex-col gap-4 px-4 md:px-6">
+                {slices.length === 0 ? (
+                    <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+                        No works yet
+                    </div>
+                ) : (
+                    <>
+                        <ChartContainer
+                            config={chartConfig}
+                            className="block aspect-auto h-[240px] w-full min-w-0 max-md:h-[200px] xl:mt-4"
+                        >
+                            <RadialBarChart
+                                data={chartData}
+                                innerRadius="14%"
+                                outerRadius="92%"
+                            >
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={
+                                        <ChartTooltipContent
+                                            hideLabel
+                                            nameKey="status"
+                                        />
+                                    }
+                                />
+                                <RadialBar dataKey="total" background />
+                            </RadialBarChart>
+                        </ChartContainer>
+                        <ChartLegend
+                            items={slices.map((slice) => ({
+                                key: slice.status,
+                                label: slice.label,
+                                total: slice.total,
+                                color: chartConfig[slice.status]?.color,
+                            }))}
                         />
-                        <XAxis dataKey="total" type="number" hide />
-                        <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
-                        />
-                        <Bar dataKey="total" radius={5}>
-                            <LabelList
-                                dataKey="total"
-                                position="right"
-                                offset={8}
-                                className="fill-foreground"
-                                fontSize={12}
-                            />
-                        </Bar>
-                    </BarChart>
-                </ChartContainer>
+                    </>
+                )}
             </CardContent>
             <CardFooter className="text-sm text-muted-foreground max-md:px-4 max-md:text-xs">
                 {total === 0 ? (

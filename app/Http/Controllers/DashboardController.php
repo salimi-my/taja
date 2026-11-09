@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Reports\IncompleteSplitReport;
+use App\Actions\Writers\UpcomingBirthdays;
 use App\Enums\ConflictStatus;
 use App\Enums\CsvImportStatus;
 use App\Enums\RegistrationStatus;
@@ -12,7 +13,6 @@ use App\Models\CsvImport;
 use App\Models\Publisher;
 use App\Models\RightsHistory;
 use App\Models\Work;
-use App\Models\WorkParty;
 use App\Models\Writer;
 use Carbon\CarbonPeriod;
 use DateTimeInterface;
@@ -32,17 +32,12 @@ class DashboardController extends Controller
     private const RECENT_IMPORTS_LIMIT = 5;
 
     /**
-     * The number of publishers in the top publishers list.
-     */
-    private const TOP_PUBLISHERS_LIMIT = 5;
-
-    /**
      * Display the dashboard with the catalogue counts and their weekly trend,
-     * the checks that need attention, the latest rights changes and, for
-     * admins, the latest imports. The charts are deferred so the cards and
+     * the checks that need attention, the writers with a birthday coming up,
+     * the latest rights changes and, for admins, the latest imports. The charts are deferred so the cards and
      * lists render first, and the activity chart covers the requested days.
      */
-    public function __invoke(DashboardRequest $request, IncompleteSplitReport $incompleteSplit): Response
+    public function __invoke(DashboardRequest $request, IncompleteSplitReport $incompleteSplit, UpcomingBirthdays $upcomingBirthdays): Response
     {
         $isAdmin = $request->user()->isAdmin();
         $days = $request->activityDays();
@@ -60,6 +55,7 @@ class DashboardController extends Controller
                 'incomplete_splits' => $incompleteSplit->count(),
             ],
             'attention' => $this->attention($incompleteSplit, $isAdmin),
+            'upcomingBirthdays' => $upcomingBirthdays->get(),
             'registrationBreakdown' => collect(RegistrationStatus::cases())
                 ->map(fn (RegistrationStatus $status): array => [
                     'status' => $status->value,
@@ -99,7 +95,6 @@ class DashboardController extends Controller
             'activityDays' => $days,
             'activity' => Inertia::defer(fn (): array => $this->activity($days)),
             'conflictBreakdown' => Inertia::defer(fn (): array => $this->conflictBreakdown()),
-            'topPublishers' => Inertia::defer(fn (): array => $this->topPublishers()),
         ]);
     }
 
@@ -241,34 +236,5 @@ class DashboardController extends Controller
             'label' => $status->label(),
             'total' => (int) ($totals[$status->value] ?? 0),
         ], ConflictStatus::cases());
-    }
-
-    /**
-     * Find the publishers that are a current party of the most works.
-     *
-     * @return list<array{id: int, name: string, code: string, total: int}>
-     */
-    private function topPublishers(): array
-    {
-        $rows = WorkParty::query()
-            ->current()
-            ->join('works', 'works.id', '=', 'work_parties.work_id')
-            ->join('publishers', 'publishers.id', '=', 'work_parties.publisher_id')
-            ->whereNull('works.deleted_at')
-            ->whereNull('publishers.deleted_at')
-            ->selectRaw('publishers.id, publishers.name, publishers.publisher_code, COUNT(DISTINCT work_parties.work_id) as total')
-            ->groupBy('publishers.id', 'publishers.name', 'publishers.publisher_code')
-            ->orderByDesc('total')
-            ->orderBy('publishers.name')
-            ->limit(self::TOP_PUBLISHERS_LIMIT)
-            ->toBase()
-            ->get();
-
-        return array_values($rows->map(fn (object $row): array => [
-            'id' => (int) $row->id,
-            'name' => (string) $row->name,
-            'code' => (string) $row->publisher_code,
-            'total' => (int) $row->total,
-        ])->all());
     }
 }
