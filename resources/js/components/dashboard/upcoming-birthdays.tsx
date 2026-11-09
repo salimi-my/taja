@@ -101,14 +101,14 @@ export function UpcomingBirthdays({ birthdays }: UpcomingBirthdaysProps) {
                                             >
                                                 <span
                                                     className={cn(
-                                                        'text-[10px] font-semibold tracking-wide text-primary',
+                                                        'text-[10px] font-semibold tracking-wide text-primary pt-1',
                                                         isToday &&
                                                             'text-primary-foreground/80',
                                                     )}
                                                 >
                                                     {date.month}
                                                 </span>
-                                                <span className="mt-0.5 text-base font-semibold tabular-nums">
+                                                <span className="text-base font-semibold tabular-nums">
                                                     {date.day}
                                                 </span>
                                             </span>
