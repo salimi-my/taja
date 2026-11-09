@@ -258,4 +258,4 @@ The spec is `PHASE_1.md`. The three client workbooks it describes are the source
 
 ### Seeding
 
-`php artisan db:seed` creates fake users, publishers (including "Taja Archive"), writers with aliases, and works with parties, history and a few deliberately incomplete splits.
+`php artisan db:seed` creates curated, fictional Malaysian sample data, not Faker placeholders: users with a matching gender, email and phone, publishers (including "Taja Archive"), writers with stage names, and works with named splits, history and a few deliberately incomplete splits. The seeders share `database/seeders/Concerns/GeneratesMalaysianDetails.php` for NRICs, phones, banks and IPI numbers. Add new sample records as named rows in the seeders and keep the generic Faker factories for tests.

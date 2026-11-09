@@ -26,11 +26,14 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $gender = fake()->boolean(4) ? Gender::Other : fake()->randomElement([Gender::Male, Gender::Female]);
+        $mobilePrefix = fake()->randomElement(['11', '12', '13', '14', '16', '17', '18', '19']);
+
         return [
-            'name' => fake()->name(),
+            'name' => fake()->name($gender === Gender::Other ? null : $gender->value),
             'email' => fake()->unique()->safeEmail(),
-            'phone' => '+601'.fake()->numerify('########'),
-            'gender' => fake()->randomElement(Gender::cases()),
+            'phone' => '+60'.$mobilePrefix.fake()->numerify(str_repeat('#', $mobilePrefix === '11' ? 8 : 7)),
+            'gender' => $gender,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => UserRole::User,
