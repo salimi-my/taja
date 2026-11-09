@@ -101,7 +101,7 @@ export function UpcomingBirthdays({ birthdays }: UpcomingBirthdaysProps) {
                                             >
                                                 <span
                                                     className={cn(
-                                                        'text-[10px] font-semibold tracking-wide text-primary pt-1',
+                                                        'pt-1 text-[10px] font-semibold tracking-wide text-primary',
                                                         isToday &&
                                                             'text-primary-foreground/80',
                                                     )}

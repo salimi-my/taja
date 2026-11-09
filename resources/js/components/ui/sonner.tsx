@@ -19,6 +19,7 @@ function Toaster({ ...props }: ToasterProps) {
             theme={appearance}
             className="toaster group"
             position="top-right"
+            closeButton
             richColors
             icons={{
                 success: <CircleCheckIcon className="size-4" />,
@@ -33,6 +34,9 @@ function Toaster({ ...props }: ToasterProps) {
                     '--normal-text': 'var(--popover-foreground)',
                     '--normal-border': 'var(--border)',
                     '--border-radius': 'var(--radius)',
+                    '--toast-close-button-start': 'unset',
+                    '--toast-close-button-end': '0',
+                    '--toast-close-button-transform': 'translate(35%, -35%)',
                 } as React.CSSProperties
             }
             toastOptions={{
