@@ -1,3 +1,4 @@
+import { ChartPie } from 'lucide-react';
 import { RadialBar, RadialBarChart } from 'recharts';
 import {
     Card,
@@ -13,6 +14,13 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from '@/components/ui/chart';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import type { RegistrationBreakdownItem } from '@/types';
 import { ChartLegend } from './chart-legend';
 
@@ -89,9 +97,18 @@ export function RegistrationChart({ breakdown }: RegistrationChartProps) {
             </CardHeader>
             <CardContent className="flex flex-1 flex-col gap-4 px-4 md:px-6">
                 {slices.length === 0 ? (
-                    <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-                        No works yet
-                    </div>
+                    <Empty className="flex-1 border p-6">
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                                <ChartPie />
+                            </EmptyMedia>
+                            <EmptyTitle>No works yet</EmptyTitle>
+                            <EmptyDescription>
+                                Registration statuses appear here once works are
+                                added.
+                            </EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
                 ) : (
                     <>
                         <ChartContainer

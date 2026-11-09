@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { useMemo } from 'react';
-import { CalendarDays, Music, TriangleAlert } from 'lucide-react';
+import { CalendarDays, Music, TriangleAlert, Users } from 'lucide-react';
 import { ContentCard } from '@/components/content-card';
 import { formatDate } from '@/components/detail-grid';
 import { ReportActions } from '@/components/reports/report-actions';
@@ -136,11 +136,17 @@ function WorkOwnership({ row }: { row: WorkOwnershipRow }) {
                 <TableBody>
                     {row.parties.length === 0 ? (
                         <TableRow>
-                            <TableCell
-                                colSpan={7}
-                                className="py-6 text-center text-muted-foreground"
-                            >
-                                No parties in effect.
+                            <TableCell colSpan={7}>
+                                <Empty className="border-0 p-4">
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <Users />
+                                        </EmptyMedia>
+                                        <EmptyTitle>
+                                            No parties in effect
+                                        </EmptyTitle>
+                                    </EmptyHeader>
+                                </Empty>
                             </TableCell>
                         </TableRow>
                     ) : (

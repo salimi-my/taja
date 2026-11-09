@@ -18,6 +18,13 @@ import {
 } from '@/components/detail-grid';
 import { PhoneDisplay } from '@/components/phone-display';
 import { Badge } from '@/components/ui/badge';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WorkCatalogue } from '@/components/works/work-catalogue';
 import { WriterHeader } from '@/components/writers/writer-header';
@@ -211,9 +218,18 @@ export function WriterDetails({
                             description="Stage names the writer is also known by."
                         >
                             {writer.aliases.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    No pseudonyms.
-                                </p>
+                                <Empty className="border p-6">
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <Theater />
+                                        </EmptyMedia>
+                                        <EmptyTitle>No pseudonyms</EmptyTitle>
+                                        <EmptyDescription>
+                                            Stage names the writer is known by
+                                            appear here.
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                </Empty>
                             ) : (
                                 <dl className="flex flex-col gap-4">
                                     {writer.aliases.map((alias) => (

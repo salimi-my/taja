@@ -48,7 +48,7 @@ export function RecentHistory({ entries }: RecentHistoryProps) {
             </CardHeader>
             <CardContent className="max-md:px-4">
                 {entries.length === 0 ? (
-                    <Empty className="border-0 p-4">
+                    <Empty className="border p-6">
                         <EmptyHeader>
                             <EmptyMedia variant="icon">
                                 <History />

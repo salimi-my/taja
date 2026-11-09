@@ -1,4 +1,12 @@
+import { FileSearch } from 'lucide-react';
 import { formatDate } from '@/components/detail-grid';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { cn } from '@/lib/utils';
 import type { RightsSnapshot } from '@/types';
 
@@ -182,9 +190,17 @@ export function RightsSnapshotDiff({
 
     if (rows.length === 0) {
         return (
-            <p className="text-sm text-muted-foreground">
-                No field values were recorded for this entry.
-            </p>
+            <Empty className="border p-6">
+                <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                        <FileSearch />
+                    </EmptyMedia>
+                    <EmptyTitle>No field values</EmptyTitle>
+                    <EmptyDescription>
+                        No field values were recorded for this entry.
+                    </EmptyDescription>
+                </EmptyHeader>
+            </Empty>
         );
     }
 

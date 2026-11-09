@@ -1,3 +1,12 @@
+import { Percent } from 'lucide-react';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
+
 type DealSplitProps = {
     taja: string | null;
     other: string | null;
@@ -9,7 +18,17 @@ type DealSplitProps = {
 export function DealSplit({ taja, other, otherLabel }: DealSplitProps) {
     if (taja === null || other === null) {
         return (
-            <p className="text-sm text-muted-foreground">No deal recorded.</p>
+            <Empty className="border p-6">
+                <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                        <Percent />
+                    </EmptyMedia>
+                    <EmptyTitle>No deal recorded</EmptyTitle>
+                    <EmptyDescription>
+                        The income split appears here once a deal is set.
+                    </EmptyDescription>
+                </EmptyHeader>
+            </Empty>
         );
     }
 

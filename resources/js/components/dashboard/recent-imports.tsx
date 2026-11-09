@@ -64,7 +64,7 @@ export function RecentImports({ imports }: RecentImportsProps) {
             </CardHeader>
             <CardContent className="max-md:px-4">
                 {imports.length === 0 ? (
-                    <Empty className="border-0 p-4">
+                    <Empty className="border p-6">
                         <EmptyHeader>
                             <EmptyMedia variant="icon">
                                 <FileUp />
