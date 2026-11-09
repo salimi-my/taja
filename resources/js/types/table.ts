@@ -23,21 +23,21 @@ export type Params = {
     territories?: string[];
     registration_statuses?: string[];
     conflict_statuses?: string[];
-    work_types?: string[];
     languages?: string[];
     genres?: string[];
-    public_domain?: string[];
     controlled?: string[];
     start_date?: string;
     end_date?: string;
     /** Report filters: the chosen writer or work, a point in time and history filters. */
     writer_id?: string;
     work_id?: string;
-    /** `'1'` includes ended involvement in the writer catalogue. */
-    include_ended?: string;
+    /** Writer catalogue: `['1']` includes ended involvement, `['0']` is current only. */
+    include_ended?: string[];
     as_of?: string;
     change_types?: string[];
     users?: string[];
+    /** Incomplete split report: the kinds of issue a work has. */
+    issues?: string[];
     effective_from?: string;
     effective_to?: string;
     recorded_from?: string;

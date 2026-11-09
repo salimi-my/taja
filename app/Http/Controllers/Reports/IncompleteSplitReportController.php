@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Reports;
 
 use App\Actions\Reports\IncompleteSplitReport;
 use App\Actions\Reports\StreamCsv;
+use App\Enums\ConflictStatus;
+use App\Enums\RegistrationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reports\IncompleteSplitReportRequest;
 use App\Http\Resources\IncompleteSplitResource;
@@ -25,6 +27,13 @@ class IncompleteSplitReportController extends Controller
                 $report->query($filters)->paginate($filters['per_page'])->withQueryString(),
             ),
             'filters' => $filters,
+            'registrationStatuses' => RegistrationStatus::options(),
+            'conflictStatuses' => ConflictStatus::options(),
+            'issueOptions' => array_map(
+                fn (string $value, string $label): array => ['value' => $value, 'label' => $label],
+                array_keys(IncompleteSplitReport::ISSUE_LABELS),
+                IncompleteSplitReport::ISSUE_LABELS,
+            ),
             'perPageOptions' => IncompleteSplitReportRequest::PER_PAGE_OPTIONS,
         ]);
     }

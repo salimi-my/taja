@@ -31,15 +31,47 @@ class IncompleteSplitReport
     ];
 
     /**
+     * The issues a work can have, with the label shown in the filter.
+     *
+     * @var array<string, string>
+     */
+    public const ISSUE_LABELS = [
+        'no_parties' => 'No parties in effect',
+        'performance' => 'Performance total',
+        'mechanical' => 'Mechanical total',
+        'sync' => 'Sync total',
+        'lyrics' => 'Lyrics total',
+    ];
+
+    /**
+     * The SQL that tells a work has an issue, over the grouped totals.
+     * A work without parties only has the first issue.
+     *
+     * @var array<string, string>
+     */
+    private const ISSUE_CONDITIONS = [
+        'no_parties' => 'totals.work_id IS NULL',
+        'performance' => 'totals.work_id IS NOT NULL AND ABS(COALESCE(totals.performance_total, 0) - 100) > 0.004',
+        'mechanical' => 'totals.work_id IS NOT NULL AND ABS(COALESCE(totals.mechanical_total, 0) - 100) > 0.004',
+        'sync' => 'totals.sync_values_count > 0 AND ABS(COALESCE(totals.sync_total, 0) - 100) > 0.004',
+        'lyrics' => 'totals.lyrics_values_count > 0 AND ABS(COALESCE(totals.lyrics_total, 0) - 100) > 0.004',
+    ];
+
+    /**
      * The incomplete works, with the party count and totals as attributes.
      *
-     * @param  array{search: string, sort: string, direction: 'asc'|'desc'}  $filters
+     * @param  array{search: string, registration_statuses: list<string>, conflict_statuses: list<string>, issues: list<string>, sort: string, direction: 'asc'|'desc'}  $filters
      * @return Builder<Work>
      */
     public function query(array $filters): Builder
     {
         $query = $this->incompleteWorks()
-            ->when($filters['search'] !== '', fn (Builder $query) => $query->search($filters['search']));
+            ->when($filters['search'] !== '', fn (Builder $query) => $query->search($filters['search']))
+            ->when($filters['registration_statuses'] !== [], fn (Builder $query) => $query->whereIn('works.registration_status', $filters['registration_statuses']))
+            ->when($filters['conflict_statuses'] !== [], fn (Builder $query) => $query->whereIn('works.conflict_status', $filters['conflict_statuses']))
+            ->when($filters['issues'] !== [], fn (Builder $query) => $query->where(
+                fn (Builder $query) => $this->whereHasAnyIssue($query, $filters['issues']),
+            ));
 
         return $query->orderBy($filters['sort'], $filters['direction'])->orderBy('id');
     }
@@ -153,12 +185,19 @@ class IncompleteSplitReport
             ->selectRaw('COALESCE(totals.sync_values_count, 0) as sync_values_count')
             ->selectRaw('COALESCE(totals.lyrics_total, 0) as lyrics_total')
             ->selectRaw('COALESCE(totals.lyrics_values_count, 0) as lyrics_values_count')
-            ->where(function (Builder $query): void {
-                $query->whereNull('totals.work_id')
-                    ->orWhereRaw('ABS(COALESCE(totals.performance_total, 0) - 100) > 0.004')
-                    ->orWhereRaw('ABS(COALESCE(totals.mechanical_total, 0) - 100) > 0.004')
-                    ->orWhereRaw('(totals.sync_values_count > 0 AND ABS(COALESCE(totals.sync_total, 0) - 100) > 0.004)')
-                    ->orWhereRaw('(totals.lyrics_values_count > 0 AND ABS(COALESCE(totals.lyrics_total, 0) - 100) > 0.004)');
-            });
+            ->where(fn (Builder $query) => $this->whereHasAnyIssue($query, array_keys(self::ISSUE_CONDITIONS)));
+    }
+
+    /**
+     * Narrow the works to those with at least one of the given issues.
+     *
+     * @param  Builder<Work>  $query
+     * @param  list<string>  $issues
+     */
+    private function whereHasAnyIssue(Builder $query, array $issues): void
+    {
+        foreach ($issues as $issue) {
+            $query->orWhereRaw('('.self::ISSUE_CONDITIONS[$issue].')');
+        }
     }
 }

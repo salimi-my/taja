@@ -71,6 +71,62 @@ describe('screen', function () {
     });
 });
 
+describe('filters', function () {
+    test('narrows the catalogue by role', function () {
+        $composer = WorkParty::factory()->forWriter($this->writer)->create(['role' => 'C']);
+        WorkParty::factory()->forWriter($this->writer)->create(['role' => 'A']);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.writer-catalogue', ['writer_id' => $this->writer->id, 'roles' => ['C']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $composer->id));
+    });
+
+    test('narrows the catalogue by the status of the work', function () {
+        $draft = Work::factory()->create(['registration_status' => 'draft', 'conflict_status' => 'no_conflict']);
+        $conflict = Work::factory()->create(['registration_status' => 'submitted', 'conflict_status' => 'share_conflict']);
+        $draftParty = WorkParty::factory()->forWriter($this->writer)->create(['work_id' => $draft->id]);
+        $conflictParty = WorkParty::factory()->forWriter($this->writer)->create(['work_id' => $conflict->id]);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.writer-catalogue', ['writer_id' => $this->writer->id, 'registration_statuses' => ['draft']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $draftParty->id));
+
+        $this->actingAs($this->user)
+            ->get(route('reports.writer-catalogue', ['writer_id' => $this->writer->id, 'conflict_statuses' => ['share_conflict']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $conflictParty->id));
+    });
+
+    test('the search matches the title of the work', function () {
+        $match = WorkParty::factory()->forWriter($this->writer)->create([
+            'work_id' => Work::factory()->create(['english_title' => 'Alpha Fake'])->id,
+        ]);
+        WorkParty::factory()->forWriter($this->writer)->create([
+            'work_id' => Work::factory()->create(['english_title' => 'Beta Fake'])->id,
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.writer-catalogue', ['writer_id' => $this->writer->id, 'search' => 'Alpha']))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $match->id));
+    });
+
+    test('rejects a publisher role or an unknown status', function () {
+        $this->actingAs($this->user)
+            ->get(route('reports.writer-catalogue', ['roles' => ['E'], 'conflict_statuses' => ['nope']]))
+            ->assertSessionHasErrors(['roles.0', 'conflict_statuses.0']);
+    });
+
+    test('the export uses the same filters', function () {
+        WorkParty::factory()->forWriter($this->writer)->create(['role' => 'C']);
+        WorkParty::factory()->forWriter($this->writer)->create(['role' => 'A']);
+
+        $content = $this->actingAs($this->user)
+            ->get(route('reports.export.writer-catalogue', ['writer_id' => $this->writer->id, 'roles' => ['C']]))
+            ->streamedContent();
+
+        expect(array_filter(explode("\n", $content)))->toHaveCount(2);
+    });
+});
+
 describe('export', function () {
     test('downloads the catalogue of the writer as csv', function () {
         $work = Work::factory()->create(['english_title' => 'Fake Song']);

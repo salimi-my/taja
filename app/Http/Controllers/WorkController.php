@@ -36,11 +36,8 @@ class WorkController extends Controller
             'search' => $request->string('search')->trim()->toString(),
             'registration_statuses' => $request->array('registration_statuses'),
             'conflict_statuses' => $request->array('conflict_statuses'),
-            'work_types' => $request->array('work_types'),
             'languages' => $request->array('languages'),
             'genres' => $request->array('genres'),
-            'public_domain' => $request->array('public_domain'),
-            'controlled' => $request->array('controlled'),
             'start_date' => $request->string('start_date')->toString(),
             'end_date' => $request->string('end_date')->toString(),
             'sort' => $request->string('sort', 'created_at')->toString(),
@@ -53,18 +50,8 @@ class WorkController extends Controller
             ->when($filters['search'] !== '', fn (Builder $query) => $query->search($filters['search']))
             ->when($filters['registration_statuses'] !== [], fn (Builder $query) => $query->whereIn('registration_status', $filters['registration_statuses']))
             ->when($filters['conflict_statuses'] !== [], fn (Builder $query) => $query->whereIn('conflict_status', $filters['conflict_statuses']))
-            ->when($filters['work_types'] !== [], fn (Builder $query) => $query->whereIn('work_type', $filters['work_types']))
             ->when($filters['languages'] !== [], fn (Builder $query) => $query->whereIn('language', $filters['languages']))
             ->when($filters['genres'] !== [], fn (Builder $query) => $query->whereIn('genre', $filters['genres']))
-            ->when(
-                count($filters['public_domain']) === 1,
-                fn (Builder $query) => $query->where('is_public_domain', $filters['public_domain'][0] === 'yes'),
-            )
-            ->when(count($filters['controlled']) === 1, function (Builder $query) use ($filters): void {
-                $filters['controlled'][0] === 'yes'
-                    ? $query->whereHas('currentParties', fn (Builder $parties) => $parties->where('is_controlled', true))
-                    : $query->whereDoesntHave('currentParties', fn (Builder $parties) => $parties->where('is_controlled', true));
-            })
             ->when($filters['start_date'] !== '', fn (Builder $query) => $query->whereDate('registration_date', '>=', $filters['start_date']))
             ->when($filters['end_date'] !== '', fn (Builder $query) => $query->whereDate('registration_date', '<=', $filters['end_date']))
             ->when(
@@ -208,7 +195,6 @@ class WorkController extends Controller
 
         return [
             ...$this->statusOptions(),
-            'workTypes' => $distinct('work_type'),
             'languages' => $distinct('language'),
             'genres' => $distinct('genre'),
         ];

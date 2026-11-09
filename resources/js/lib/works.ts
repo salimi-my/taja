@@ -21,11 +21,8 @@ export const WORK_COLUMN_LABELS = {
     created_at: 'Created Date',
     registration_statuses: 'Registration status',
     conflict_statuses: 'Conflict status',
-    work_types: 'Work type',
     languages: 'Language',
     genres: 'Genre',
-    public_domain: 'Public domain',
-    controlled: 'Controlled',
 };
 
 /** The Yes/No options of the boolean filters. */

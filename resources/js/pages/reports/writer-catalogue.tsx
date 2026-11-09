@@ -4,11 +4,12 @@ import { useMemo } from 'react';
 import { ContentCard } from '@/components/content-card';
 import { ReportActions } from '@/components/reports/report-actions';
 import { ReportSummaryBar } from '@/components/reports/report-summary-bar';
+import { TableFacetedFilter } from '@/components/table/table-faceted-filter';
 import { TablePagination } from '@/components/table/table-pagination';
 import { TableQueryState } from '@/components/table/table-shell';
+import { TableSearchbar } from '@/components/table/table-searchbar';
 import { TableSkeleton } from '@/components/table/table-skeleton';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox } from '@/components/ui/combobox';
 import {
     Empty,
@@ -17,31 +18,49 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from '@/components/ui/empty';
-import { Label } from '@/components/ui/label';
 import { WorkCatalogueTable } from '@/components/works/work-catalogue-table';
 import { useTableParams } from '@/hooks/use-table-params';
 import { exportQuery, reportDefaults } from '@/lib/reports';
-import { paramsFromServer } from '@/lib/table';
+import { hasActiveFilters, paramsFromServer } from '@/lib/table';
 import type { ServerFilters } from '@/lib/table';
 import { writerCatalogue } from '@/routes/reports';
 import { writerCatalogue as exportWriterCatalogue } from '@/routes/reports/export';
-import type { PaginatedResource, ReportWriterOption, WorkParty } from '@/types';
+import type {
+    EnumOption,
+    PaginatedResource,
+    ReportWriterOption,
+    WorkParty,
+} from '@/types';
 
 type Props = {
     rows: PaginatedResource<WorkParty>;
     filters: ServerFilters;
     writer: ReportWriterOption | null;
     writers: ReportWriterOption[];
+    roles: EnumOption[];
+    registrationStatuses: EnumOption[];
+    conflictStatuses: EnumOption[];
 };
 
 const DEFAULTS = reportDefaults('effective_start_date.desc');
 const REFRESHED_PROPS = ['rows', 'filters', 'writer'];
+
+const INVOLVEMENT_OPTIONS = [
+    { id: '0', name: 'Current only' },
+    { id: '1', name: 'Include ended' },
+];
+
+const toFilterOptions = (options: EnumOption[]) =>
+    options.map((item) => ({ id: item.value, name: item.label }));
 
 export default function WriterCatalogueReport({
     rows,
     filters,
     writer,
     writers,
+    roles,
+    registrationStatuses,
+    conflictStatuses,
 }: Props) {
     const { params, setParams, isLoading, hasError, retry } = useTableParams({
         url: writerCatalogue().url,
@@ -59,6 +78,31 @@ export default function WriterCatalogueReport({
         [writers],
     );
 
+    const roleOptions = useMemo(() => toFilterOptions(roles), [roles]);
+    const registrationOptions = useMemo(
+        () => toFilterOptions(registrationStatuses),
+        [registrationStatuses],
+    );
+    const conflictOptions = useMemo(
+        () => toFilterOptions(conflictStatuses),
+        [conflictStatuses],
+    );
+
+    // The writer has its own control, so "Reset" keeps it.
+    const isFiltered = hasActiveFilters(
+        { ...params, writer_id: undefined },
+        DEFAULTS,
+    );
+
+    const resetFilters = () =>
+        setParams((previous) => ({
+            ...DEFAULTS,
+            page: 1,
+            per_page: previous.per_page,
+            sort: previous.sort,
+            writer_id: previous.writer_id,
+        }));
+
     return (
         <>
             <Head title="Writer Catalogue" />
@@ -68,9 +112,9 @@ export default function WriterCatalogueReport({
                 description="Every work a writer is a party of, with the shares, territories and dates."
             >
                 <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-3 print:hidden">
+                    <div className="flex flex-wrap items-center gap-2 print:hidden">
                         <div className="flex items-center gap-1">
-                            <div className="w-72">
+                            <div className="w-64">
                                 <Combobox
                                     options={writerOptions}
                                     value={params.writer_id ?? null}
@@ -83,12 +127,13 @@ export default function WriterCatalogueReport({
                                     }
                                     placeholder="Select a writer"
                                     searchPlaceholder="Search writers..."
+                                    className="h-8"
                                 />
                             </div>
                             {params.writer_id && (
                                 <Button
                                     variant="ghost"
-                                    size="icon"
+                                    size="icon-sm"
                                     aria-label="Clear writer"
                                     onClick={() =>
                                         setParams((previous) => ({
@@ -103,26 +148,47 @@ export default function WriterCatalogueReport({
                             )}
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="include-ended"
-                                checked={params.include_ended === '1'}
-                                onCheckedChange={(checked) =>
-                                    setParams((previous) => ({
-                                        ...previous,
-                                        page: 1,
-                                        include_ended:
-                                            checked === true ? '1' : undefined,
-                                    }))
-                                }
-                            />
-                            <Label
-                                htmlFor="include-ended"
-                                className="text-sm font-normal"
+                        <TableSearchbar params={params} setParams={setParams} />
+                        <TableFacetedFilter
+                            title="Involvement"
+                            column="include_ended"
+                            params={params}
+                            setParams={setParams}
+                            options={INVOLVEMENT_OPTIONS}
+                            multiple={false}
+                        />
+                        <TableFacetedFilter
+                            title="Role"
+                            column="roles"
+                            params={params}
+                            setParams={setParams}
+                            options={roleOptions}
+                        />
+                        <TableFacetedFilter
+                            title="Registration"
+                            column="registration_statuses"
+                            params={params}
+                            setParams={setParams}
+                            options={registrationOptions}
+                        />
+                        <TableFacetedFilter
+                            title="Conflict"
+                            column="conflict_statuses"
+                            params={params}
+                            setParams={setParams}
+                            options={conflictOptions}
+                        />
+                        {isFiltered && (
+                            <Button
+                                aria-label="Reset filters"
+                                variant="ghost"
+                                className="h-8 px-2 lg:px-3"
+                                onClick={resetFilters}
                             >
-                                Include ended involvement
-                            </Label>
-                        </div>
+                                Reset
+                                <X className="ml-2 size-4" aria-hidden="true" />
+                            </Button>
+                        )}
 
                         <div className="ml-auto">
                             <ReportActions
@@ -147,7 +213,7 @@ export default function WriterCatalogueReport({
                                 ·
                             </span>
                             <span className="text-muted-foreground">
-                                {params.include_ended === '1'
+                                {params.include_ended?.[0] === '1'
                                     ? 'Including ended involvement'
                                     : 'Current involvement'}
                             </span>
@@ -182,8 +248,9 @@ export default function WriterCatalogueReport({
                                         <EmptyHeader>
                                             <EmptyTitle>No works</EmptyTitle>
                                             <EmptyDescription>
-                                                This writer is not a party of
-                                                any work yet.
+                                                {isFiltered
+                                                    ? 'No work matches the search or filters.'
+                                                    : 'This writer is not a party of any work yet.'}
                                             </EmptyDescription>
                                         </EmptyHeader>
                                     </Empty>

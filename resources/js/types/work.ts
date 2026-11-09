@@ -90,7 +90,6 @@ export type WorkParty = {
 export type WorkFilterOptions = {
     registrationStatuses: EnumOption[];
     conflictStatuses: EnumOption[];
-    workTypes: string[];
     languages: string[];
     genres: string[];
 };

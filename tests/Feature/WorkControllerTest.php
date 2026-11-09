@@ -81,7 +81,6 @@ describe('index', function () {
                 ->where('works.meta.total', 12)
                 ->where('filters.sort', 'created_at')
                 ->where('filters.direction', 'desc')
-                ->where('workTypes', ['ORG'])
                 ->where('languages', ['Malay'])
                 ->where('genres', ['Pop'])
                 ->has('registrationStatuses', 7)
@@ -170,46 +169,9 @@ describe('index', function () {
     })->with([
         'registration' => [['registration_statuses' => ['accepted']], 'Match'],
         'conflict' => [['conflict_statuses' => ['share_conflict']], 'Match'],
-        'work type' => [['work_types' => ['ORG']], 'Match'],
         'language' => [['languages' => ['English']], 'Other'],
         'genre' => [['genres' => ['Pop']], 'Match'],
     ]);
-
-    test('filters by public domain', function () {
-        Work::factory()->publicDomain()->create(['english_title' => 'Old Folk Song']);
-        Work::factory()->create(['english_title' => 'New Song']);
-
-        $this->actingAs($this->admin)
-            ->get(route('works.index', ['public_domain' => ['yes']]))
-            ->assertInertia(fn (Assert $page) => $page
-                ->has('works.data', 1)
-                ->where('works.data.0.title', 'Old Folk Song')
-            );
-
-        $this->actingAs($this->admin)
-            ->get(route('works.index', ['public_domain' => ['yes', 'no']]))
-            ->assertInertia(fn (Assert $page) => $page->has('works.data', 2));
-    });
-
-    test('filters by whether any current party is controlled', function () {
-        $controlled = Work::factory()->create(['english_title' => 'Controlled Song']);
-        WorkParty::factory()->create(['work_id' => $controlled->id, 'is_controlled' => true]);
-        $uncontrolled = Work::factory()->create(['english_title' => 'Uncontrolled Song']);
-        WorkParty::factory()->create(['work_id' => $uncontrolled->id, 'is_controlled' => false]);
-        $endedOnly = Work::factory()->create(['english_title' => 'Ended Song']);
-        WorkParty::factory()->ended()->create(['work_id' => $endedOnly->id, 'is_controlled' => true]);
-
-        $this->actingAs($this->admin)
-            ->get(route('works.index', ['controlled' => ['yes']]))
-            ->assertInertia(fn (Assert $page) => $page
-                ->has('works.data', 1)
-                ->where('works.data.0.title', 'Controlled Song')
-            );
-
-        $this->actingAs($this->admin)
-            ->get(route('works.index', ['controlled' => ['no']]))
-            ->assertInertia(fn (Assert $page) => $page->has('works.data', 2));
-    });
 
     test('filters by registration date range', function () {
         Work::factory()->create(['english_title' => 'Early', 'registration_date' => '2026-01-10']);

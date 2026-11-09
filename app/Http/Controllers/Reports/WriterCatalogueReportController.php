@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Reports;
 
 use App\Actions\Reports\StreamCsv;
 use App\Actions\Reports\WriterCatalogueReport;
+use App\Enums\ConflictStatus;
+use App\Enums\PartyRole;
+use App\Enums\RegistrationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reports\WriterCatalogueReportRequest;
 use App\Http\Resources\WorkPartyResource;
@@ -26,7 +29,6 @@ class WriterCatalogueReportController extends Controller
                 $report->query($filters)->paginate($filters['per_page'])->withQueryString(),
             ),
             'filters' => [
-                'search' => '',
                 'sort' => 'effective_start_date',
                 'direction' => 'desc',
                 ...$filters,
@@ -41,6 +43,12 @@ class WriterCatalogueReportController extends Controller
                     'code' => $writer->writer_code,
                 ])
                 ->all(),
+            'roles' => array_values(array_filter(
+                PartyRole::options(),
+                fn (array $option): bool => PartyRole::from($option['value'])->isWriterRole(),
+            )),
+            'registrationStatuses' => RegistrationStatus::options(),
+            'conflictStatuses' => ConflictStatus::options(),
             'perPageOptions' => WriterCatalogueReportRequest::PER_PAGE_OPTIONS,
         ]);
     }

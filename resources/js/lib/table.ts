@@ -17,10 +17,8 @@ export const DEFAULT_PARAMS: Params = {
     territories: undefined,
     registration_statuses: undefined,
     conflict_statuses: undefined,
-    work_types: undefined,
     languages: undefined,
     genres: undefined,
-    public_domain: undefined,
     controlled: undefined,
     start_date: undefined,
     end_date: undefined,
@@ -34,6 +32,7 @@ export const DEFAULT_PARAMS: Params = {
     recorded_to: undefined,
     change_types: undefined,
     users: undefined,
+    issues: undefined,
 };
 
 /** The filters the server echoes back for a table (see `UserController`). */
@@ -48,10 +47,8 @@ export type ServerFilters = {
     territories?: string[];
     registration_statuses?: string[];
     conflict_statuses?: string[];
-    work_types?: string[];
     languages?: string[];
     genres?: string[];
-    public_domain?: string[];
     controlled?: string[];
     start_date?: string;
     end_date?: string;
@@ -65,6 +62,7 @@ export type ServerFilters = {
     include_ended?: boolean;
     change_types?: string[];
     users?: string[];
+    issues?: string[];
     sort: string;
     direction: string;
     per_page: number;
@@ -97,23 +95,20 @@ export function paramsFromServer(
         conflict_statuses: filters.conflict_statuses?.length
             ? filters.conflict_statuses
             : undefined,
-        work_types: filters.work_types?.length ? filters.work_types : undefined,
         languages: filters.languages?.length ? filters.languages : undefined,
         genres: filters.genres?.length ? filters.genres : undefined,
-        public_domain: filters.public_domain?.length
-            ? filters.public_domain
-            : undefined,
         controlled: filters.controlled?.length ? filters.controlled : undefined,
         start_date: filters.start_date || undefined,
         end_date: filters.end_date || undefined,
         writer_id: filters.writer_id ? String(filters.writer_id) : undefined,
         work_id: filters.work_id ? String(filters.work_id) : undefined,
-        include_ended: filters.include_ended ? '1' : undefined,
+        include_ended: filters.include_ended ? ['1'] : undefined,
         as_of: filters.as_of || undefined,
         change_types: filters.change_types?.length
             ? filters.change_types
             : undefined,
         users: filters.users?.length ? filters.users : undefined,
+        issues: filters.issues?.length ? filters.issues : undefined,
         effective_from: filters.effective_from || undefined,
         effective_to: filters.effective_to || undefined,
         recorded_from: filters.recorded_from || undefined,
@@ -176,20 +171,12 @@ export function paramsToQuery(
         query.conflict_statuses = params.conflict_statuses;
     }
 
-    if (params.work_types?.length) {
-        query.work_types = params.work_types;
-    }
-
     if (params.languages?.length) {
         query.languages = params.languages;
     }
 
     if (params.genres?.length) {
         query.genres = params.genres;
-    }
-
-    if (params.public_domain?.length) {
-        query.public_domain = params.public_domain;
     }
 
     if (params.controlled?.length) {
@@ -212,6 +199,10 @@ export function paramsToQuery(
         query.users = params.users;
     }
 
+    if (params.issues?.length) {
+        query.issues = params.issues;
+    }
+
     if (params.writer_id) {
         query.writer_id = params.writer_id;
     }
@@ -220,8 +211,8 @@ export function paramsToQuery(
         query.work_id = params.work_id;
     }
 
-    if (params.include_ended) {
-        query.include_ended = params.include_ended;
+    if (params.include_ended?.length) {
+        query.include_ended = params.include_ended[0];
     }
 
     if (params.as_of) {
@@ -273,10 +264,8 @@ export function hasActiveFilters(
         'territories',
         'registration_statuses',
         'conflict_statuses',
-        'work_types',
         'languages',
         'genres',
-        'public_domain',
         'controlled',
         'start_date',
         'end_date',
@@ -290,6 +279,7 @@ export function hasActiveFilters(
         'recorded_to',
         'change_types',
         'users',
+        'issues',
     ];
 
     return keys.some(

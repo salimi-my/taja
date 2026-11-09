@@ -14,7 +14,7 @@ class WriterCatalogueReport
     /**
      * The party rows of the chosen writer. Without a writer there are no rows.
      *
-     * @param  array{writer_id: int|null, include_ended: bool}  $filters
+     * @param  array{writer_id: int|null, include_ended: bool, search: string, roles: list<string>, registration_statuses: list<string>, conflict_statuses: list<string>}  $filters
      * @return Builder<WorkParty>
      */
     public function query(array $filters): Builder
@@ -26,7 +26,20 @@ class WriterCatalogueReport
                 fn (Builder $query) => $query->whereRaw('1 = 0'),
                 fn (Builder $query) => $query->where('writer_id', $filters['writer_id']),
             )
-            ->forCatalogue($filters['include_ended']);
+            ->forCatalogue($filters['include_ended'])
+            ->when($filters['search'] !== '', fn (Builder $query) => $query->whereHas(
+                'work',
+                fn (Builder $work) => $work->search($filters['search']),
+            ))
+            ->when($filters['roles'] !== [], fn (Builder $query) => $query->whereIn('role', $filters['roles']))
+            ->when($filters['registration_statuses'] !== [], fn (Builder $query) => $query->whereHas(
+                'work',
+                fn (Builder $work) => $work->whereIn('registration_status', $filters['registration_statuses']),
+            ))
+            ->when($filters['conflict_statuses'] !== [], fn (Builder $query) => $query->whereHas(
+                'work',
+                fn (Builder $work) => $work->whereIn('conflict_status', $filters['conflict_statuses']),
+            ));
     }
 
     /**

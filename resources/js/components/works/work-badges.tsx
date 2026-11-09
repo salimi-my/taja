@@ -23,7 +23,7 @@ export function WorkRegistrationBadge({
     return (
         <Badge
             variant="outline"
-            className={`text-nowrap ${tone[work.registration_status] ?? ''} ${className ?? ''}`}
+            className={`w-24 text-nowrap ${tone[work.registration_status] ?? ''} ${className ?? ''}`}
         >
             {work.registration_status_label}
         </Badge>

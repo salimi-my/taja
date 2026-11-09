@@ -4,7 +4,7 @@ import {
     type FilterGroup,
 } from '@/components/table/table-filter-drawer';
 import { DEFAULT_PARAMS } from '@/lib/table';
-import { WORK_SORT_COLUMNS, YES_NO_FILTER_OPTIONS } from '@/lib/works';
+import { WORK_SORT_COLUMNS } from '@/lib/works';
 import type { FilterOption, Params } from '@/types';
 
 type WorksFilterDrawerProps = {
@@ -12,7 +12,6 @@ type WorksFilterDrawerProps = {
     setParams: Dispatch<SetStateAction<Params>>;
     registrationOptions: FilterOption[];
     conflictOptions: FilterOption[];
-    workTypeOptions: FilterOption[];
     languageOptions: FilterOption[];
     genreOptions: FilterOption[];
 };
@@ -25,7 +24,6 @@ export function WorksFilterDrawer({
     setParams,
     registrationOptions,
     conflictOptions,
-    workTypeOptions,
     languageOptions,
     genreOptions,
 }: WorksFilterDrawerProps) {
@@ -43,12 +41,6 @@ export function WorksFilterDrawer({
             paramKey: 'conflict_statuses',
         },
         {
-            key: 'work_types',
-            label: 'Work type',
-            options: workTypeOptions,
-            paramKey: 'work_types',
-        },
-        {
             key: 'languages',
             label: 'Language',
             options: languageOptions,
@@ -59,18 +51,6 @@ export function WorksFilterDrawer({
             label: 'Genre',
             options: genreOptions,
             paramKey: 'genres',
-        },
-        {
-            key: 'public_domain',
-            label: 'Public domain',
-            options: YES_NO_FILTER_OPTIONS,
-            paramKey: 'public_domain',
-        },
-        {
-            key: 'controlled',
-            label: 'Controlled',
-            options: YES_NO_FILTER_OPTIONS,
-            paramKey: 'controlled',
         },
     ];
 

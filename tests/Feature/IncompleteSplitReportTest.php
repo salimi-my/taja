@@ -108,6 +108,55 @@ describe('screen', function () {
     });
 });
 
+describe('filters', function () {
+    test('narrows the list by registration and conflict status', function () {
+        $draft = Work::factory()->create(['registration_status' => 'draft', 'conflict_status' => 'no_conflict']);
+        $conflict = Work::factory()->create(['registration_status' => 'submitted', 'conflict_status' => 'share_conflict']);
+
+        $this->actingAs($this->user)
+            ->get(route('reports.incomplete-split', ['registration_statuses' => ['draft']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $draft->id));
+
+        $this->actingAs($this->user)
+            ->get(route('reports.incomplete-split', ['conflict_statuses' => ['share_conflict']]))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.id', $conflict->id));
+    });
+
+    test('narrows the list by the kind of issue', function () {
+        $empty = Work::factory()->create();
+        $short = workWithShares([40]);
+        $syncOnly = workWithShares([100]);
+        WorkParty::where('work_id', $syncOnly->id)->update(['sync_share' => 60]);
+
+        $idsFor = fn (array $issues) => $this->actingAs($this->user)
+            ->get(route('reports.incomplete-split', ['issues' => $issues]))
+            ->viewData('page')['props']['rows']['data'];
+
+        expect(collect($idsFor(['no_parties']))->pluck('id')->all())->toBe([$empty->id])
+            ->and(collect($idsFor(['performance']))->pluck('id')->all())->toBe([$short->id])
+            ->and(collect($idsFor(['sync']))->pluck('id')->all())->toBe([$syncOnly->id])
+            ->and(collect($idsFor(['lyrics'])))->toBeEmpty()
+            ->and(collect($idsFor(['no_parties', 'sync']))->pluck('id')->sort()->values()->all())->toBe(collect([$empty->id, $syncOnly->id])->sort()->values()->all());
+    });
+
+    test('rejects an unknown issue or status', function () {
+        $this->actingAs($this->user)
+            ->get(route('reports.incomplete-split', ['issues' => ['nope'], 'registration_statuses' => ['nope']]))
+            ->assertSessionHasErrors(['issues.0', 'registration_statuses.0']);
+    });
+
+    test('the export uses the same filters', function () {
+        $empty = Work::factory()->create();
+        $short = workWithShares([40]);
+
+        $content = $this->actingAs($this->user)
+            ->get(route('reports.export.incomplete-split', ['issues' => ['no_parties']]))
+            ->streamedContent();
+
+        expect($content)->toContain($empty->tap_number)->not->toContain($short->tap_number);
+    });
+});
+
 describe('export', function () {
     test('downloads the incomplete works with totals and issues', function () {
         $short = workWithShares([40]);

@@ -26,7 +26,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useTableParams } from '@/hooks/use-table-params';
 import { paramsFromServer } from '@/lib/table';
 import type { ServerFilters } from '@/lib/table';
-import { WORK_COLUMN_LABELS, YES_NO_FILTER_OPTIONS } from '@/lib/works';
+import { WORK_COLUMN_LABELS } from '@/lib/works';
 import { create, index } from '@/routes/works';
 import type { PaginatedResource, Work, WorkFilterOptions } from '@/types';
 
@@ -43,7 +43,6 @@ export function WorksTable({
     filters,
     registrationStatuses,
     conflictStatuses,
-    workTypes,
     languages,
     genres,
 }: WorksTableProps) {
@@ -80,10 +79,6 @@ export function WorksTable({
             })),
         [conflictStatuses],
     );
-    const workTypeOptions = useMemo(
-        () => workTypes.map((item) => ({ id: item, name: item })),
-        [workTypes],
-    );
     const languageOptions = useMemo(
         () => languages.map((item) => ({ id: item, name: item })),
         [languages],
@@ -106,11 +101,6 @@ export function WorksTable({
                 options: conflictOptions,
             },
             {
-                key: 'work_types' as const,
-                label: 'Work type',
-                options: workTypeOptions,
-            },
-            {
                 key: 'languages' as const,
                 label: 'Language',
                 options: languageOptions,
@@ -120,24 +110,8 @@ export function WorksTable({
                 label: 'Genre',
                 options: genreOptions,
             },
-            {
-                key: 'public_domain' as const,
-                label: 'Public domain',
-                options: YES_NO_FILTER_OPTIONS,
-            },
-            {
-                key: 'controlled' as const,
-                label: 'Controlled',
-                options: YES_NO_FILTER_OPTIONS,
-            },
         ],
-        [
-            registrationOptions,
-            conflictOptions,
-            workTypeOptions,
-            languageOptions,
-            genreOptions,
-        ],
+        [registrationOptions, conflictOptions, languageOptions, genreOptions],
     );
 
     return (
@@ -152,7 +126,6 @@ export function WorksTable({
                             setParams={setParams}
                             registrationOptions={registrationOptions}
                             conflictOptions={conflictOptions}
-                            workTypeOptions={workTypeOptions}
                             languageOptions={languageOptions}
                             genreOptions={genreOptions}
                         />
@@ -192,13 +165,6 @@ export function WorksTable({
                                 options={conflictOptions}
                             />
                             <TableFacetedFilter
-                                title="Work type"
-                                column="work_types"
-                                params={params}
-                                setParams={setParams}
-                                options={workTypeOptions}
-                            />
-                            <TableFacetedFilter
                                 title="Language"
                                 column="languages"
                                 params={params}
@@ -211,20 +177,6 @@ export function WorksTable({
                                 params={params}
                                 setParams={setParams}
                                 options={genreOptions}
-                            />
-                            <TableFacetedFilter
-                                title="Public domain"
-                                column="public_domain"
-                                params={params}
-                                setParams={setParams}
-                                options={YES_NO_FILTER_OPTIONS}
-                            />
-                            <TableFacetedFilter
-                                title="Controlled"
-                                column="controlled"
-                                params={params}
-                                setParams={setParams}
-                                options={YES_NO_FILTER_OPTIONS}
                             />
                             <TableDateRangeFilter
                                 params={params}

@@ -1,14 +1,16 @@
 import { Head, Link } from '@inertiajs/react';
 import { CircleCheck, ListChecks, TriangleAlert } from 'lucide-react';
+import { useMemo } from 'react';
 import { ContentCard } from '@/components/content-card';
 import { ReportActions } from '@/components/reports/report-actions';
 import { ReportSummaryBar } from '@/components/reports/report-summary-bar';
 import { ShareTotalCell } from '@/components/reports/share-total-cell';
 import { TableColumnHeader } from '@/components/table/table-column-header';
 import { TablePagination } from '@/components/table/table-pagination';
-import { TableSearchbar } from '@/components/table/table-searchbar';
+import { TableFacetedFilter } from '@/components/table/table-faceted-filter';
 import {
     TableDesktopFrame,
+    TableDesktopToolbar,
     TableQueryState,
 } from '@/components/table/table-shell';
 import { TableSkeleton } from '@/components/table/table-skeleton';
@@ -34,23 +36,60 @@ import type { ServerFilters } from '@/lib/table';
 import { incompleteSplit } from '@/routes/reports';
 import { incompleteSplit as exportIncompleteSplit } from '@/routes/reports/export';
 import { show } from '@/routes/works';
-import type { IncompleteSplitRow, PaginatedResource } from '@/types';
+import type {
+    EnumOption,
+    IncompleteSplitRow,
+    PaginatedResource,
+} from '@/types';
 
 type Props = {
     rows: PaginatedResource<IncompleteSplitRow>;
     filters: ServerFilters;
+    registrationStatuses: EnumOption[];
+    conflictStatuses: EnumOption[];
+    issueOptions: EnumOption[];
 };
 
 const DEFAULTS = reportDefaults('tap_number.asc');
 const REFRESHED_PROPS = ['rows', 'filters'];
 
-export default function IncompleteSplitReport({ rows, filters }: Props) {
-    const { params, setParams, isLoading, hasError, retry } = useTableParams({
+const toFilterOptions = (options: EnumOption[]) =>
+    options.map((item) => ({ id: item.value, name: item.label }));
+
+export default function IncompleteSplitReport({
+    rows,
+    filters,
+    registrationStatuses,
+    conflictStatuses,
+    issueOptions,
+}: Props) {
+    const {
+        params,
+        setParams,
+        isFiltered,
+        isLoading,
+        hasError,
+        resetFilters,
+        retry,
+    } = useTableParams({
         url: incompleteSplit().url,
         initialParams: paramsFromServer(filters, rows.meta.current_page),
         defaultParams: DEFAULTS,
         only: REFRESHED_PROPS,
     });
+
+    const registrationOptions = useMemo(
+        () => toFilterOptions(registrationStatuses),
+        [registrationStatuses],
+    );
+    const conflictOptions = useMemo(
+        () => toFilterOptions(conflictStatuses),
+        [conflictStatuses],
+    );
+    const issueFilterOptions = useMemo(
+        () => toFilterOptions(issueOptions),
+        [issueOptions],
+    );
 
     return (
         <>
@@ -61,17 +100,50 @@ export default function IncompleteSplitReport({ rows, filters }: Props) {
                 description="Works that have no parties in effect, or whose shares do not add up to 100%."
             >
                 <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-3 print:hidden">
-                        <TableSearchbar params={params} setParams={setParams} />
-                        <div className="ml-auto">
-                            <ReportActions
-                                exportUrl={
-                                    exportIncompleteSplit({
-                                        query: exportQuery(params, DEFAULTS),
-                                    }).url
-                                }
-                            />
-                        </div>
+                    <div className="print:hidden">
+                        <TableDesktopToolbar
+                            params={params}
+                            setParams={setParams}
+                            isFiltered={isFiltered}
+                            onResetFilters={resetFilters}
+                            filters={
+                                <>
+                                    <TableFacetedFilter
+                                        title="Issue"
+                                        column="issues"
+                                        params={params}
+                                        setParams={setParams}
+                                        options={issueFilterOptions}
+                                    />
+                                    <TableFacetedFilter
+                                        title="Registration"
+                                        column="registration_statuses"
+                                        params={params}
+                                        setParams={setParams}
+                                        options={registrationOptions}
+                                    />
+                                    <TableFacetedFilter
+                                        title="Conflict"
+                                        column="conflict_statuses"
+                                        params={params}
+                                        setParams={setParams}
+                                        options={conflictOptions}
+                                    />
+                                </>
+                            }
+                            actions={
+                                <ReportActions
+                                    exportUrl={
+                                        exportIncompleteSplit({
+                                            query: exportQuery(
+                                                params,
+                                                DEFAULTS,
+                                            ),
+                                        }).url
+                                    }
+                                />
+                            }
+                        />
                     </div>
 
                     <ReportSummaryBar note="Performance and mechanical are always checked. Sync and lyrics only when a party has a value.">
@@ -107,8 +179,9 @@ export default function IncompleteSplitReport({ rows, filters }: Props) {
                                             No incomplete splits
                                         </EmptyTitle>
                                         <EmptyDescription>
-                                            Every work has parties and its
-                                            shares add up to 100%.
+                                            {isFiltered
+                                                ? 'No incomplete split matches the search or filters.'
+                                                : 'Every work has parties and its shares add up to 100%.'}
                                         </EmptyDescription>
                                     </EmptyHeader>
                                 </Empty>
