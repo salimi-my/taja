@@ -2,7 +2,9 @@
 
 namespace App\Actions\Imports;
 
+use App\Actions\Masters\RecordMasterHistory;
 use App\Enums\CsvImportType;
+use App\Enums\MasterChangeType;
 use App\Http\Requests\Publishers\StorePublisherRequest;
 use App\Models\CsvImport;
 use App\Models\Publisher;
@@ -129,6 +131,14 @@ class PublisherImportDefinition extends RowImportDefinition
      */
     protected function createRecord(CsvImport $import, array $attributes): void
     {
-        Publisher::create($attributes);
+        $publisher = Publisher::create($attributes);
+
+        app(RecordMasterHistory::class)(
+            $publisher,
+            MasterChangeType::Imported,
+            new: RecordMasterHistory::withoutEmptyValues(RecordMasterHistory::snapshot($publisher)),
+            userId: $import->user_id,
+            csvImportId: $import->id,
+        );
     }
 }

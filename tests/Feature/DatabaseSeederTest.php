@@ -2,8 +2,10 @@
 
 use App\Actions\Reports\IncompleteSplitReport;
 use App\Enums\Gender;
+use App\Enums\MasterChangeType;
 use App\Enums\MasterStatus;
 use App\Enums\RightsChangeType;
+use App\Models\MasterHistory;
 use App\Models\Publisher;
 use App\Models\RightsHistory;
 use App\Models\User;
@@ -33,6 +35,16 @@ test('the seeders build a catalogue with codes, history and incomplete works', f
 
     expect(app(IncompleteSplitReport::class)->count())->toBeGreaterThanOrEqual(3)
         ->and(app(IncompleteSplitReport::class)->count())->toBeLessThan(10);
+});
+
+test('every seeded writer and publisher has a created entry, and a few have changes', function () {
+    $this->seed();
+
+    $created = MasterHistory::query()->where('change_type', MasterChangeType::Created);
+
+    expect($created->count())->toBe(Writer::count() + Publisher::count())
+        ->and(MasterHistory::query()->where('change_type', MasterChangeType::Updated)->count())->toBeGreaterThanOrEqual(3)
+        ->and(MasterHistory::query()->where('subject_type', 'writer')->whereJsonContainsKey('new_snapshot->bank_name')->exists())->toBeTrue();
 });
 
 test('the seeded users have a gender and a Malaysian mobile number, with a few gaps', function () {

@@ -41,6 +41,19 @@ const FIELD_LABELS: Record<string, string> = {
     song_link: 'Song link',
     compass_work_internal_no: 'COMPASS internal no.',
     wami_work_internal_no: 'WAMI internal no.',
+    nric: 'NRIC / passport',
+    heir_nric: 'Heir NRIC / passport',
+    tin_number: 'TIN number',
+    cmo_society: 'CMO / society',
+    society_cmo: 'CMO / society',
+    ipi_base_number: 'IPI base number',
+    ipi_name_number: 'IPI name number',
+    swift_code: 'Swift code',
+    person_in_charge_nric: 'Person in charge NRIC',
+    taja_percentage_deal: 'Taja % deal',
+    writer_percentage_deal: 'Writer % deal',
+    client_percentage_deal: 'Client % deal',
+    aliases: 'Pseudonyms',
 };
 
 function labelFor(key: string): string {
@@ -60,6 +73,20 @@ function isEmpty(value: unknown): boolean {
         value === '' ||
         (Array.isArray(value) && value.length === 0)
     );
+}
+
+/** The text of one list item: a pseudonym is an object, everything else a scalar. */
+function itemLabel(item: unknown): string {
+    if (item !== null && typeof item === 'object') {
+        const { name, ipi_base_number: ipi } = item as {
+            name?: string;
+            ipi_base_number?: string | null;
+        };
+
+        return ipi ? `${name} (${ipi})` : String(name ?? '');
+    }
+
+    return String(item);
 }
 
 function sameValue(a: unknown, b: unknown): boolean {
@@ -114,24 +141,24 @@ function SnapshotValue({
     }
 
     if (Array.isArray(value)) {
-        const otherItems = Array.isArray(other) ? other.map(String) : null;
+        const otherItems = Array.isArray(other) ? other.map(itemLabel) : null;
 
         return (
             <span className="flex flex-wrap gap-1">
                 {value.map((item) => {
                     const differs =
                         otherItems !== null &&
-                        !otherItems.includes(String(item));
+                        !otherItems.includes(itemLabel(item));
 
                     return (
                         <span
-                            key={String(item)}
+                            key={itemLabel(item)}
                             className={cn(
                                 'rounded-sm px-1.5 py-0.5 font-mono text-xs',
                                 TONE_CLASSES[differs ? tone : 'neutral'],
                             )}
                         >
-                            {String(item)}
+                            {itemLabel(item)}
                         </span>
                     );
                 })}

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 
@@ -152,6 +153,18 @@ class Writer extends Model
     public function aliases(): HasMany
     {
         return $this->hasMany(WriterAlias::class)->orderBy('position');
+    }
+
+    /**
+     * The change log of the writer, newest first.
+     *
+     * @return MorphMany<MasterHistory, $this>
+     */
+    public function histories(): MorphMany
+    {
+        return $this->morphMany(MasterHistory::class, 'subject')
+            ->orderByDesc('recorded_at')
+            ->orderByDesc('id');
     }
 
     /**

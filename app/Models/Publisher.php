@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 
@@ -127,6 +128,18 @@ class Publisher extends Model
     public function writers(): HasMany
     {
         return $this->hasMany(Writer::class);
+    }
+
+    /**
+     * The change log of the publisher, newest first.
+     *
+     * @return MorphMany<MasterHistory, $this>
+     */
+    public function histories(): MorphMany
+    {
+        return $this->morphMany(MasterHistory::class, 'subject')
+            ->orderByDesc('recorded_at')
+            ->orderByDesc('id');
     }
 
     /**

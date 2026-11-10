@@ -5,6 +5,7 @@ use App\Http\Controllers\CsvImportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\Reports\IncompleteSplitReportController;
+use App\Http\Controllers\Reports\MasterHistoryReportController;
 use App\Http\Controllers\Reports\RightsHistoryReportController;
 use App\Http\Controllers\Reports\SongOwnershipReportController;
 use App\Http\Controllers\Reports\WriterCatalogueReportController;
@@ -61,12 +62,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('writer-catalogue', [WriterCatalogueReportController::class, 'index'])->name('writer-catalogue');
         Route::get('song-ownership', [SongOwnershipReportController::class, 'index'])->name('song-ownership');
         Route::get('rights-history', [RightsHistoryReportController::class, 'index'])->name('rights-history');
+        Route::get('master-history', [MasterHistoryReportController::class, 'index'])->name('master-history');
         Route::get('incomplete-split', [IncompleteSplitReportController::class, 'index'])->name('incomplete-split');
 
         Route::prefix('export')->name('export.')->group(function () {
             Route::get('writer-catalogue', [WriterCatalogueReportController::class, 'export'])->name('writer-catalogue');
             Route::get('song-ownership', [SongOwnershipReportController::class, 'export'])->name('song-ownership');
             Route::get('rights-history', [RightsHistoryReportController::class, 'export'])->name('rights-history');
+            Route::get('master-history', [MasterHistoryReportController::class, 'export'])->name('master-history');
             Route::get('incomplete-split', [IncompleteSplitReportController::class, 'export'])->name('incomplete-split');
         });
     });

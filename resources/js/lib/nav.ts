@@ -13,6 +13,7 @@ import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editProfile } from '@/routes/profile';
 import {
     incompleteSplit,
+    masterHistory,
     rightsHistory,
     songOwnership,
     writerCatalogue,
@@ -129,6 +130,7 @@ export const navGroups: SidebarNavGroup[] = [
                     { title: 'Writer Catalogue', href: writerCatalogue() },
                     { title: 'Song Ownership Split', href: songOwnership() },
                     { title: 'Rights History', href: rightsHistory() },
+                    { title: 'Master History', href: masterHistory() },
                     { title: 'Incomplete Split', href: incompleteSplit() },
                 ],
             },

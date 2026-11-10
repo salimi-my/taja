@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Lists\WriterList;
+use App\Actions\Masters\CreateWriter;
+use App\Actions\Masters\DeleteWriter;
+use App\Actions\Masters\UpdateWriter;
 use App\Actions\Reports\StreamCsv;
 use App\Enums\MasterStatus;
 use App\Enums\PartyRole;
@@ -10,6 +13,7 @@ use App\Enums\RightsType;
 use App\Http\Requests\Writers\StoreWriterRequest;
 use App\Http\Requests\Writers\UpdateWriterRequest;
 use App\Http\Requests\Writers\WriterIndexRequest;
+use App\Http\Resources\MasterHistoryResource;
 use App\Http\Resources\WorkPartyResource;
 use App\Http\Resources\WriterDetailResource;
 use App\Http\Resources\WriterResource;
@@ -18,8 +22,6 @@ use App\Models\Publisher;
 use App\Models\Writer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -75,6 +77,12 @@ class WriterController extends Controller
                 $writer->parties()->forCatalogue($includeEnded)->get(),
             ),
             'includeEnded' => $includeEnded,
+            'history' => Inertia::defer(fn () => MasterHistoryResource::collection(
+                $writer->histories()
+                    ->with('user')
+                    ->paginate(15, pageName: 'history_page')
+                    ->withQueryString(),
+            )),
             ...$this->formOptions(),
         ]);
     }
@@ -105,19 +113,11 @@ class WriterController extends Controller
     }
 
     /**
-     * Store a newly created writer with its pseudonyms.
+     * Store a newly created writer with its pseudonyms and log it.
      */
-    public function store(StoreWriterRequest $request): RedirectResponse
+    public function store(StoreWriterRequest $request, CreateWriter $createWriter): RedirectResponse
     {
-        $validated = $request->validated();
-
-        $writer = DB::transaction(function () use ($validated): Writer {
-            $writer = Writer::create(Arr::except($validated, 'aliases'));
-
-            $this->syncAliases($writer, $validated['aliases'] ?? []);
-
-            return $writer;
-        });
+        $writer = $createWriter($request->validated(), $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Writer created.')]);
 
@@ -127,15 +127,9 @@ class WriterController extends Controller
     /**
      * Update the given writer and replace its pseudonyms.
      */
-    public function update(UpdateWriterRequest $request, Writer $writer): RedirectResponse
+    public function update(UpdateWriterRequest $request, Writer $writer, UpdateWriter $updateWriter): RedirectResponse
     {
-        $validated = $request->validated();
-
-        DB::transaction(function () use ($validated, $writer): void {
-            $writer->update(Arr::except($validated, 'aliases'));
-
-            $this->syncAliases($writer, $validated['aliases'] ?? []);
-        });
+        $updateWriter($writer, $request->validated(), $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Writer updated.')]);
 
@@ -145,7 +139,7 @@ class WriterController extends Controller
     /**
      * Delete the given writer. It is soft-deleted so its history stays intact.
      */
-    public function destroy(Writer $writer): RedirectResponse
+    public function destroy(Request $request, Writer $writer, DeleteWriter $deleteWriter): RedirectResponse
     {
         Gate::authorize('delete', $writer);
 
@@ -158,29 +152,11 @@ class WriterController extends Controller
             return back();
         }
 
-        $writer->delete();
+        $deleteWriter($writer, $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Writer deleted.')]);
 
         return redirect()->route('writers.index');
-    }
-
-    /**
-     * Replace the pseudonyms of a writer. Positions follow the submitted order.
-     *
-     * @param  list<array{name: string, ipi_base_number?: string|null}>  $aliases
-     */
-    private function syncAliases(Writer $writer, array $aliases): void
-    {
-        $writer->aliases()->delete();
-
-        foreach ($aliases as $index => $alias) {
-            $writer->aliases()->create([
-                'name' => $alias['name'],
-                'ipi_base_number' => $alias['ipi_base_number'] ?? null,
-                'position' => $index + 1,
-            ]);
-        }
     }
 
     /**

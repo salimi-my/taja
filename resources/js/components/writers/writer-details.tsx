@@ -26,11 +26,17 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MasterHistory } from '@/components/history/master-history';
 import { WorkCatalogue } from '@/components/works/work-catalogue';
 import { WriterHeader } from '@/components/writers/writer-header';
 import { writerCatalogue as exportWriterCatalogue } from '@/routes/reports/export';
 import { show as showWriter } from '@/routes/writers';
-import type { WorkParty, WriterDetail } from '@/types';
+import type {
+    MasterHistoryEntry,
+    PaginatedResource,
+    WorkParty,
+    WriterDetail,
+} from '@/types';
 
 type WriterDetailsProps = {
     writer: WriterDetail;
@@ -38,6 +44,8 @@ type WriterDetailsProps = {
     /** The works the writer is a party of. */
     catalogue: WorkParty[];
     includeEnded: boolean;
+    /** `undefined` while the deferred history is loading. */
+    history: PaginatedResource<MasterHistoryEntry> | undefined;
 };
 
 export function WriterDetails({
@@ -45,6 +53,7 @@ export function WriterDetails({
     rightsTypeLabels,
     catalogue,
     includeEnded,
+    history,
 }: WriterDetailsProps) {
     return (
         <div className="flex flex-col gap-4">
@@ -54,6 +63,7 @@ export function WriterDetails({
                 <TabsList>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="catalogue">Catalogue</TabsTrigger>
+                    <TabsTrigger value="history">History</TabsTrigger>
                 </TabsList>
 
                 <TabsContent
@@ -318,6 +328,19 @@ export function WriterDetails({
                                     },
                                 }).url
                             }
+                        />
+                    </ContentCard>
+                </TabsContent>
+
+                <TabsContent value="history">
+                    <ContentCard
+                        title="History"
+                        description="Every change to the writer, newest first. Entries are never edited or deleted."
+                    >
+                        <MasterHistory
+                            url={showWriter(writer.id).url}
+                            subjectLabel="writer"
+                            history={history}
                         />
                     </ContentCard>
                 </TabsContent>

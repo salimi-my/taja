@@ -2,7 +2,9 @@
 
 namespace App\Actions\Imports;
 
+use App\Actions\Masters\RecordMasterHistory;
 use App\Enums\CsvImportType;
+use App\Enums\MasterChangeType;
 use App\Http\Requests\Writers\StoreWriterRequest;
 use App\Models\CsvImport;
 use App\Models\Publisher;
@@ -234,5 +236,13 @@ class WriterImportDefinition extends RowImportDefinition
                 'position' => ++$position,
             ]);
         }
+
+        app(RecordMasterHistory::class)(
+            $writer,
+            MasterChangeType::Imported,
+            new: RecordMasterHistory::withoutEmptyValues(RecordMasterHistory::snapshot($writer)),
+            userId: $import->user_id,
+            csvImportId: $import->id,
+        );
     }
 }

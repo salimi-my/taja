@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             PublisherSeeder::class,
             WriterSeeder::class,
             WorkSeeder::class,
+            MasterHistorySeeder::class,
         ]);
     }
 }

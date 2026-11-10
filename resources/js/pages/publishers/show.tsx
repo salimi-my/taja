@@ -6,18 +6,26 @@ import { PublisherDetails } from '@/components/publishers/publisher-details';
 import { Button } from '@/components/ui/button';
 import { useIsAdmin } from '@/hooks/use-is-admin';
 import { edit, index, show } from '@/routes/publishers';
-import type { PublisherDetail, PublisherOptions, WorkParty } from '@/types';
+import type {
+    MasterHistoryEntry,
+    PaginatedResource,
+    PublisherDetail,
+    PublisherOptions,
+    WorkParty,
+} from '@/types';
 
 type Props = Pick<PublisherOptions, 'rightsTypes'> & {
     publisher: { data: PublisherDetail };
     catalogue: { data: WorkParty[] };
     includeEnded: boolean;
+    history?: PaginatedResource<MasterHistoryEntry>;
 };
 
 export default function PublishersShow({
     publisher: { data: publisher },
     catalogue: { data: catalogue },
     includeEnded,
+    history,
     rightsTypes,
 }: Props) {
     const isAdmin = useIsAdmin();
@@ -78,6 +86,7 @@ export default function PublishersShow({
                 rightsTypeLabels={rightsTypeLabels}
                 catalogue={catalogue}
                 includeEnded={includeEnded}
+                history={history}
             />
         </>
     );

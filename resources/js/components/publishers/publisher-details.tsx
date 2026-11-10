@@ -19,9 +19,15 @@ import { PublisherHeader } from '@/components/publishers/publisher-header';
 import { PhoneDisplay } from '@/components/phone-display';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MasterHistory } from '@/components/history/master-history';
 import { WorkCatalogue } from '@/components/works/work-catalogue';
 import { show } from '@/routes/publishers';
-import type { PublisherDetail, WorkParty } from '@/types';
+import type {
+    MasterHistoryEntry,
+    PaginatedResource,
+    PublisherDetail,
+    WorkParty,
+} from '@/types';
 
 type PublisherDetailsProps = {
     publisher: PublisherDetail;
@@ -29,6 +35,8 @@ type PublisherDetailsProps = {
     /** The works the publisher is a party of. */
     catalogue: WorkParty[];
     includeEnded: boolean;
+    /** `undefined` while the deferred history is loading. */
+    history: PaginatedResource<MasterHistoryEntry> | undefined;
 };
 
 export function PublisherDetails({
@@ -36,6 +44,7 @@ export function PublisherDetails({
     rightsTypeLabels,
     catalogue,
     includeEnded,
+    history,
 }: PublisherDetailsProps) {
     return (
         <div className="flex flex-col gap-4">
@@ -45,6 +54,7 @@ export function PublisherDetails({
                 <TabsList>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="works">Works</TabsTrigger>
+                    <TabsTrigger value="history">History</TabsTrigger>
                 </TabsList>
 
                 <TabsContent
@@ -260,6 +270,19 @@ export function PublisherDetails({
                             includeEnded={includeEnded}
                             url={show(publisher.id).url}
                             only={['catalogue', 'includeEnded']}
+                        />
+                    </ContentCard>
+                </TabsContent>
+
+                <TabsContent value="history">
+                    <ContentCard
+                        title="History"
+                        description="Every change to the publisher, newest first. Entries are never edited or deleted."
+                    >
+                        <MasterHistory
+                            url={show(publisher.id).url}
+                            subjectLabel="publisher"
+                            history={history}
                         />
                     </ContentCard>
                 </TabsContent>

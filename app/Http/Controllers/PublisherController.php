@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Lists\PublisherList;
+use App\Actions\Masters\CreatePublisher;
+use App\Actions\Masters\DeletePublisher;
+use App\Actions\Masters\UpdatePublisher;
 use App\Actions\Reports\StreamCsv;
 use App\Enums\MasterStatus;
 use App\Enums\RightsType;
 use App\Http\Requests\Publishers\PublisherIndexRequest;
 use App\Http\Requests\Publishers\StorePublisherRequest;
 use App\Http\Requests\Publishers\UpdatePublisherRequest;
+use App\Http\Resources\MasterHistoryResource;
 use App\Http\Resources\PublisherDetailResource;
 use App\Http\Resources\PublisherResource;
 use App\Http\Resources\WorkPartyResource;
@@ -69,6 +73,12 @@ class PublisherController extends Controller
                 $publisher->parties()->forCatalogue($includeEnded)->get(),
             ),
             'includeEnded' => $includeEnded,
+            'history' => Inertia::defer(fn () => MasterHistoryResource::collection(
+                $publisher->histories()
+                    ->with('user')
+                    ->paginate(15, pageName: 'history_page')
+                    ->withQueryString(),
+            )),
             ...$this->formOptions(),
         ]);
     }
@@ -99,9 +109,9 @@ class PublisherController extends Controller
     /**
      * Store a newly created publisher.
      */
-    public function store(StorePublisherRequest $request): RedirectResponse
+    public function store(StorePublisherRequest $request, CreatePublisher $createPublisher): RedirectResponse
     {
-        $publisher = Publisher::create($request->validated());
+        $publisher = $createPublisher($request->validated(), $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Publisher created.')]);
 
@@ -111,9 +121,9 @@ class PublisherController extends Controller
     /**
      * Update the given publisher.
      */
-    public function update(UpdatePublisherRequest $request, Publisher $publisher): RedirectResponse
+    public function update(UpdatePublisherRequest $request, Publisher $publisher, UpdatePublisher $updatePublisher): RedirectResponse
     {
-        $publisher->update($request->validated());
+        $updatePublisher($publisher, $request->validated(), $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Publisher updated.')]);
 
@@ -123,7 +133,7 @@ class PublisherController extends Controller
     /**
      * Delete the given publisher. It is soft-deleted so its history stays intact.
      */
-    public function destroy(Publisher $publisher): RedirectResponse
+    public function destroy(Request $request, Publisher $publisher, DeletePublisher $deletePublisher): RedirectResponse
     {
         Gate::authorize('delete', $publisher);
 
@@ -145,7 +155,7 @@ class PublisherController extends Controller
             return back();
         }
 
-        $publisher->delete();
+        $deletePublisher($publisher, $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Publisher deleted.')]);
 

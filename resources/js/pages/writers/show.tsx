@@ -6,18 +6,26 @@ import { WriterDelete } from '@/components/writers/writer-delete';
 import { WriterDetails } from '@/components/writers/writer-details';
 import { useIsAdmin } from '@/hooks/use-is-admin';
 import { edit, index, show } from '@/routes/writers';
-import type { WorkParty, WriterDetail, WriterOptions } from '@/types';
+import type {
+    MasterHistoryEntry,
+    PaginatedResource,
+    WorkParty,
+    WriterDetail,
+    WriterOptions,
+} from '@/types';
 
 type Props = Pick<WriterOptions, 'rightsTypes'> & {
     writer: { data: WriterDetail };
     catalogue: { data: WorkParty[] };
     includeEnded: boolean;
+    history?: PaginatedResource<MasterHistoryEntry>;
 };
 
 export default function WritersShow({
     writer: { data: writer },
     catalogue: { data: catalogue },
     includeEnded,
+    history,
     rightsTypes,
 }: Props) {
     const isAdmin = useIsAdmin();
@@ -78,6 +86,7 @@ export default function WritersShow({
                 rightsTypeLabels={rightsTypeLabels}
                 catalogue={catalogue}
                 includeEnded={includeEnded}
+                history={history}
             />
         </>
     );

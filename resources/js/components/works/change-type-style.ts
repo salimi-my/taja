@@ -7,6 +7,7 @@ import {
     FileUp,
     History,
     Percent,
+    Trash2,
     UserMinus,
     UserPlus,
     Wrench,
@@ -31,6 +32,9 @@ const CHANGE_TYPE_STYLES: Record<string, ChangeTypeStyle> = {
     dates_changed: { icon: CalendarClock, classes: NEUTRAL },
     correction: { icon: Wrench, classes: AMBER },
     imported: { icon: FileUp, classes: GREEN },
+    created: { icon: FilePlus2, classes: GREEN },
+    updated: { icon: FilePen, classes: NEUTRAL },
+    deleted: { icon: Trash2, classes: RED },
 };
 
 const FALLBACK_STYLE: ChangeTypeStyle = { icon: History, classes: NEUTRAL };
