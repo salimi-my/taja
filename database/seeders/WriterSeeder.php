@@ -262,7 +262,7 @@ class WriterSeeder extends Seeder
                 'heir' => ['Mohd Redzuan bin Salleh', 'Spouse', true],
             ],
             [
-                'name' => 'Jason Wong Zhi Kang', 'male' => true, 'role' => PartyRole::C, 'dob' => '1993-06-06',
+                'name' => 'Jason Wong Zhi Kang', 'male' => true, 'role' => PartyRole::C, 'birthday_in' => [2, 33],
                 'society' => 'Non-Member', 'aliases' => ['JW Zhi'],
             ],
             [
@@ -279,7 +279,7 @@ class WriterSeeder extends Seeder
                 'heir' => ['Noraini binti Ismail', 'Spouse', false],
             ],
             [
-                'name' => 'Jessie Yap Mei Fong', 'male' => false, 'role' => PartyRole::CA, 'dob' => '1996-04-08',
+                'name' => 'Jessie Yap Mei Fong', 'male' => false, 'role' => PartyRole::CA, 'birthday_in' => [3, 30],
                 'society' => 'MACP', 'publisher' => 'Langit Biru Music Sdn Bhd', 'aliases' => ['Jessie Y'],
             ],
             [

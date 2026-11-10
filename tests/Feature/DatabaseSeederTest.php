@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Reports\IncompleteSplitReport;
+use App\Actions\Writers\UpcomingBirthdays;
 use App\Enums\Gender;
 use App\Enums\MasterChangeType;
 use App\Enums\MasterStatus;
@@ -85,6 +86,7 @@ test('the seeded masters have believable details that agree with each other', fu
         ->and($writer->aliases)->toHaveCount(1)
         ->and($writer->taja_percentage_deal + $writer->writer_percentage_deal)->toEqual(100)
         ->and(Writer::query()->whereMonth('date_of_birth', now()->month)->whereDay('date_of_birth', now()->day)->count())->toBe(2)
+        ->and(app(UpcomingBirthdays::class)->get())->toHaveCount(6)
         ->and(Writer::whereNotNull('date_of_death')->count())->toBe(1)
         ->and(Writer::where('status', MasterStatus::Inactive)->count())->toBe(1)
         ->and(Writer::whereNotNull('publisher_id')->count())->toBeGreaterThan(0);
