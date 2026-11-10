@@ -129,17 +129,22 @@ export const navGroups: SidebarNavGroup[] = [
                 items: [
                     { title: 'Writer Catalogue', href: writerCatalogue() },
                     { title: 'Song Ownership Split', href: songOwnership() },
-                    { title: 'Rights History', href: rightsHistory() },
-                    { title: 'Master History', href: masterHistory() },
                     { title: 'Incomplete Split', href: incompleteSplit() },
                 ],
             },
             {
-                title: 'Import History',
-                href: importsIndex(),
+                title: 'History',
                 icon: History,
-                exact: true,
-                adminOnly: true,
+                items: [
+                    { title: 'Rights History', href: rightsHistory() },
+                    { title: 'Master History', href: masterHistory() },
+                    {
+                        title: 'Import History',
+                        href: importsIndex(),
+                        exact: true,
+                        adminOnly: true,
+                    },
+                ],
             },
         ],
     },

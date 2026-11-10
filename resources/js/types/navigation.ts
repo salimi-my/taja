@@ -28,6 +28,8 @@ export type SidebarNavSubItem = SidebarNavBase & {
      * page props, for pages whose url does not start with `href`.
      */
     isActiveForProps?: (props: Record<string, unknown>) => boolean;
+    /** Only mark the item as active on its exact url, not on pages below it. */
+    exact?: boolean;
 };
 
 export type SidebarNavLink = SidebarNavBase & {

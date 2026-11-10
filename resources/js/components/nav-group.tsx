@@ -73,14 +73,15 @@ export function NavGroup({ title, items }: SidebarNavGroup) {
 function useActiveSubItem(
     items: SidebarNavSubItem[],
 ): SidebarNavSubItem | undefined {
-    const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
     const { props } = usePage();
 
     return items
         .filter(
             (subItem) =>
-                isCurrentOrParentUrl(subItem.href) ||
-                subItem.isActiveForProps?.(props) === true,
+                (subItem.exact ? isCurrentUrl : isCurrentOrParentUrl)(
+                    subItem.href,
+                ) || subItem.isActiveForProps?.(props) === true,
         )
         .sort((a, b) => toUrl(b.href).length - toUrl(a.href).length)[0];
 }
