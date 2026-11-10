@@ -89,7 +89,7 @@ export function RecentHistory({ entries }: RecentHistoryProps) {
                                                 <Link
                                                     href={show(entry.work.id)}
                                                     prefetch
-                                                    className="min-w-0 truncate text-sm font-semibold"
+                                                    className="min-w-0 truncate text-[11px] md:text-sm font-semibold"
                                                 >
                                                     <span className="link-hover after:h-[2px]">
                                                         {entry.work.title}
@@ -103,10 +103,10 @@ export function RecentHistory({ entries }: RecentHistoryProps) {
                                             )}
                                             <RelativeTime
                                                 iso={entry.recorded_at}
-                                                className="shrink-0 text-xs text-muted-foreground"
+                                                className="shrink-0 text-[9px] md:text-xs text-muted-foreground"
                                             />
                                         </div>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-[9px] md:text-sm text-muted-foreground">
                                             {entry.summary}
                                         </p>
                                         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
