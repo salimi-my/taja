@@ -77,7 +77,7 @@ class WorkList
                 $work->original_work_title,
                 $work->sub_title_work,
                 $work->society_no,
-                $work->currentParties->map(fn (WorkParty $party): ?string => $party->contributor_name)->filter()->unique()->implode('|'),
+                $work->currentParties->map(fn (WorkParty $party): string => $party->contributor_name)->unique()->implode('|'),
                 $work->administration_start_date?->toDateString(),
                 $work->administration_end_date?->toDateString(),
                 $work->registration_date?->toDateString(),
