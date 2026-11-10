@@ -594,6 +594,8 @@ describe('store', function () {
                 'aliases' => [['name' => '', 'ipi_base_number' => '11111111111']],
             ]))
             ->assertSessionHasErrors('aliases.0.name');
+
+        expect(session('errors')->first('aliases.0.name'))->toBe('The pseudonym name field is required.');
     });
 
     test('regular users are forbidden', function () {

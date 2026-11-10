@@ -3,6 +3,7 @@ import { History } from 'lucide-react';
 import { useMemo } from 'react';
 import { ContentCard } from '@/components/content-card';
 import { formatDate } from '@/components/detail-grid';
+import { ImportSourceLink } from '@/components/imports/import-source-link';
 import { ReportActions } from '@/components/reports/report-actions';
 import { TableColumnHeader } from '@/components/table/table-column-header';
 import { TableDateRangeFilter } from '@/components/table/table-date-range-filter';
@@ -286,20 +287,28 @@ export default function MasterHistoryReport({
                                                         {entry.summary}
                                                     </TableCell>
                                                     <TableCell className="whitespace-nowrap">
-                                                        {entry.user_name ? (
-                                                            <UserAvatarName
-                                                                name={
-                                                                    entry.user_name
+                                                        <div className="flex flex-col items-start gap-1">
+                                                            {entry.user_name ? (
+                                                                <UserAvatarName
+                                                                    name={
+                                                                        entry.user_name
+                                                                    }
+                                                                    avatarUrl={
+                                                                        entry.user_avatar_url
+                                                                    }
+                                                                />
+                                                            ) : entry.csv_import_id ? (
+                                                                'Import'
+                                                            ) : (
+                                                                'System'
+                                                            )}
+                                                            <ImportSourceLink
+                                                                csvImportId={
+                                                                    entry.csv_import_id
                                                                 }
-                                                                avatarUrl={
-                                                                    entry.user_avatar_url
-                                                                }
+                                                                className="text-xs"
                                                             />
-                                                        ) : entry.csv_import_id ? (
-                                                            'Import'
-                                                        ) : (
-                                                            'System'
-                                                        )}
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell className="min-w-[10rem] whitespace-normal text-muted-foreground">
                                                         {entry.remarks || 'N/A'}

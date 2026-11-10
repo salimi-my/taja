@@ -44,7 +44,7 @@ trait WriterValidationRules
             'name' => ['required', 'string', 'max:255'],
             'default_role' => ['nullable', Rule::enum(PartyRole::class), function (string $attribute, mixed $value, Closure $fail): void {
                 if (PartyRole::tryFrom((string) $value)?->isWriterRole() === false) {
-                    $fail('The default role must be a writer role (C, A, CA or AR).');
+                    $fail('The default role must be a writer role (C, A, CA, AR or SA).');
                 }
             }],
             'ipi_base_number' => ['nullable', 'string', 'max:50'],
@@ -84,6 +84,21 @@ trait WriterValidationRules
             'aliases' => ['nullable', 'array', 'max:'.self::MAX_ALIASES],
             'aliases.*.name' => ['required', 'string', 'max:255'],
             'aliases.*.ipi_base_number' => ['nullable', 'string', 'max:50'],
+        ];
+    }
+
+    /**
+     * Get readable names for the repeated pseudonym and rights type fields, so
+     * errors do not show raw keys such as "aliases.0.name".
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'aliases.*.name' => 'pseudonym name',
+            'aliases.*.ipi_base_number' => 'pseudonym IPI base number',
+            'rights_types_controlled.*' => 'rights type',
         ];
     }
 

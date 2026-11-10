@@ -549,6 +549,20 @@ describe('store', function () {
             ->assertSessionHasErrors('isrcs.0');
     });
 
+    test('shows readable field names in repeated field errors', function () {
+        $writer = Writer::factory()->create();
+
+        $this->actingAs($this->admin)
+            ->post(route('works.store'), workPayload([
+                'isrcs' => ['SHORT'],
+                'parties' => [partyPayload(['writer_id' => $writer->id, 'performance_share' => ''])],
+            ]))
+            ->assertSessionHasErrors([
+                'isrcs.0' => 'The ISRC must be an ISRC of 12 characters, e.g. MYABC2600001.',
+                'parties.0.performance_share' => 'The performance share field is required.',
+            ]);
+    });
+
     test('rejects administration dates in the wrong order', function () {
         $this->actingAs($this->admin)
             ->post(route('works.store'), workPayload([

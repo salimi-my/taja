@@ -135,7 +135,7 @@ class WorkImportDefinition extends ImportDefinition
             new ImportColumn('IPI_No', false, '11 digits. Finds the writer or publisher when no ID is given', '00000000011', 'ipi_no'),
             new ImportColumn('Contributor_Name', true, 'Text, the name as written on the work', 'Fake Writer', 'contributor_name'),
             new ImportColumn('Publisher_Client_ID', false, 'PUB- code, for the roles E and SE', '', 'publisher_code'),
-            new ImportColumn('Writer_ID', false, 'WRT- code, for the roles C, A, CA and AR', '', 'writer_code'),
+            new ImportColumn('Writer_ID', false, 'WRT- code, for the roles C, A, CA, AR and SA', '', 'writer_code'),
             new ImportColumn('Writer_Roles', true, 'C, A, CA, AR, SA, E or SE', 'C', 'role'),
             new ImportColumn('Perform_Share_Owner_Rights', true, self::PERCENT, '25', 'performance_share'),
             new ImportColumn('Controlled_Mechanical_Share', true, self::PERCENT, '25', 'mechanical_share'),

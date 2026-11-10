@@ -10,6 +10,7 @@ use App\Rules\Isrc;
 use App\Rules\Iswc;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 trait WorkValidationRules
@@ -77,6 +78,23 @@ trait WorkValidationRules
         }
 
         return $rules;
+    }
+
+    /**
+     * Get readable names for the repeated ISRC and party fields, so errors read
+     * "The performance share field is required" and not "parties.0.performance_share".
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        $names = ['isrcs.*' => 'ISRC'];
+
+        foreach ([...array_keys($this->partyFieldRules()), ...array_keys($this->partyIdentityRules())] as $field) {
+            $names["parties.*.{$field}"] = str_replace('_', ' ', Str::beforeLast($field, '_id'));
+        }
+
+        return $names;
     }
 
     /**

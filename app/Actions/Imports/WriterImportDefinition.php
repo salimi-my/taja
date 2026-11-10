@@ -42,7 +42,7 @@ class WriterImportDefinition extends RowImportDefinition
     {
         $columns = [
             new ImportColumn('Name', true, 'Text, the preferred display name', 'Fake Writer', 'name'),
-            new ImportColumn('Writer_Role', false, 'C, A, CA or AR', 'CA', 'default_role', ImportCast::Role),
+            new ImportColumn('Writer_Role', false, 'C, A, CA, AR or SA', 'CA', 'default_role', ImportCast::Role),
             new ImportColumn('IPI_Base_Number', false, 'Text', 'I-000000001-1', 'ipi_base_number'),
             new ImportColumn('IPI_Name_Number', false, '11 digits, unique', '00000000011', 'ipi_name_number'),
             new ImportColumn('NRIC', false, 'NRIC or passport number, saved without dashes', '000000000001', 'nric', ImportCast::Nric),

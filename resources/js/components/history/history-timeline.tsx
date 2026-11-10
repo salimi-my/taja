@@ -1,5 +1,6 @@
 import { ChevronDown, History } from 'lucide-react';
 import { formatDate } from '@/components/detail-grid';
+import { ImportSourceLink } from '@/components/imports/import-source-link';
 import { Button } from '@/components/ui/button';
 import {
     Collapsible,
@@ -120,6 +121,10 @@ function HistoryEntry({ entry }: { entry: HistoryTimelineEntry }) {
                     ) : (
                         'the system'
                     )}
+                    <ImportSourceLink
+                        csvImportId={entry.csv_import_id}
+                        className="ml-2"
+                    />
                 </p>
                 {hasSnapshots && (
                     <Collapsible>

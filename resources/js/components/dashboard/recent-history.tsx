@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { History } from 'lucide-react';
+import { ImportSourceLink } from '@/components/imports/import-source-link';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -131,6 +132,12 @@ export function RecentHistory({ entries }: RecentHistoryProps) {
                                             ) : (
                                                 'The system'
                                             )}
+                                            <ImportSourceLink
+                                                csvImportId={
+                                                    entry.csv_import_id
+                                                }
+                                                className="ml-1"
+                                            />
                                         </p>
                                     </div>
                                 </li>
