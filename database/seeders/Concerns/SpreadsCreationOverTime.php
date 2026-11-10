@@ -29,7 +29,8 @@ trait SpreadsCreationOverTime
      * When there are at least as many records as days, every day gets at least
      * one record and the rest land on random days. With fewer records, the days
      * are cut into equal parts and each record lands on a random day inside its
-     * part, so the whole month is still covered. The time of day is random
+     * part, so the whole month is still covered, and the first record always
+     * lands on the oldest day. The time of day is random
      * within working hours, and no moment is in the future.
      *
      * @return list<CarbonImmutable>
@@ -47,7 +48,7 @@ trait SpreadsCreationOverTime
             }
         } else {
             for ($index = 0; $index < $count; $index++) {
-                $progress = ($index + mt_rand() / mt_getrandmax()) / $count;
+                $progress = $index === 0 ? 0.0 : ($index + mt_rand() / mt_getrandmax()) / $count;
                 $daysAgo[] = ($days - 1) - (int) floor($progress * $days);
             }
         }

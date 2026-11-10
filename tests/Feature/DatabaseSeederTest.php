@@ -99,7 +99,7 @@ test('the seeded records are created at random moments over the past month', fun
     $now = CarbonImmutable::now();
     $distinctDays = fn (string $model, string $column = 'created_at'): int => $model::query()->pluck($column)->map(fn ($moment) => $moment->toDateString())->unique()->count();
 
-    expect(User::query()->orderBy('created_at')->first()->created_at->lessThanOrEqualTo($now->subDays(29)))->toBeTrue()
+    expect(User::query()->orderBy('created_at')->first()->created_at->toDateString())->toBe($now->subDays(29)->toDateString())
         ->and(User::query()->orderByDesc('created_at')->first()->created_at->greaterThan($now->subDays(2)))->toBeTrue()
         ->and($distinctDays(User::class))->toBeGreaterThan(15)
         ->and($distinctDays(Writer::class))->toBeGreaterThan(8)

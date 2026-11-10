@@ -76,3 +76,24 @@ test('password cannot be reset with invalid token', function () {
 
     $response->assertSessionHasErrors('email');
 });
+
+test('resetting the password through the emailed link verifies an unverified user', function () {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+
+    $this->post(route('password.email'), ['email' => $user->email]);
+
+    Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+        $this->post(route('password.update'), [
+            'token' => $notification->token,
+            'email' => $user->email,
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertSessionHasNoErrors();
+
+        expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
+
+        return true;
+    });
+});

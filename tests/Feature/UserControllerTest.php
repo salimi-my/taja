@@ -130,7 +130,7 @@ describe('index', function () {
 });
 
 describe('store', function () {
-    test('admins can create a verified user and email them a password setup link', function () {
+    test('admins can create an unverified user and email them a password setup link', function () {
         Notification::fake();
 
         $this->actingAs($this->admin)
@@ -151,7 +151,7 @@ describe('store', function () {
             ->and($user->gender)->toBe(Gender::Female)
             ->and($user->role)->toBe(UserRole::Admin)
             ->and($user->password)->not->toBeEmpty()
-            ->and($user->hasVerifiedEmail())->toBeTrue();
+            ->and($user->hasVerifiedEmail())->toBeFalse();
 
         Notification::assertSentTo($user, ResetPassword::class);
     });

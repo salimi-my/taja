@@ -9,13 +9,14 @@ use App\Http\Requests\Users\UpdateUserRequest;
 use App\Http\Requests\Users\UserIndexRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class UserController extends Controller
 {
@@ -78,9 +79,13 @@ class UserController extends Controller
             'password' => Str::random(32),
         ]);
 
-        $user->markEmailAsVerified();
+        try {
+            $status = Password::sendResetLink(['email' => $user->email]);
+        } catch (TransportExceptionInterface $exception) {
+            report($exception);
 
-        $status = Password::sendResetLink(['email' => $user->email]);
+            $status = null;
+        }
 
         Inertia::flash('toast', $status === Password::RESET_LINK_SENT
             ? ['type' => 'success', 'message' => __('User created. An email was sent for them to set their password.')]
