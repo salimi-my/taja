@@ -6,6 +6,7 @@ use App\Models\Publisher;
 use App\Models\Writer;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -40,6 +41,10 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        if ($this->app->environment('local')) {
+            TrustProxies::at('*');
+        }
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
