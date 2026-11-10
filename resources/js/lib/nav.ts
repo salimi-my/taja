@@ -16,6 +16,7 @@ import {
     masterHistory,
     rightsHistory,
     songOwnership,
+    userHistory,
     writerCatalogue,
 } from '@/routes/reports';
 import {
@@ -138,6 +139,11 @@ export const navGroups: SidebarNavGroup[] = [
                 items: [
                     { title: 'Rights History', href: rightsHistory() },
                     { title: 'Master History', href: masterHistory() },
+                    {
+                        title: 'User History',
+                        href: userHistory(),
+                        adminOnly: true,
+                    },
                     {
                         title: 'Import History',
                         href: importsIndex(),

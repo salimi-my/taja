@@ -8,6 +8,7 @@ use App\Http\Controllers\Reports\IncompleteSplitReportController;
 use App\Http\Controllers\Reports\MasterHistoryReportController;
 use App\Http\Controllers\Reports\RightsHistoryReportController;
 use App\Http\Controllers\Reports\SongOwnershipReportController;
+use App\Http\Controllers\Reports\UserHistoryReportController;
 use App\Http\Controllers\Reports\WriterCatalogueReportController;
 use App\Http\Controllers\UserBulkDestroyController;
 use App\Http\Controllers\UserController;
@@ -63,6 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('song-ownership', [SongOwnershipReportController::class, 'index'])->name('song-ownership');
         Route::get('rights-history', [RightsHistoryReportController::class, 'index'])->name('rights-history');
         Route::get('master-history', [MasterHistoryReportController::class, 'index'])->name('master-history');
+        Route::get('user-history', [UserHistoryReportController::class, 'index'])->name('user-history');
         Route::get('incomplete-split', [IncompleteSplitReportController::class, 'index'])->name('incomplete-split');
 
         Route::prefix('export')->name('export.')->group(function () {
@@ -70,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('song-ownership', [SongOwnershipReportController::class, 'export'])->name('song-ownership');
             Route::get('rights-history', [RightsHistoryReportController::class, 'export'])->name('rights-history');
             Route::get('master-history', [MasterHistoryReportController::class, 'export'])->name('master-history');
+            Route::get('user-history', [UserHistoryReportController::class, 'export'])->name('user-history');
             Route::get('incomplete-split', [IncompleteSplitReportController::class, 'export'])->name('incomplete-split');
         });
     });

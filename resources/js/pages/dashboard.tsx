@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { FileUp, History, Plus } from 'lucide-react';
+import { FileUp, Plus } from 'lucide-react';
 import { useState, useSyncExternalStore } from 'react';
 import { ActivityChart } from '@/components/dashboard/activity-chart';
 import { AttentionList } from '@/components/dashboard/attention-list';
@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { useIsAdmin } from '@/hooks/use-is-admin';
 import { dashboard } from '@/routes';
 import { create as importCreate } from '@/routes/imports';
-import { rightsHistory } from '@/routes/reports';
 import { create as createWork } from '@/routes/works';
 import type {
     ActivityPoint,
@@ -130,12 +129,6 @@ export default function Dashboard({
                                 </Button>
                             </>
                         )}
-                        <Button variant="outline" asChild>
-                            <Link href={rightsHistory()}>
-                                <History aria-hidden="true" />
-                                Rights history
-                            </Link>
-                        </Button>
                     </div>
                 </div>
 

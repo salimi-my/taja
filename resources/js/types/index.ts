@@ -10,3 +10,4 @@ export type * from './work';
 export type * from './imports';
 export type * from './report';
 export type * from './master-history';
+export type * from './user-history';

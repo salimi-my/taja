@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Users\CreateUser;
+use App\Actions\Users\DeleteUser;
+use App\Actions\Users\UpdateUser;
 use App\Enums\Gender;
 use App\Enums\UserRole;
 use App\Http\Requests\Users\StoreUserRequest;
@@ -11,6 +14,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -72,12 +76,12 @@ class UserController extends Controller
     /**
      * Store a newly created user.
      */
-    public function store(StoreUserRequest $request): RedirectResponse
+    public function store(StoreUserRequest $request, CreateUser $createUser): RedirectResponse
     {
-        $user = User::create([
+        $user = $createUser([
             ...$request->validated(),
             'password' => Str::random(32),
-        ]);
+        ], $request->user()->id);
 
         try {
             $status = Password::sendResetLink(['email' => $user->email]);
@@ -97,15 +101,9 @@ class UserController extends Controller
     /**
      * Update the given user.
      */
-    public function update(UpdateUserRequest $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, User $user, UpdateUser $updateUser): RedirectResponse
     {
-        $user->fill($request->validated());
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
+        $updateUser($user, $request->validated(), $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User updated.')]);
 
@@ -115,11 +113,11 @@ class UserController extends Controller
     /**
      * Delete the given user.
      */
-    public function destroy(User $user): RedirectResponse
+    public function destroy(Request $request, User $user, DeleteUser $deleteUser): RedirectResponse
     {
         Gate::authorize('delete', $user);
 
-        $user->delete();
+        $deleteUser($user, $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User deleted.')]);
 

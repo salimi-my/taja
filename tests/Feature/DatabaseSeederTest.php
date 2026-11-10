@@ -5,10 +5,12 @@ use App\Enums\Gender;
 use App\Enums\MasterChangeType;
 use App\Enums\MasterStatus;
 use App\Enums\RightsChangeType;
+use App\Enums\UserChangeType;
 use App\Models\MasterHistory;
 use App\Models\Publisher;
 use App\Models\RightsHistory;
 use App\Models\User;
+use App\Models\UserHistory;
 use App\Models\Work;
 use App\Models\WorkParty;
 use App\Models\Writer;
@@ -45,6 +47,15 @@ test('every seeded writer and publisher has a created entry, and a few have chan
     expect($created->count())->toBe(Writer::count() + Publisher::count())
         ->and(MasterHistory::query()->where('change_type', MasterChangeType::Updated)->count())->toBeGreaterThanOrEqual(3)
         ->and(MasterHistory::query()->where('subject_type', 'writer')->whereJsonContainsKey('new_snapshot->bank_name')->exists())->toBeTrue();
+});
+
+test('every seeded user has a created entry, and a few have changes', function () {
+    $this->seed();
+
+    expect(UserHistory::query()->where('change_type', UserChangeType::Created)->count())->toBe(User::count())
+        ->and(UserHistory::query()->where('change_type', UserChangeType::RoleChanged)->exists())->toBeTrue()
+        ->and(UserHistory::query()->where('change_type', UserChangeType::Updated)->count())->toBeGreaterThanOrEqual(2)
+        ->and(UserHistory::query()->where('change_type', UserChangeType::PasswordChanged)->exists())->toBeTrue();
 });
 
 test('the seeded users have a gender and a Malaysian mobile number, with a few gaps', function () {
