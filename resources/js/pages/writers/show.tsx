@@ -41,7 +41,7 @@ export default function WritersShow({
         <>
             <Head title={writer.name} />
 
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <Button variant="ghost" size="sm" asChild>
                     <Link href={index()}>
                         <ArrowLeft />

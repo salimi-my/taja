@@ -3,6 +3,7 @@ import { PublishersCardRow } from '@/components/publishers/publishers-card-row';
 import { PublishersFilterDrawer } from '@/components/publishers/publishers-filter-drawer';
 import { PublishersTableRow } from '@/components/publishers/publishers-table-row';
 import { TableCreateLink } from '@/components/table/table-create-link';
+import { TableExportLink } from '@/components/table/table-export-link';
 import { TableColumnHeader } from '@/components/table/table-column-header';
 import { TableFacetedFilter } from '@/components/table/table-faceted-filter';
 import { TablePagination } from '@/components/table/table-pagination';
@@ -24,9 +25,10 @@ import { useIsAdmin } from '@/hooks/use-is-admin';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTableParams } from '@/hooks/use-table-params';
 import { PUBLISHER_COLUMN_LABELS } from '@/lib/publishers';
-import { paramsFromServer } from '@/lib/table';
+import { exportQuery } from '@/lib/reports';
+import { DEFAULT_PARAMS, paramsFromServer } from '@/lib/table';
 import type { ServerFilters } from '@/lib/table';
-import { create, index } from '@/routes/publishers';
+import { create, exportMethod, index } from '@/routes/publishers';
 import type { PaginatedResource, Publisher, PublisherOptions } from '@/types';
 
 type PublishersTableProps = PublisherOptions & {
@@ -61,6 +63,10 @@ export function PublishersTable({
         initialParams: paramsFromServer(filters, publishers.meta.current_page),
         only: REFRESHED_PROPS,
     });
+
+    const exportUrl = exportMethod({
+        query: exportQuery(params, DEFAULT_PARAMS),
+    }).url;
 
     const statusOptions = useMemo(
         () => statuses.map((item) => ({ id: item.value, name: item.label })),
@@ -127,13 +133,20 @@ export function PublishersTable({
                     filterConfigs={mobileFilterConfigs}
                     columnLabels={PUBLISHER_COLUMN_LABELS}
                     actions={
-                        isAdmin ? (
-                            <TableCreateLink
-                                label="Create publisher"
-                                href={create()}
+                        <>
+                            {isAdmin && (
+                                <TableCreateLink
+                                    label="Create publisher"
+                                    href={create()}
+                                    compact
+                                />
+                            )}
+                            <TableExportLink
+                                href={exportUrl}
+                                label="Export publishers as CSV"
                                 compact
                             />
-                        ) : null
+                        </>
                     }
                 />
             ) : (
@@ -175,12 +188,18 @@ export function PublishersTable({
                         </>
                     }
                     actions={
-                        isAdmin ? (
-                            <TableCreateLink
-                                label="Create publisher"
-                                href={create()}
+                        <>
+                            {isAdmin && (
+                                <TableCreateLink
+                                    label="Create publisher"
+                                    href={create()}
+                                />
+                            )}
+                            <TableExportLink
+                                href={exportUrl}
+                                label="Export publishers as CSV"
                             />
-                        ) : null
+                        </>
                     }
                 />
             )}

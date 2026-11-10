@@ -100,7 +100,7 @@ export default function IncompleteSplitReport({
                 description="Works that have no parties in effect, or whose shares do not add up to 100%."
             >
                 <div className="space-y-4">
-                    <div className="print:hidden">
+                    <div>
                         <TableDesktopToolbar
                             params={params}
                             setParams={setParams}
@@ -321,7 +321,7 @@ export default function IncompleteSplitReport({
                                             ))}
                                         </TableBody>
                                     </TableDesktopFrame>
-                                    <div className="print:hidden">
+                                    <div>
                                         <TablePagination
                                             total={data.meta.total}
                                             params={params}

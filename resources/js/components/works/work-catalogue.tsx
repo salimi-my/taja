@@ -20,7 +20,7 @@ type WorkCatalogueProps = {
     url: string;
     /** The props refreshed when the toggle changes, e.g. `['catalogue', 'includeEnded']`. */
     only: string[];
-    /** The CSV export of the catalogue. When given, Export CSV and Print buttons are shown. */
+    /** The CSV export of the catalogue. When given, the Export CSV button is shown. */
     exportUrl?: string;
 };
 
@@ -47,7 +47,7 @@ export function WorkCatalogue({
     return (
         <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2 print:hidden">
+                <div className="flex items-center gap-2">
                     <Checkbox
                         id="include-ended"
                         checked={includeEnded}

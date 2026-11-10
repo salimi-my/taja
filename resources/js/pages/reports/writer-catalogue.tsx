@@ -112,7 +112,7 @@ export default function WriterCatalogueReport({
                 description="Every work a writer is a party of, with the shares, territories and dates."
             >
                 <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-2 print:hidden">
+                    <div className="flex flex-wrap items-center gap-2">
                         <div className="flex items-center gap-1">
                             <div className="w-64">
                                 <Combobox
@@ -257,7 +257,7 @@ export default function WriterCatalogueReport({
                                 ) : (
                                     <>
                                         <WorkCatalogueTable rows={data.data} />
-                                        <div className="print:hidden">
+                                        <div>
                                             <TablePagination
                                                 total={data.meta.total}
                                                 params={params}

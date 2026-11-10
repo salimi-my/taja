@@ -59,4 +59,30 @@ class WriterIndexRequest extends FormRequest
             'per_page' => ['nullable', Rule::in(self::PER_PAGE_OPTIONS)],
         ];
     }
+
+    /**
+     * The filters of the list, as the screen and the CSV export both use them.
+     *
+     * @return array{
+     *     search: string,
+     *     status: list<string>,
+     *     societies: list<string>,
+     *     publishers: list<string>,
+     *     sort: string,
+     *     direction: string,
+     *     per_page: int,
+     * }
+     */
+    public function filters(): array
+    {
+        return [
+            'search' => $this->string('search')->trim()->toString(),
+            'status' => array_values(array_filter($this->array('status'), is_string(...))),
+            'societies' => array_values(array_filter($this->array('societies'), is_string(...))),
+            'publishers' => array_map(strval(...), array_values(array_filter($this->array('publishers'), is_scalar(...)))),
+            'sort' => $this->string('sort', 'created_at')->toString(),
+            'direction' => $this->string('direction', 'desc')->toString(),
+            'per_page' => $this->integer('per_page', 10),
+        ];
+    }
 }

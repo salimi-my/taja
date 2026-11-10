@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Casts\IdentityNumber;
+use App\Actions\Lists\WriterList;
+use App\Actions\Reports\StreamCsv;
 use App\Enums\MasterStatus;
 use App\Enums\PartyRole;
 use App\Enums\RightsType;
@@ -15,7 +16,6 @@ use App\Http\Resources\WriterResource;
 use App\Models\Country;
 use App\Models\Publisher;
 use App\Models\Writer;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -23,52 +23,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WriterController extends Controller
 {
     /**
      * Display a paginated, searchable and filterable list of writers.
      */
-    public function index(WriterIndexRequest $request): Response
+    public function index(WriterIndexRequest $request, WriterList $list): Response
     {
-        $filters = [
-            'search' => $request->string('search')->trim()->toString(),
-            'status' => $request->array('status'),
-            'societies' => $request->array('societies'),
-            'publishers' => $request->array('publishers'),
-            'sort' => $request->string('sort', 'created_at')->toString(),
-            'direction' => $request->string('direction', 'desc')->toString(),
-            'per_page' => $request->integer('per_page', 10),
-        ];
+        $filters = $request->filters();
 
-        $writers = Writer::query()
-            ->with(['publisher', 'aliases'])
-            ->when($filters['search'] !== '', function (Builder $query) use ($filters): void {
-                $term = '%'.addcslashes($filters['search'], '%_\\').'%';
-                $nricDigits = IdentityNumber::normalize($filters['search']);
-
-                $query->where(function (Builder $query) use ($term, $nricDigits): void {
-                    $query->where('name', 'like', $term)
-                        ->orWhere('writer_code', 'like', $term)
-                        ->orWhere('ipi_name_number', 'like', $term)
-                        ->orWhere('ipi_base_number', 'like', $term)
-                        ->orWhere('nric', 'like', $term)
-                        ->when($nricDigits !== null, fn (Builder $query) => $query->orWhere('nric', 'like', '%'.addcslashes($nricDigits, '%_\\').'%'))
-                        ->orWhereHas('aliases', function (Builder $query) use ($term): void {
-                            $query->where('name', 'like', $term)
-                                ->orWhere('ipi_base_number', 'like', $term);
-                        });
-                });
-            })
-            ->when($filters['status'] !== [], fn (Builder $query) => $query->whereIn('status', $filters['status']))
-            ->when($filters['societies'] !== [], fn (Builder $query) => $query->whereIn('cmo_society', $filters['societies']))
-            ->when($filters['publishers'] !== [], fn (Builder $query) => $query->whereIn('publisher_id', $filters['publishers']))
-            ->when(
-                $filters['direction'] === 'desc',
-                fn (Builder $query) => $query->orderByDesc($filters['sort']),
-                fn (Builder $query) => $query->orderBy($filters['sort']),
-            )
-            ->orderBy('id')
+        $writers = $list->query($filters)
             ->paginate($filters['per_page'])
             ->withQueryString();
 
@@ -78,6 +44,18 @@ class WriterController extends Controller
             ...$this->formOptions(),
             'perPageOptions' => WriterIndexRequest::PER_PAGE_OPTIONS,
         ]);
+    }
+
+    /**
+     * Download every writer matching the current filters as a CSV file.
+     */
+    public function export(WriterIndexRequest $request, WriterList $list, StreamCsv $streamCsv): StreamedResponse
+    {
+        return $streamCsv(
+            'writers-'.now()->toDateString().'.csv',
+            $list->csvHeaders(),
+            $list->csvRows($list->query($request->filters())->lazy()),
+        );
     }
 
     /**

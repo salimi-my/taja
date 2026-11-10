@@ -64,4 +64,36 @@ class WorkIndexRequest extends FormRequest
             'per_page' => ['nullable', Rule::in(self::PER_PAGE_OPTIONS)],
         ];
     }
+
+    /**
+     * The filters of the list, as the screen and the CSV export both use them.
+     *
+     * @return array{
+     *     search: string,
+     *     registration_statuses: list<string>,
+     *     conflict_statuses: list<string>,
+     *     languages: list<string>,
+     *     genres: list<string>,
+     *     start_date: string,
+     *     end_date: string,
+     *     sort: string,
+     *     direction: string,
+     *     per_page: int,
+     * }
+     */
+    public function filters(): array
+    {
+        return [
+            'search' => $this->string('search')->trim()->toString(),
+            'registration_statuses' => array_values(array_filter($this->array('registration_statuses'), is_string(...))),
+            'conflict_statuses' => array_values(array_filter($this->array('conflict_statuses'), is_string(...))),
+            'languages' => array_values(array_filter($this->array('languages'), is_string(...))),
+            'genres' => array_values(array_filter($this->array('genres'), is_string(...))),
+            'start_date' => $this->string('start_date')->toString(),
+            'end_date' => $this->string('end_date')->toString(),
+            'sort' => $this->string('sort', 'created_at')->toString(),
+            'direction' => $this->string('direction', 'desc')->toString(),
+            'per_page' => $this->integer('per_page', 10),
+        ];
+    }
 }

@@ -66,13 +66,13 @@ export function AppSidebarHeader({
         <>
             <div
                 className={cn(
-                    'fixed top-0 z-10 h-8 bg-header print:hidden',
+                    'fixed top-0 z-10 h-8 bg-header',
                     maxHeaderLayoutClasses,
                 )}
             />
             <header
                 className={cn(
-                    'fixed top-2 z-10 flex shrink-0 flex-col justify-center rounded-lg border border-header bg-header px-2.5 print:hidden',
+                    'fixed top-2 z-10 flex shrink-0 flex-col justify-center rounded-lg border border-header bg-header px-2.5',
                     getHeaderLayoutClasses({ scrolled }),
                     scrolled && 'border-sidebar-border bg-sidebar shadow-md',
                 )}

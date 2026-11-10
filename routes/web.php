@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::post('users/{user}/password-reset-link', UserPasswordResetLinkController::class)->name('users.password-reset-link');
 
+    Route::get('works/export', [WorkController::class, 'export'])->name('works.export');
     Route::resource('works', WorkController::class);
 
     Route::scopeBindings()->prefix('works/{work}/parties')->name('works.parties.')->group(function () {
@@ -34,8 +35,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('{party}', [WorkPartyController::class, 'destroy'])->name('destroy');
     });
 
+    Route::get('writers/export', [WriterController::class, 'export'])->name('writers.export');
     Route::resource('writers', WriterController::class);
 
+    Route::get('publishers/export', [PublisherController::class, 'export'])->name('publishers.export');
     Route::resource('publishers', PublisherController::class);
 
     Route::prefix('imports')->name('imports.')->where(['type' => '[a-z]+'])->group(function () {

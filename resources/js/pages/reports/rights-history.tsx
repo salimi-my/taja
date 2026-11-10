@@ -101,7 +101,7 @@ export default function RightsHistoryReport({
                 description="Every recorded change to the rights of a work, newest first."
             >
                 <div className="space-y-4">
-                    <div className="print:hidden">
+                    <div>
                         <TableDesktopToolbar
                             params={params}
                             setParams={setParams}
@@ -292,7 +292,7 @@ export default function RightsHistoryReport({
                                             ))}
                                         </TableBody>
                                     </TableDesktopFrame>
-                                    <div className="print:hidden">
+                                    <div>
                                         <TablePagination
                                             total={data.meta.total}
                                             params={params}

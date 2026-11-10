@@ -242,7 +242,7 @@ export default function SongOwnershipReport({
                 description="Who owns each work and the shares they hold, today or as of a date."
             >
                 <div className="space-y-4">
-                    <div className="print:hidden">
+                    <div>
                         <TableDesktopToolbar
                             params={params}
                             setParams={setParams}
@@ -342,7 +342,7 @@ export default function SongOwnershipReport({
                                     {data.data.map((row) => (
                                         <WorkOwnership key={row.id} row={row} />
                                     ))}
-                                    <div className="print:hidden">
+                                    <div>
                                         <TablePagination
                                             total={data.meta.total}
                                             params={params}

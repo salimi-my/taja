@@ -15,7 +15,7 @@ export function ReportWorkBadge({ work, setParams }: ReportWorkBadgeProps) {
     }
 
     return (
-        <Badge variant="secondary" className="gap-1 print:hidden">
+        <Badge variant="secondary" className="gap-1">
             Work: {work.tap_number} {work.title}
             <button
                 type="button"

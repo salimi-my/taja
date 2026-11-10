@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { TableCreateLink } from '@/components/table/table-create-link';
+import { TableExportLink } from '@/components/table/table-export-link';
 import { TableColumnHeader } from '@/components/table/table-column-header';
 import { TableFacetedFilter } from '@/components/table/table-faceted-filter';
 import { TablePagination } from '@/components/table/table-pagination';
@@ -23,10 +24,11 @@ import { WritersTableRow } from '@/components/writers/writers-table-row';
 import { useIsAdmin } from '@/hooks/use-is-admin';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTableParams } from '@/hooks/use-table-params';
-import { paramsFromServer } from '@/lib/table';
+import { exportQuery } from '@/lib/reports';
+import { DEFAULT_PARAMS, paramsFromServer } from '@/lib/table';
 import type { ServerFilters } from '@/lib/table';
 import { WRITER_COLUMN_LABELS } from '@/lib/writers';
-import { create, index } from '@/routes/writers';
+import { create, exportMethod, index } from '@/routes/writers';
 import type { PaginatedResource, Writer, WriterOptions } from '@/types';
 
 type WritersTableProps = WriterOptions & {
@@ -60,6 +62,10 @@ export function WritersTable({
         initialParams: paramsFromServer(filters, writers.meta.current_page),
         only: REFRESHED_PROPS,
     });
+
+    const exportUrl = exportMethod({
+        query: exportQuery(params, DEFAULT_PARAMS),
+    }).url;
 
     const statusOptions = useMemo(
         () => statuses.map((item) => ({ id: item.value, name: item.label })),
@@ -113,13 +119,20 @@ export function WritersTable({
                     filterConfigs={mobileFilterConfigs}
                     columnLabels={WRITER_COLUMN_LABELS}
                     actions={
-                        isAdmin ? (
-                            <TableCreateLink
-                                label="Create writer"
-                                href={create()}
+                        <>
+                            {isAdmin && (
+                                <TableCreateLink
+                                    label="Create writer"
+                                    href={create()}
+                                    compact
+                                />
+                            )}
+                            <TableExportLink
+                                href={exportUrl}
+                                label="Export writers as CSV"
                                 compact
                             />
-                        ) : null
+                        </>
                     }
                 />
             ) : (
@@ -154,12 +167,18 @@ export function WritersTable({
                         </>
                     }
                     actions={
-                        isAdmin ? (
-                            <TableCreateLink
-                                label="Create writer"
-                                href={create()}
+                        <>
+                            {isAdmin && (
+                                <TableCreateLink
+                                    label="Create writer"
+                                    href={create()}
+                                />
+                            )}
+                            <TableExportLink
+                                href={exportUrl}
+                                label="Export writers as CSV"
                             />
-                        ) : null
+                        </>
                     }
                 />
             )}

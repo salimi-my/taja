@@ -150,12 +150,7 @@ export function ImportReview({ csvImport, sample }: ImportReviewProps) {
                     </TabsList>
 
                     {activeTab === 'errors' && csvImport.has_errors_file && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="print:hidden"
-                            asChild
-                        >
+                        <Button variant="outline" size="sm" asChild>
                             <a href={errorsFile.url(csvImport.id)}>
                                 <Download />
                                 Download errors CSV

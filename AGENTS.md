@@ -250,9 +250,11 @@ The spec is `PHASE_1.md`. The three client workbooks it describes are the source
 - **Reports:** `app/Actions/Reports/*Report` builds the query (and the CSV headers and rows) once. The report controller's `index` renders the datatable and `export` streams the same filters through `StreamCsv`, so the screen and the file cannot drift. Report filters are read by a Form Request `filters()` method. Reports are read-only and open to every signed-in user.
 - **Dashboard:** counts, the incomplete split count (`IncompleteSplitReport::count()`), the registration status chart, upcoming writer birthdays (`UpcomingBirthdays`, a banner plus a card, visible to every role), recent rights history, and recent imports for admins.
 
+- **Master and work lists:** the filtered query, CSV headers and rows live in `app/Actions/Lists/{Work,Writer,Publisher}List`. The controller's `index` pages through `query()` and `export` streams it through `StreamCsv`, using the filters from the index request's `filters()` method. The datatable toolbar shows `TableExportLink` next to `TableCreateLink`.
+
 ### Frontend
 
-- Work and party pickers reuse `Combobox`. Report pages are in `resources/js/pages/reports/*` and use `ReportActions` (Export CSV link plus Print). Printing uses `window.print()` with `print:hidden` classes and the `@media print` block in `resources/css/app.css`, so mark new toolbars and buttons `print:hidden`.
+- Work and party pickers reuse `Combobox`. Report pages are in `resources/js/pages/reports/*` and use `ReportActions` (Export CSV link). There is no print feature.
 - Report filters live in `Params` (`types/table.ts`) and `lib/table.ts`, like any datatable. Pass a stable `defaultParams` (see `reportDefaults()` in `lib/reports.ts`) to `useTableParams` when a report sorts by something other than `created_at`.
 - Generate Wayfinder files with `php artisan wayfinder:generate --with-form` when you add routes outside `pnpm run dev`.
 

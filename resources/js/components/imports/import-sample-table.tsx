@@ -73,7 +73,7 @@ export function ImportSampleTable({
 
     return (
         <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+            <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
                     The first rows of the file, as they will be read. Check that
                     each value sits in the right column.
@@ -203,7 +203,6 @@ export function ImportSampleTable({
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="print:hidden"
                         disabled={loading}
                         onClick={showMore}
                     >

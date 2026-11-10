@@ -352,27 +352,3 @@ button[data-variant='outline'][aria-invalid='true'] {
     background-color: var(--primary-tint-10-white);
     color: var(--primary);
 }
-
-/*
- * Print layout for reports and profiles: only the page content is printed,
- * without the sidebar, header, footer and the controls marked `print:hidden`.
- */
-@media print {
-    [data-slot='sidebar'],
-    [data-slot='sidebar-gap'],
-    [data-slot='sidebar-container'] {
-        display: none !important;
-    }
-
-    [data-slot='sidebar-wrapper'] {
-        display: block;
-        min-height: 0;
-    }
-
-    [data-slot='sidebar-inset'] {
-        margin: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        background-color: transparent;
-    }
-}

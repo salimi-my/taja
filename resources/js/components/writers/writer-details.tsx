@@ -51,7 +51,7 @@ export function WriterDetails({
             <WriterHeader writer={writer} />
 
             <Tabs defaultValue="overview">
-                <TabsList className="print:hidden">
+                <TabsList>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="catalogue">Catalogue</TabsTrigger>
                 </TabsList>

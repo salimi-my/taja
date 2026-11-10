@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Lists\WorkList;
+use App\Actions\Reports\StreamCsv;
 use App\Actions\Works\CreateWork;
 use App\Actions\Works\UpdateWork;
 use App\Enums\ConflictStatus;
@@ -19,47 +21,22 @@ use App\Models\Country;
 use App\Models\Publisher;
 use App\Models\Work;
 use App\Models\Writer;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WorkController extends Controller
 {
     /**
      * Display a paginated, searchable and filterable list of works.
      */
-    public function index(WorkIndexRequest $request): Response
+    public function index(WorkIndexRequest $request, WorkList $list): Response
     {
-        $filters = [
-            'search' => $request->string('search')->trim()->toString(),
-            'registration_statuses' => $request->array('registration_statuses'),
-            'conflict_statuses' => $request->array('conflict_statuses'),
-            'languages' => $request->array('languages'),
-            'genres' => $request->array('genres'),
-            'start_date' => $request->string('start_date')->toString(),
-            'end_date' => $request->string('end_date')->toString(),
-            'sort' => $request->string('sort', 'created_at')->toString(),
-            'direction' => $request->string('direction', 'desc')->toString(),
-            'per_page' => $request->integer('per_page', 10),
-        ];
+        $filters = $request->filters();
 
-        $works = Work::query()
-            ->with('currentParties')
-            ->when($filters['search'] !== '', fn (Builder $query) => $query->search($filters['search']))
-            ->when($filters['registration_statuses'] !== [], fn (Builder $query) => $query->whereIn('registration_status', $filters['registration_statuses']))
-            ->when($filters['conflict_statuses'] !== [], fn (Builder $query) => $query->whereIn('conflict_status', $filters['conflict_statuses']))
-            ->when($filters['languages'] !== [], fn (Builder $query) => $query->whereIn('language', $filters['languages']))
-            ->when($filters['genres'] !== [], fn (Builder $query) => $query->whereIn('genre', $filters['genres']))
-            ->when($filters['start_date'] !== '', fn (Builder $query) => $query->whereDate('registration_date', '>=', $filters['start_date']))
-            ->when($filters['end_date'] !== '', fn (Builder $query) => $query->whereDate('registration_date', '<=', $filters['end_date']))
-            ->when(
-                $filters['direction'] === 'desc',
-                fn (Builder $query) => $query->orderByDesc($filters['sort']),
-                fn (Builder $query) => $query->orderBy($filters['sort']),
-            )
-            ->orderBy('id')
+        $works = $list->query($filters)
             ->paginate($filters['per_page'])
             ->withQueryString();
 
@@ -69,6 +46,18 @@ class WorkController extends Controller
             ...$this->filterOptions(),
             'perPageOptions' => WorkIndexRequest::PER_PAGE_OPTIONS,
         ]);
+    }
+
+    /**
+     * Download every work matching the current filters as a CSV file.
+     */
+    public function export(WorkIndexRequest $request, WorkList $list, StreamCsv $streamCsv): StreamedResponse
+    {
+        return $streamCsv(
+            'works-'.now()->toDateString().'.csv',
+            $list->csvHeaders(),
+            $list->csvRows($list->query($request->filters())->with('isrcs')->lazy()),
+        );
     }
 
     /**

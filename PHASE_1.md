@@ -42,7 +42,7 @@ The `Relationships` sheets in the workbooks are **ignored**. Create a child tabl
 - Withdrawal/termination tracking and alerts, documents/file storage, licensing, rights source traceability workflow, sound recording / master rights (Module I), royalty calculation or payments.
 - Encrypted storage of sensitive columns (**decided: not needed**). Store as normal columns.
 - CSV import that _updates_ existing records (create-only for now, see [Section 9.7](#97-import-modes)).
-- PDF export (CSV + print-friendly page only).
+- PDF export and printing (CSV only).
 - Extra user roles beyond what is in [Section 10](#10-roles-and-permissions).
 - ~~Queues/background import~~ **Changed during the build:** imports are validated and committed by a queued job (`ProcessCsvImportJob`) so very large files work. See [Section 9.1](#91-general). A queue worker must be running (`php artisan queue:work`); tests use the `sync` driver.
 - New composer or pnpm dependencies (use native PHP `fgetcsv`/`SplFileObject` for CSV).
@@ -500,7 +500,7 @@ Work detail page tabs: **Overview**, **Parties** (current view with an "as of da
 
 ### 8.4 Writer profile
 
-Writer detail page: master data, aliases, and the **Catalogue** — every work the writer is a party of (TAP, MACP Work ID, title, role, the four shares, territories, effective start/end, registration status, conflict status), with a toggle to include ended involvement. Buttons: **Print** (print-friendly layout) and **Export CSV**.
+Writer detail page: master data, aliases, and the **Catalogue** — every work the writer is a party of (TAP, MACP Work ID, title, role, the four shares, territories, effective start/end, registration status, conflict status), with a toggle to include ended involvement. Button: **Export CSV**.
 
 ---
 
@@ -570,7 +570,7 @@ Add `WorkPolicy`, `WriterPolicy`, `PublisherPolicy`, `CsvImportPolicy`. Adding a
 
 ## 11. Reports (Phase 1)
 
-All are on-screen datatables with filters, **Export CSV** and a print-friendly view.
+All are on-screen datatables with filters, and **Export CSV**.
 
 | Report                   | Contents / filters                                                                                                                                                                             |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -585,7 +585,7 @@ Rows with `is_controlled = false` still count in the sums (assumption: all owner
 
 - Incomplete Split judges **today's** parties only (not a past date). The "party without an effective start date" check is not implemented, because `effective_start_date` is required and cannot be empty.
 - Song Ownership and Rights History take a specific work through a `work_id` query parameter (shown as a removable badge); otherwise users narrow by searching TAP number, MACP Work ID or title. There is no work picker, to avoid loading every work into the page.
-- **Print** prints the rows on screen (set "per page" to 100 for longer lists). On the writer profile it prints only the active tab. Publisher profiles have no Export/Print.
+- There is no print feature. Publisher profiles have no Export.
 
 ---
 
@@ -650,7 +650,7 @@ Run in order. Each plan must end with: Pint, `pnpm run check:fix`, `pnpm run typ
 
 ### Plan 8 — Reports, dashboard and polish
 
-- The four reports in [Section 11](#11-reports-phase-1) with filters, CSV export and print view; writer profile **Print** and **Export CSV**.
+- The four reports in [Section 11](#11-reports-phase-1) with filters and CSV export; writer profile **Export CSV**.
 - Dashboard: counts of works, writers, publishers, works with incomplete splits, recent history and recent imports (replace starter content).
 - Seeder with fake data (publishers incl. a "Taja Archive" publisher, writers, works with multiple parties and some history).
 - Update `taja-project-resources/docs/*` only if the client asks; update `AGENTS.md` project conventions section with the new areas.

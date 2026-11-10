@@ -27,7 +27,7 @@ export function ImportActionBar({ csvImport }: ImportActionBarProps) {
     }
 
     return (
-        <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sidebar-border bg-card/90 p-3 pl-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/75 print:hidden">
+        <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sidebar-border bg-card/90 p-3 pl-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/75">
             <p className="text-sm font-medium">{summaryFor(csvImport)}</p>
             <ImportActions csvImport={csvImport} />
         </div>

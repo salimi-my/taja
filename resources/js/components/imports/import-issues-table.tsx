@@ -204,7 +204,6 @@ function IssueRow({
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="print:hidden"
                         disabled={isLoading}
                         onClick={() => onViewRow?.(group.line)}
                     >
@@ -216,7 +215,7 @@ function IssueRow({
                     group.line > 1 && (
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <span className="inline-flex cursor-default items-center gap-1.5 px-2 text-xs text-muted-foreground print:hidden">
+                                <span className="inline-flex cursor-default items-center gap-1.5 px-2 text-xs text-muted-foreground">
                                     <EyeOff className="size-4" />
                                     Not in preview
                                 </span>

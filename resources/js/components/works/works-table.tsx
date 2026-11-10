@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { TableColumnHeader } from '@/components/table/table-column-header';
 import { TableCreateLink } from '@/components/table/table-create-link';
+import { TableExportLink } from '@/components/table/table-export-link';
 import { TableDateRangeFilter } from '@/components/table/table-date-range-filter';
 import { TableFacetedFilter } from '@/components/table/table-faceted-filter';
 import { TablePagination } from '@/components/table/table-pagination';
@@ -24,10 +25,11 @@ import { WorksTableRow } from '@/components/works/works-table-row';
 import { useIsAdmin } from '@/hooks/use-is-admin';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTableParams } from '@/hooks/use-table-params';
-import { paramsFromServer } from '@/lib/table';
+import { exportQuery } from '@/lib/reports';
+import { DEFAULT_PARAMS, paramsFromServer } from '@/lib/table';
 import type { ServerFilters } from '@/lib/table';
 import { WORK_COLUMN_LABELS } from '@/lib/works';
-import { create, index } from '@/routes/works';
+import { create, exportMethod, index } from '@/routes/works';
 import type { PaginatedResource, Work, WorkFilterOptions } from '@/types';
 
 type WorksTableProps = WorkFilterOptions & {
@@ -62,6 +64,10 @@ export function WorksTable({
         initialParams: paramsFromServer(filters, works.meta.current_page),
         only: REFRESHED_PROPS,
     });
+
+    const exportUrl = exportMethod({
+        query: exportQuery(params, DEFAULT_PARAMS),
+    }).url;
 
     const registrationOptions = useMemo(
         () =>
@@ -133,13 +139,20 @@ export function WorksTable({
                     filterConfigs={mobileFilterConfigs}
                     columnLabels={WORK_COLUMN_LABELS}
                     actions={
-                        isAdmin ? (
-                            <TableCreateLink
-                                label="Create work"
-                                href={create()}
+                        <>
+                            {isAdmin && (
+                                <TableCreateLink
+                                    label="Create work"
+                                    href={create()}
+                                    compact
+                                />
+                            )}
+                            <TableExportLink
+                                href={exportUrl}
+                                label="Export works as CSV"
                                 compact
                             />
-                        ) : null
+                        </>
                     }
                 />
             ) : (
@@ -185,12 +198,18 @@ export function WorksTable({
                         </>
                     }
                     actions={
-                        isAdmin ? (
-                            <TableCreateLink
-                                label="Create work"
-                                href={create()}
+                        <>
+                            {isAdmin && (
+                                <TableCreateLink
+                                    label="Create work"
+                                    href={create()}
+                                />
+                            )}
+                            <TableExportLink
+                                href={exportUrl}
+                                label="Export works as CSV"
                             />
-                        ) : null
+                        </>
                     }
                 />
             )}

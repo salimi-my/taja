@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Lists\PublisherList;
+use App\Actions\Reports\StreamCsv;
 use App\Enums\MasterStatus;
 use App\Enums\RightsType;
 use App\Http\Requests\Publishers\PublisherIndexRequest;
@@ -12,65 +14,23 @@ use App\Http\Resources\PublisherResource;
 use App\Http\Resources\WorkPartyResource;
 use App\Models\Country;
 use App\Models\Publisher;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PublisherController extends Controller
 {
     /**
      * Display a paginated, searchable and filterable list of publishers.
      */
-    public function index(PublisherIndexRequest $request): Response
+    public function index(PublisherIndexRequest $request, PublisherList $list): Response
     {
-        $filters = [
-            'search' => $request->string('search')->trim()->toString(),
-            'status' => $request->array('status'),
-            'societies' => $request->array('societies'),
-            'rights_types' => $request->array('rights_types'),
-            'territories' => array_map('strtoupper', $request->array('territories')),
-            'sort' => $request->string('sort', 'created_at')->toString(),
-            'direction' => $request->string('direction', 'desc')->toString(),
-            'per_page' => $request->integer('per_page', 10),
-        ];
+        $filters = $request->filters();
 
-        $publishers = Publisher::query()
-            ->when($filters['search'] !== '', function (Builder $query) use ($filters): void {
-                $term = '%'.addcslashes($filters['search'], '%_\\').'%';
-
-                $query->where(function (Builder $query) use ($term): void {
-                    $query->where('name', 'like', $term)
-                        ->orWhere('publisher_code', 'like', $term)
-                        ->orWhere('ipi_name_number', 'like', $term)
-                        ->orWhere('ipi_base_number', 'like', $term)
-                        ->orWhere('company_registration_number', 'like', $term);
-                });
-            })
-            ->when($filters['status'] !== [], fn (Builder $query) => $query->whereIn('status', $filters['status']))
-            ->when($filters['societies'] !== [], fn (Builder $query) => $query->whereIn('society_cmo', $filters['societies']))
-            ->when($filters['rights_types'] !== [], function (Builder $query) use ($filters): void {
-                $query->where(function (Builder $query) use ($filters): void {
-                    foreach ($filters['rights_types'] as $type) {
-                        $query->orWhereJsonContains('rights_types_granted', $type);
-                    }
-                });
-            })
-            ->when($filters['territories'] !== [], function (Builder $query) use ($filters): void {
-                $query->where(function (Builder $query) use ($filters): void {
-                    foreach ([...$filters['territories'], 'WW'] as $territory) {
-                        $query->orWhereJsonContains('territories_granted', $territory);
-                    }
-                });
-            })
-            ->when(
-                $filters['direction'] === 'desc',
-                fn (Builder $query) => $query->orderByDesc($filters['sort']),
-                fn (Builder $query) => $query->orderBy($filters['sort']),
-            )
-            ->orderBy('id')
+        $publishers = $list->query($filters)
             ->paginate($filters['per_page'])
             ->withQueryString();
 
@@ -80,6 +40,18 @@ class PublisherController extends Controller
             ...$this->formOptions(),
             'perPageOptions' => PublisherIndexRequest::PER_PAGE_OPTIONS,
         ]);
+    }
+
+    /**
+     * Download every publisher matching the current filters as a CSV file.
+     */
+    public function export(PublisherIndexRequest $request, PublisherList $list, StreamCsv $streamCsv): StreamedResponse
+    {
+        return $streamCsv(
+            'publishers-'.now()->toDateString().'.csv',
+            $list->csvHeaders(),
+            $list->csvRows($list->query($request->filters())->lazy()),
+        );
     }
 
     /**
