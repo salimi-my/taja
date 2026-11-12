@@ -151,6 +151,17 @@ describe('writers', function () {
         expect(MasterHistory::query()->count())->toBe(0);
     });
 
+    test('renaming a writer renames its party rows but keeps a custom name', function () {
+        $writer = Writer::factory()->create(['name' => 'Fake Old Writer']);
+        $party = WorkParty::factory()->forWriter($writer)->create();
+        $custom = WorkParty::factory()->forWriter($writer)->create(['contributor_name' => 'Fake Stage Name']);
+
+        app(UpdateWriter::class)($writer, ['name' => 'Fake New Writer'], $this->admin->id);
+
+        expect($party->refresh()->contributor_name)->toBe('Fake New Writer')
+            ->and($custom->refresh()->contributor_name)->toBe('Fake Stage Name');
+    });
+
     test('pseudonym changes are logged as one list', function () {
         $writer = Writer::factory()->withoutOptionalFields()->create();
 
@@ -230,6 +241,21 @@ describe('publishers', function () {
 
         expect($entry->previous_snapshot)->toBe(['rights_types_granted' => ['performance'], 'territories_granted' => ['MY']])
             ->and($entry->new_snapshot)->toBe(['rights_types_granted' => ['performance', 'sync'], 'territories_granted' => ['MY', 'SG']]);
+    });
+
+    test('renaming a publisher renames its party rows but keeps a custom name', function () {
+        $publisher = Publisher::factory()->create(['name' => 'Fake Old Name Sdn Bhd']);
+        $current = WorkParty::factory()->forPublisher($publisher)->create();
+        $ended = WorkParty::factory()->forPublisher($publisher)->ended()->create();
+        $custom = WorkParty::factory()->forPublisher($publisher)->create(['contributor_name' => 'Fake Imprint Name']);
+        $other = WorkParty::factory()->forPublisher()->create();
+
+        app(UpdatePublisher::class)($publisher, ['name' => 'Fake New Name Sdn Bhd'], $this->admin->id);
+
+        expect($current->refresh()->contributor_name)->toBe('Fake New Name Sdn Bhd')
+            ->and($ended->refresh()->contributor_name)->toBe('Fake New Name Sdn Bhd')
+            ->and($custom->refresh()->contributor_name)->toBe('Fake Imprint Name')
+            ->and($other->refresh()->contributor_name)->not->toBe('Fake New Name Sdn Bhd');
     });
 
     test('saving a publisher without changes logs nothing', function () {
